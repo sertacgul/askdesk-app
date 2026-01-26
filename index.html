@@ -5,12 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AskDesk v2.4 | Server Edition</title>
 
-<!-- Tailwind CSS -->
+<!-- UI Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- FontAwesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- SheetJS (Excel) -->
+
+<!-- Data Processing Libraries -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Mammoth.js (DOCX) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script>
 tailwind.config = {
@@ -20,8 +24,8 @@ colors: {
 brand: {
 dark: '#0f172a',
 panel: '#1e293b',
-primary: '#6366f1', // Indigo
-accent: '#f43f5e', // Rose
+primary: '#6366f1',
+accent: '#f43f5e',
 success: '#10b981',
 warning: '#f59e0b',
 info: '#3b82f6'
@@ -30,6 +34,8 @@ info: '#3b82f6'
 }
 }
 }
+// PDF.js Worker Configuration
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 </script>
 <style>
 body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; }
@@ -44,15 +50,12 @@ border-color: #6366f1;
 box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 outline: none;
 }
-/* Windows Web Fix: Dropdown Options Visibility */
 option { background-color: #1e293b; color: white; padding: 5px; }
 select { cursor: pointer; }
-
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #0f172a; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
 .loader {
 border: 3px solid #1e293b;
 border-top: 3px solid #6366f1;
@@ -68,15 +71,15 @@ html[dir="rtl"] .text-left { text-align: right; }
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-200">
 
-<!-- WARNING BANNER -->
-<div class="bg-brand-success/10 border-b border-brand-success/30 text-green-400 px-4 py-1 text-xs text-center font-semibold" data-i18n="bannerWarning">
-🔒 Secure Mode: API Key is managed server-side. Do not paste PII.
+<!-- BANNER -->
+<div class="bg-brand-success/10 border-b border-brand-success/30 text-green-400 px-4 py-1 text-xs text-center font-semibold">
+<i class="fa-solid fa-lock"></i> AskDesk Pro: Server-Side AI Management Active. No Client Keys Required.
 </div>
 
 <!-- HEADER -->
 <header class="bg-brand-panel border-b border-slate-700 h-16 flex items-center justify-between px-6 shadow-lg z-20 shrink-0">
 <div class="flex items-center gap-3">
-<!-- GLOBAL LOGO -->
+<!-- LOGO -->
 <div class="relative w-10 h-10 group cursor-pointer">
 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-lg transform transition group-hover:scale-105 duration-300">
 <rect width="40" height="40" rx="10" fill="url(#brand_gradient)"/>
@@ -92,68 +95,52 @@ html[dir="rtl"] .text-left { text-align: right; }
 </defs>
 </svg>
 </div>
-
 <div>
 <h1 class="text-xl font-bold text-white tracking-wide">AskDesk <span class="text-brand-primary text-xs align-top">v2.4</span></h1>
-<p class="text-[10px] text-slate-400 font-mono tracking-wider" data-i18n="appSubtitle">PROD SERVER EDITION</p>
+<p class="text-[10px] text-slate-400 font-mono tracking-wider">ENTERPRISE QA GENERATOR</p>
 </div>
 </div>
 
 <div class="flex items-center gap-4">
-<!-- UI Language Selector -->
-<select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer">
-<!-- Options populated by JS -->
-</select>
-
-<!-- Status / Settings Info (FIXED BUTTON) -->
-<button onclick="App.ui.showToast(App.i18n.t('serverManagedToast'))" class="text-slate-400 hover:text-white transition p-2 relative cursor-pointer" title="Server Managed">
+<select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer"></select>
+<div class="text-slate-400 p-2 relative cursor-help" title="Connected to Cloudflare Worker">
 <i class="fa-solid fa-server"></i>
-<span class="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-</button>
+<span class="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+</div>
 </div>
 </header>
 
-<!-- MAIN LAYOUT -->
+<!-- MAIN -->
 <div class="flex-1 flex overflow-hidden">
 
-<!-- LEFT PANEL: Inputs -->
+<!-- LEFT: INPUTS -->
 <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-r border-slate-700 relative">
 <div class="p-5 flex flex-col gap-4 h-full overflow-y-auto">
 
-<!-- Configuration Box -->
+<!-- Config -->
 <div class="bg-brand-panel p-4 rounded-xl border border-slate-700 shadow-sm space-y-3">
 <div class="flex justify-between items-center border-b border-slate-700 pb-2">
 <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
 <i class="fa-solid fa-sliders"></i> <span data-i18n="configTitle">Configuration</span>
 </h3>
 </div>
-
-<!-- Domain -->
 <div>
 <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="domainLabel">Domain</label>
-<select id="domainSelect" class="glass-input w-full rounded px-3 py-2 text-sm cursor-pointer">
-<!-- Populated by JS -->
-</select>
+<select id="domainSelect" class="glass-input w-full rounded px-3 py-2 text-sm cursor-pointer"></select>
 </div>
-
-<!-- Languages -->
 <div class="grid grid-cols-2 gap-3">
 <div>
 <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="qLangLabel">Question Lang</label>
-<select id="qLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer">
-<!-- Populated by JS -->
-</select>
+<select id="qLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer"></select>
 </div>
 <div>
 <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="aLangLabel">Answer Lang</label>
-<select id="aLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer">
-<!-- Populated by JS -->
-</select>
+<select id="aLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer"></select>
 </div>
 </div>
 </div>
 
-<!-- Metadata Box -->
+<!-- Metadata -->
 <div class="bg-brand-panel p-4 rounded-xl border border-slate-700 shadow-sm">
 <h3 class="text-xs font-bold text-brand-primary uppercase mb-3 flex items-center gap-2">
 <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
@@ -170,40 +157,41 @@ html[dir="rtl"] .text-left { text-align: right; }
 </div>
 </div>
 
-<!-- Source Content Area -->
+<!-- Source Input -->
 <div class="flex-1 flex flex-col min-h-[250px]">
 <div class="flex justify-between items-end mb-2">
 <label class="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
 <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source Content</span>
 </label>
-
 <div class="flex items-center gap-2">
-<input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp" onchange="App.ui.handleFileUpload(this)">
+<input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
 <button onclick="document.getElementById('fileUpload').click()"
 class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2 text-sm cursor-pointer">
 <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
 <span data-i18n="uploadBtn">UPLOAD FILE</span>
 </button>
-
 <span class="w-px h-6 bg-slate-600 mx-2"></span>
-
 <button onclick="App.ui.clearInput()" class="text-xs text-slate-500 hover:text-red-400 transition" data-i18n="clear">Clear</button>
 </div>
 </div>
 
 <div class="relative flex-1 h-full">
-<!-- Text Input -->
 <textarea id="sourceText" oninput="App.ui.updateCharCount()"
 class="glass-input w-full h-full rounded-xl p-4 text-sm font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
-placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
+placeholder="Paste text, or upload PDF, DOCX, Excel, Image..."></textarea>
 
-<!-- Image Preview Overlay (Hidden by default) -->
 <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
 <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
 <div class="flex gap-2">
 <span class="text-xs text-brand-primary bg-brand-primary/10 px-2 py-1 rounded">Image Mode Active</span>
 <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
 </div>
+</div>
+
+<!-- File Loading Overlay -->
+<div id="fileLoader" class="hidden absolute inset-0 bg-slate-900/80 z-20 flex-col items-center justify-center rounded-xl backdrop-blur-sm">
+<div class="loader mb-2"></div>
+<span class="text-xs text-brand-primary font-bold">Extracting Text...</span>
 </div>
 </div>
 
@@ -212,7 +200,7 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 </div>
 
-<!-- Analyze Button -->
+<!-- Generate Button -->
 <div class="mt-auto pt-4">
 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1">
 <div class="flex items-center gap-2 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="error">Error</span>:</div>
@@ -228,10 +216,10 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 </div>
 
-<!-- RIGHT PANEL: Output & Log -->
+<!-- RIGHT: OUTPUT -->
 <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a]">
 
-<!-- Preview Section -->
+<!-- Preview -->
 <div class="h-[55%] bg-slate-900/50 p-6 border-b border-slate-700 overflow-y-auto relative">
 <div class="flex items-center justify-between mb-4">
 <h2 class="text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
@@ -240,7 +228,6 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 <span id="statusTag" class="text-[10px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
 </div>
 
-<!-- Quality Box -->
 <div id="qualityBox" class="hidden mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-xs">
 <div class="flex items-center justify-between mb-2">
 <div class="flex items-center gap-2">
@@ -253,7 +240,6 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 </div>
 <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-2 italic"></ul>
-
 <details class="group">
 <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1">
 <i class="fa-solid fa-chevron-right text-[10px] group-open:rotate-90 transition"></i>
@@ -269,12 +255,10 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1" data-i18n="generatedQ">Question</label>
 <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-sm font-bold h-16" readonly></textarea>
 </div>
-
 <div class="h-40 flex flex-col">
 <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1" data-i18n="generatedA">Answer</label>
 <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-sm font-mono whitespace-pre" readonly></textarea>
 </div>
-
 <div class="flex justify-end gap-3 pt-2">
 <button id="regenerateBtn" onclick="App.logic.regenerate()" disabled class="text-xs text-brand-primary hover:text-white font-bold px-4 py-2 border border-brand-primary/50 hover:border-brand-primary rounded-lg transition flex items-center gap-2 opacity-50 cursor-not-allowed">
 <i class="fa-solid fa-rotate"></i> <span data-i18n="regenerateBtn">Regenerate</span>
@@ -286,7 +270,7 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 </div>
 
-<!-- Log / Export Section -->
+<!-- Log Table -->
 <div class="h-[45%] flex flex-col bg-[#0f172a]">
 <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
 <div class="flex justify-between items-center">
@@ -295,13 +279,13 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 <div class="flex items-center gap-2">
 <div class="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-<button onclick="App.exporters.toExcel()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export Excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
+<button onclick="App.exporters.toExcel()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
 <div class="w-px bg-slate-700 my-1"></div>
-<button onclick="App.exporters.toCSV()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export CSV"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
+<button onclick="App.exporters.toCSV()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
 <div class="w-px bg-slate-700 my-1"></div>
-<button onclick="App.exporters.toJSON()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export JSON"><i class="fa-solid fa-code text-yellow-500 mr-1"></i> JSON</button>
+<button onclick="App.exporters.toJSON()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition"><i class="fa-solid fa-code text-yellow-500 mr-1"></i> JSON</button>
 </div>
-<button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
+<button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2"><i class="fa-solid fa-trash"></i></button>
 </div>
 </div>
 
@@ -318,7 +302,6 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 <input type="text" id="filterSearch" oninput="App.logic.renderTable()" placeholder="Search..." class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-1 w-40 outline-none focus:border-brand-primary placeholder:text-slate-600">
 </div>
 </div>
-
 <div class="flex-1 overflow-auto">
 <table class="w-full text-left border-collapse">
 <thead class="bg-slate-800 text-xs uppercase sticky top-0 z-10 shadow-sm text-slate-400">
@@ -330,9 +313,7 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 <th class="px-4 py-3 font-semibold border-b border-slate-700 w-16"></th>
 </tr>
 </thead>
-<tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50">
-<!-- Rows injected here -->
-</tbody>
+<tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50"></tbody>
 </table>
 </div>
 </div>
@@ -360,11 +341,10 @@ placeholder="Paste text here or upload a file (Text/Image)..."></textarea>
 </div>
 </div>
 
-<!-- APP LOGIC -->
 <script>
-// WINDOWS ERROR HANDLER: Catch any load errors and alert
+// WINDOWS ERROR HANDLER
 window.onerror = function(msg, url, line) {
-alert("Startup Error: " + msg + "\nLine: " + line);
+console.error("AskDesk Error: " + msg + " at " + line);
 return false;
 };
 
@@ -373,19 +353,16 @@ api: { baseUrl: "https://askdesk-api.captsertacgul.workers.dev" },
 
 config: {
 languages: [
-{code: 'en', name: 'English', label: 'English'},
-{code: 'tr', name: 'Turkish', label: 'Türkçe'},
-{code: 'de', name: 'German', label: 'Deutsch'},
-{code: 'fr', name: 'French', label: 'Français'},
-{code: 'es', name: 'Spanish', label: 'Español'},
-{code: 'pt-BR', name: 'Portuguese (BR)', label: 'Português'},
-{code: 'ja', name: 'Japanese', label: '日本語'},
-{code: 'ko', name: 'Korean', label: '한국어'},
-{code: 'pl', name: 'Polish', label: 'Polski'},
-{code: 'ru', name: 'Russian', label: 'Русский'},
-{code: 'hi', name: 'Hindi', label: 'हिन्दी'},
-{code: 'it', name: 'Italian', label: 'Italiano'},
-{code: 'ar', name: 'Arabic', label: 'العربية', dir: 'rtl'}
+{code: 'en', label: 'English'},
+{code: 'tr', label: 'Türkçe'},
+{code: 'de', label: 'Deutsch'},
+{code: 'fr', label: 'Français'},
+{code: 'es', label: 'Español'},
+{code: 'pt-BR', label: 'Português'},
+{code: 'ja', label: '日本語'},
+{code: 'ko', label: '한국어'},
+{code: 'ru', label: 'Русский'},
+{code: 'ar', label: 'العربية', dir: 'rtl'}
 ],
 domains: [
 {id: 'general', label: 'General'},
@@ -404,7 +381,7 @@ editingNoteId: null,
 currentImage: null
 },
 
-// --- I18N MODULE ---
+// --- I18N ---
 i18n: {
 currentLang: 'en',
 translations: {
@@ -419,8 +396,7 @@ analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Rea
 generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
 logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
 noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
-minCharsErr: "Please provide text or an image.",
-notFound: "Not found in provided text",
+minCharsErr: "Please provide text or an image.", notFound: "Not found in provided text",
 uploadBtn: "UPLOAD FILE", uploadError: "File format not supported.",
 qualityScore: "Quality Score", groundingStatus: "Grounding",
 viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
@@ -430,7 +406,7 @@ cancel: "Cancel", save: "Save"
 },
 tr: {
 bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
-serverManagedToast: "API anahtarı sunucuda yönetiliyor.", // FIXED COMMA HERE
+serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
 appSubtitle: "PROD SUNUCU SÜRÜMÜ",
 configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
 metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
@@ -439,8 +415,7 @@ analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
 generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
 logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
 noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
-minCharsErr: "Lütfen metin girin veya görsel yükleyin.",
-notFound: "Metinde bulunamadı",
+minCharsErr: "Lütfen metin girin veya görsel yükleyin.", notFound: "Metinde bulunamadı",
 uploadBtn: "DOSYA YÜKLE", uploadError: "Format desteklenmiyor.",
 qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
 viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
@@ -449,17 +424,9 @@ statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı
 cancel: "İptal", save: "Kaydet"
 }
 },
-
-t(key) {
-const lang = this.currentLang;
-const dict = this.translations[lang] || this.translations['en'];
-return dict[key] || this.translations['en'][key] || key;
-},
-
+t(key) { return (this.translations[this.currentLang] || this.translations['en'])[key] || key; },
 updateUI() {
-document.querySelectorAll('[data-i18n]').forEach(el => {
-el.innerText = this.t(el.getAttribute('data-i18n'));
-});
+document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = this.t(el.getAttribute('data-i18n')));
 const langObj = App.config.languages.find(l => l.code === this.currentLang);
 document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
 }
@@ -471,183 +438,107 @@ getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"
 savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p}))
 },
 
-// --- PROMPT BUILDER (FINAL) ---
-
+// --- PROMPT BUILDER ---
 promptBuilder: {
+build(domain, qLang, aLang, sourceText, retryCount, hasImage) {
+const constraints = retryCount > 0 ? `- STRICTER MODE: Ensure Question is unambiguous. Citation indices MUST be exact.` : "";
+const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
+const inputContext = hasImage ? `Input is an IMAGE. Perform OCR. Extract text relevant to domain.` : `Input Text provided in payload.`;
+const groundingRule = hasImage ? `- Image mode: provide extracted text as 'extract'.` : `- Answer must be derived STRICTLY from Input Text. Provide exact 'citations'.`;
 
-  build(
-
-    domain,
-
-    qLang,
-
-    aLang,
-
-    sourceText,
-
-    retryCount,
-
-    hasImage,
-
-    extra = {}
-
-  ) {
-
-    const {
-
-      regenNonce = 0,
-
-      prevQuestion = ""
-
-    } = extra;
-
-    const constraints =
-
-      retryCount > 0
-
-        ? `- STRICTER MODE (Retry ${retryCount}):
-
-- Question MUST be unambiguous.
-
-- Citations MUST match extract exactly.`
-
-        : "";
-
-    const notFoundTxt =
-
-      App.i18n.translations[aLang]?.notFound || "Not found";
-
-    const inputContext = hasImage
-
-      ? `Input is an IMAGE.
-
-- Perform OCR and visual understanding.
-
-- Use ONLY information visible in the image.`
-
-      : `Input is TEXT provided in payload.
-
-- Use ONLY the provided text.`;
-
-    const groundingRule = hasImage
-
-      ? `- Image mode:
-
-  - Provide extracted visible text as "extract".
-
-  - Citations may be empty or approximate.`
-
-      : `- Text mode (STRICT GROUNDING):
-
-  - "extract" MUST be an exact, verbatim substring of the input text.
-
-  - Answer MUST be derived strictly from "extract".
-
-  - Do NOT use outside knowledge.`;
-
-    return `
-
-System:
-
-You are AskDesk v2.4, a strict Question–Answer generation engine.
-
-Domain:
-
-${domain.toUpperCase()} ${
-
-      domain === "aviation"
-
-        ? "(Role: Senior Pilot. No speculation. No 'According to...')"
-
-        : ""
-
-    }
-
+return `
+System: AskDesk v2.4 strict QA engine.
+Domain: ${domain.toUpperCase()} ${domain === 'aviation' ? '(Role: Senior Pilot. No "According to..." phrases.)' : ''}
 ${inputContext}
-
-Task:
-
-Generate ONE JSON object with EXACT keys:
-
-{
-
-  "question": string,
-
-  "answer": string,
-
-  "extract": string,
-
-  "citations": [{ "start": number, "end": number }],
-
-  "quality_score": number,
-
-  "quality_reasons": string[]
-
-}
-
-Instructions:
-
-1. Generate ONE clear, specific question in ${qLang}.
-
-2. Generate the answer in ${aLang}.
-
-3. If ${aLang} == source language:
-
-   - Answer MUST be an exact copy of "extract".
-
-4. If ${aLang} != source language:
-
-   - Answer MUST be a faithful translation of "extract".
-
+Task: Generate JSON {question, answer, extract, citations, quality_score, quality_reasons}.
+1. Formulate "question" in ${qLang}.
+2. Formulate "answer" in ${aLang}.
+- If ${aLang} == source lang: Answer MUST be VERBATIM copy of extract.
+- If ${aLang} != source lang: Answer MUST be faithful translation of extract.
 Rules:
-
-- If the answer is NOT found in the input:
-
-  - answer = "${notFoundTxt}"
-
-  - extract = ""
-
-  - citations = []
-
-  - quality_score = 0
-
-- Do NOT hallucinate.
-
-- Do NOT rephrase extract unless translating.
-
+- If info not found, answer: "${notFoundTxt}", extract: "", citations: [], quality_score: 0.
+- NO Markdown. STRICT JSON schema.
 ${groundingRule}
-
-REGENERATION CONTROL:
-
-- REGEN_NONCE = ${regenNonce}
-
-- PREVIOUS_QUESTION = ${JSON.stringify(prevQuestion)}
-
-CRITICAL:
-
-- You MUST generate a DIFFERENT question than PREVIOUS_QUESTION.
-
-- Pick a DIFFERENT sentence or fact from the input text.
-
-- Do NOT repeat the same intent, wording, or focus.
-
 ${constraints}
-
-Output:
-
-- Return ONLY valid JSON.
-
-- Do NOT wrap in markdown.
-
-- Do NOT add explanations.
-
-`.trim();
-
-  }
-
+`;
 }
- 
- 
+},
+
+// --- FILE HANDLERS (Binary to Text) ---
+files: {
+handleUpload(input) {
+const file = input.files[0];
+if (!file) return;
+const name = file.name.toLowerCase();
+
+// Show loader
+const loader = document.getElementById('fileLoader');
+loader.classList.remove('hidden');
+loader.classList.add('flex');
+
+const finish = (text, isImg=false) => {
+if (isImg) {
+App.data.currentImage = text;
+document.getElementById('previewImgElement').src = text;
+document.getElementById('sourceText').classList.add('hidden');
+document.getElementById('imagePreviewContainer').classList.remove('hidden');
+document.getElementById('imagePreviewContainer').classList.add('flex');
+} else {
+document.getElementById('sourceText').value = text;
+App.data.currentImage = null;
+document.getElementById('sourceText').classList.remove('hidden');
+document.getElementById('imagePreviewContainer').classList.add('hidden');
+App.ui.updateCharCount();
+}
+loader.classList.add('hidden');
+loader.classList.remove('flex');
+input.value = '';
+};
+
+if (file.type.startsWith('image/')) {
+const r = new FileReader(); r.onload = e => finish(e.target.result, true); r.readAsDataURL(file);
+} else if (name.endsWith('.pdf')) {
+const r = new FileReader();
+r.onload = async function() {
+try {
+const typedarray = new Uint8Array(this.result);
+const pdf = await pdfjsLib.getDocument(typedarray).promise;
+let fullText = "";
+for(let i=1; i<=pdf.numPages; i++) {
+const page = await pdf.getPage(i);
+const textContent = await page.getTextContent();
+fullText += textContent.items.map(s => s.str).join(' ') + "\n";
+}
+finish(fullText);
+} catch(e) { alert("PDF Error: " + e.message); finish(""); }
+};
+r.readAsArrayBuffer(file);
+} else if (name.endsWith('.docx')) {
+const r = new FileReader();
+r.onload = function(e) {
+mammoth.extractRawText({arrayBuffer: e.target.result})
+.then(res => finish(res.value))
+.catch(err => { alert("DOCX Error: " + err.message); finish(""); });
+};
+r.readAsArrayBuffer(file);
+} else if (name.endsWith('.xlsx')) {
+const r = new FileReader();
+r.onload = function(e) {
+const wb = XLSX.read(e.target.result, {type: 'binary'});
+let txt = "";
+wb.SheetNames.forEach(n => {
+txt += XLSX.utils.sheet_to_csv(wb.Sheets[n]) + "\n";
+});
+finish(txt);
+};
+r.readAsBinaryString(file);
+} else {
+// Plain text fallback
+const r = new FileReader(); r.onload = e => finish(e.target.result); r.readAsText(file, "UTF-8");
+}
+}
+},
+
 // --- MAIN LOGIC ---
 logic: {
 filters: { domain: 'all', status: 'all', search: '' },
@@ -667,13 +558,7 @@ return { ok: false, reason: "Indices mismatch." };
 },
 
 async analyzeText(opts = {}) {
- const {
-   retryCount = 0,
-   groupId: forcedGroupId = null,
-   version: forcedVersion = 0,
-   regenNonce = 0,
-   prevQuestion = ""
- } = opts;
+const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0 } = opts;
 
 const hasImage = !!App.data.currentImage;
 const sourceText = document.getElementById('sourceText').value.trim();
@@ -687,19 +572,15 @@ const qLang = document.getElementById('qLangSelect').value;
 const aLang = document.getElementById('aLangSelect').value;
 
 try {
-const promptStr = App.promptBuilder.build(
- domain, qLang, aLang, sourceText, retryCount, hasImage,
- {
-   regenNonce: (forcedVersion || 0) + retryCount,
-   prevQuestion: App.data.previewState?.result?.question || ""
- }
-);
+const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage);
+const nonce = Date.now(); // Cache busting
 
 const payload = {
 prompt: promptStr,
 sourceText: hasImage ? "" : sourceText,
 imageDataUrl: hasImage ? App.data.currentImage : null,
-meta: { domain, qLang, aLang }
+meta: { domain, qLang, aLang },
+regen: { nonce }
 };
 
 const response = await fetch(App.api.baseUrl + '/generate', {
@@ -711,7 +592,7 @@ body: JSON.stringify(payload)
 if (!response.ok) {
 let errText = '';
 try { errText = await response.text(); } catch (_) {}
-throw new Error(`Server Error: ${response.status}${errText ? " | " + errText : ""}`);
+throw new Error(`Server Error: ${response.status} ${errText}`);
 }
 const res = await response.json();
 
@@ -736,17 +617,10 @@ if (retryCount === 0) App.ui.setLoading(false);
 },
 
 regenerate() {
- if (!App.data.previewState) return;
- const { groupId, version, result } = App.data.previewState;
- // nonce + önceki soru
- return this.analyzeText({
-   retryCount: 0,
-   groupId,
-   version,
-   regenNonce: Date.now(),
-   prevQuestion: result?.question || ""
- });
-}
+if (!App.data.previewState) return;
+const { groupId, version } = App.data.previewState;
+return this.analyzeText({ retryCount: 0, groupId, version });
+},
 
 addToLog() {
 if (!App.data.previewState) return;
@@ -768,7 +642,7 @@ citations: r.citations,
 qualityScore: r.quality_score,
 groundingOk: s.grounding.ok,
 status: "Draft",
-reviewerNotes: s.hasImage ? "[From Image Source]" : "",
+reviewerNotes: s.hasImage ? "[Image]" : "",
 createdAtISO: new Date().toISOString(),
 modelName: "gemini-2.5-flash"
 };
@@ -867,21 +741,24 @@ try {
 const domSelect = document.getElementById('domainSelect');
 const domFilter = document.getElementById('filterDomain');
 domSelect.innerHTML = '';
+// Populate Domain
 App.config.domains.forEach(d => {
 domSelect.add(new Option(d.label, d.id));
 domFilter.add(new Option(d.label, d.id));
 });
+// Populate Languages
 ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(id => {
 const el = document.getElementById(id);
 el.innerHTML = '';
 App.config.languages.forEach(l => el.add(new Option(l.label, l.code)));
 });
+// Load Prefs
 const prefs = App.storage.getPrefs();
 document.getElementById('uiLangSelect').value = prefs.uiLang;
 document.getElementById('domainSelect').value = prefs.domain || 'general';
 this.changeLanguage(prefs.uiLang);
 } catch(e) {
-alert("Initialization Error: " + e.message);
+console.error("Init Error: " + e);
 }
 },
 
@@ -903,34 +780,6 @@ document.getElementById('sourceText').classList.remove('hidden');
 document.getElementById('imagePreviewContainer').classList.add('hidden');
 App.data.currentImage = null;
 this.updateCharCount();
-},
-
-handleFileUpload(input) {
-const file = input.files[0];
-if (!file) return;
-
-if (file.type.startsWith('image/')) {
-const reader = new FileReader();
-reader.onload = (e) => {
-App.data.currentImage = e.target.result;
-const img = document.getElementById('previewImgElement');
-img.src = e.target.result;
-document.getElementById('sourceText').classList.add('hidden');
-document.getElementById('imagePreviewContainer').classList.remove('hidden');
-document.getElementById('imagePreviewContainer').classList.add('flex');
-App.ui.showToast("Image loaded. Text mode disabled.");
-};
-reader.readAsDataURL(file);
-} else {
-const reader = new FileReader();
-reader.onload = (e) => {
-document.getElementById('sourceText').value = e.target.result;
-App.ui.updateCharCount();
-App.ui.showToast("Text file loaded (UTF-8).");
-};
-reader.readAsText(file, "UTF-8");
-}
-input.value = '';
 },
 
 setLoading(isLoading) {
@@ -1039,8 +888,4 @@ a.click();
 document.addEventListener('DOMContentLoaded', () => App.ui.init());
 </script>
 </body>
-
 </html>
-
-
-
