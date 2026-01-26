@@ -471,36 +471,103 @@ getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"
 savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p}))
 },
 
-// --- PROMPT BUILDER ---
+// --- PROMPT BUILDER (FINAL) ---
+
 promptBuilder: {
 
-  build(domain, qLang, aLang, sourceText, retryCount, hasImage) {
+  build(
 
-    const constraints = retryCount > 0
+    domain,
 
-      ? `STRICTER MODE (Retry ${retryCount}).`
+    qLang,
 
-      : "";
+    aLang,
 
-    const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found in provided text";
+    sourceText,
 
-    // Text modunda "extract MUST be exact substring of sourceText" kuralı kritik
+    retryCount,
+
+    hasImage,
+
+    extra = {}
+
+  ) {
+
+    const {
+
+      regenNonce = 0,
+
+      prevQuestion = ""
+
+    } = extra;
+
+    const constraints =
+
+      retryCount > 0
+
+        ? `- STRICTER MODE (Retry ${retryCount}):
+
+- Question MUST be unambiguous.
+
+- Citations MUST match extract exactly.`
+
+        : "";
+
+    const notFoundTxt =
+
+      App.i18n.translations[aLang]?.notFound || "Not found";
+
+    const inputContext = hasImage
+
+      ? `Input is an IMAGE.
+
+- Perform OCR and visual understanding.
+
+- Use ONLY information visible in the image.`
+
+      : `Input is TEXT provided in payload.
+
+- Use ONLY the provided text.`;
 
     const groundingRule = hasImage
 
-      ? `IMAGE MODE: Return extract as the exact text you read from the image (OCR). Citations can be empty.`
+      ? `- Image mode:
 
-      : `TEXT MODE: extract MUST be an EXACT substring copied from sourceText (same characters, same spacing). citations MUST contain at least one object with start/end character offsets pointing to that exact extract in sourceText.`;
+  - Provide extracted visible text as "extract".
+
+  - Citations may be empty or approximate.`
+
+      : `- Text mode (STRICT GROUNDING):
+
+  - "extract" MUST be an exact, verbatim substring of the input text.
+
+  - Answer MUST be derived strictly from "extract".
+
+  - Do NOT use outside knowledge.`;
 
     return `
 
-You are AskDesk v2.4. Output MUST be valid JSON only. No markdown. No code fences.
+System:
 
-DOMAIN: ${domain.toUpperCase()} ${domain === "aviation" ? '(Role: Senior Pilot. Avoid "According to...")' : ''}
+You are AskDesk v2.4, a strict Question–Answer generation engine.
 
-TASK:
+Domain:
 
-Return a JSON object with EXACT keys:
+${domain.toUpperCase()} ${
+
+      domain === "aviation"
+
+        ? "(Role: Senior Pilot. No speculation. No 'According to...')"
+
+        : ""
+
+    }
+
+${inputContext}
+
+Task:
+
+Generate ONE JSON object with EXACT keys:
 
 {
 
@@ -510,7 +577,7 @@ Return a JSON object with EXACT keys:
 
   "extract": string,
 
-  "citations": [{"start": number, "end": number}],
+  "citations": [{ "start": number, "end": number }],
 
   "quality_score": number,
 
@@ -518,28 +585,68 @@ Return a JSON object with EXACT keys:
 
 }
 
-LANG:
+Instructions:
 
-- Write "question" in ${qLang}.
+1. Generate ONE clear, specific question in ${qLang}.
 
-- Write "answer" in ${aLang}.
+2. Generate the answer in ${aLang}.
 
-RULES:
+3. If ${aLang} == source language:
 
-- If the needed info is not present in the input, return:
+   - Answer MUST be an exact copy of "extract".
 
-  answer: "${notFoundTxt}", extract: "", citations: [], quality_score: 0, quality_reasons: ["Not found"].
+4. If ${aLang} != source language:
 
-- ${groundingRule}
+   - Answer MUST be a faithful translation of "extract".
 
-- In TEXT MODE: answer MUST be derived ONLY from extract. If ${aLang} differs from the language of extract, answer should be a faithful translation of extract.
+Rules:
+
+- If the answer is NOT found in the input:
+
+  - answer = "${notFoundTxt}"
+
+  - extract = ""
+
+  - citations = []
+
+  - quality_score = 0
+
+- Do NOT hallucinate.
+
+- Do NOT rephrase extract unless translating.
+
+${groundingRule}
+
+REGENERATION CONTROL:
+
+- REGEN_NONCE = ${regenNonce}
+
+- PREVIOUS_QUESTION = ${JSON.stringify(prevQuestion)}
+
+CRITICAL:
+
+- You MUST generate a DIFFERENT question than PREVIOUS_QUESTION.
+
+- Pick a DIFFERENT sentence or fact from the input text.
+
+- Do NOT repeat the same intent, wording, or focus.
 
 ${constraints}
+
+Output:
+
+- Return ONLY valid JSON.
+
+- Do NOT wrap in markdown.
+
+- Do NOT add explanations.
 
 `.trim();
 
   }
-},
+
+}
+ 
  
 // --- MAIN LOGIC ---
 logic: {
@@ -560,7 +667,13 @@ return { ok: false, reason: "Indices mismatch." };
 },
 
 async analyzeText(opts = {}) {
-const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0 } = opts;
+ const {
+   retryCount = 0,
+   groupId: forcedGroupId = null,
+   version: forcedVersion = 0,
+   regenNonce = 0,
+   prevQuestion = ""
+ } = opts;
 
 const hasImage = !!App.data.currentImage;
 const sourceText = document.getElementById('sourceText').value.trim();
@@ -617,10 +730,17 @@ if (retryCount === 0) App.ui.setLoading(false);
 },
 
 regenerate() {
-if (!App.data.previewState) return;
-const { groupId, version } = App.data.previewState;
-return this.analyzeText({ retryCount: 0, groupId, version });
-},
+ if (!App.data.previewState) return;
+ const { groupId, version, result } = App.data.previewState;
+ // nonce + önceki soru
+ return this.analyzeText({
+   retryCount: 0,
+   groupId,
+   version,
+   regenNonce: Date.now(),
+   prevQuestion: result?.question || ""
+ });
+}
 
 addToLog() {
 if (!App.data.previewState) return;
@@ -915,4 +1035,5 @@ document.addEventListener('DOMContentLoaded', () => App.ui.init());
 </body>
 
 </html>
+
 
