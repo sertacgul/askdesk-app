@@ -473,31 +473,74 @@ savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.s
 
 // --- PROMPT BUILDER ---
 promptBuilder: {
-build(domain, qLang, aLang, sourceText, retryCount, hasImage) {
-const constraints = retryCount > 0 ?
-`- STRICTER MODE (Retry ${retryCount}): Ensure Question is unambiguous. Citation indices MUST be exact.` : "";
 
-const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
-const inputContext = hasImage ? `Input is an IMAGE. Perform OCR and visual analysis. Extract text relevant to the domain.` : `Input Text provided in payload.`;
-const groundingRule = hasImage ? `- Image mode: provide extracted text as 'extract'.` : `- Answer must be derived STRICTLY from Input Text. Provide exact 'citations' indices.`;
+  build(domain, qLang, aLang, sourceText, retryCount, hasImage) {
 
-return `
-System: You are AskDesk v2.4, a strict QA engine.
-Domain: ${domain.toUpperCase()} ${domain === 'aviation' ? '(Role: Senior Pilot. No "According to..." phrases.)' : ''}
-${inputContext}
-Task: Generate JSON object {question, answer, extract, citations, quality_score, quality_reasons}.
-1. Formulate "question" in ${qLang}.
-2. Formulate "answer" in ${aLang}.
-- If ${aLang} == source lang: Answer MUST be VERBATIM copy of extract.
-- If ${aLang} != source lang: Answer MUST be faithful translation of extract.
-Rules:
-- If info not found, answer: "${notFoundTxt}", extract: "", citations: [], quality_score: 0.
-${groundingRule}
-${constraints}
-`;
+    const constraints = retryCount > 0
+
+      ? `STRICTER MODE (Retry ${retryCount}).`
+
+      : "";
+
+    const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found in provided text";
+
+    // Text modunda "extract MUST be exact substring of sourceText" kuralı kritik
+
+    const groundingRule = hasImage
+
+      ? `IMAGE MODE: Return extract as the exact text you read from the image (OCR). Citations can be empty.`
+
+      : `TEXT MODE: extract MUST be an EXACT substring copied from sourceText (same characters, same spacing). citations MUST contain at least one object with start/end character offsets pointing to that exact extract in sourceText.`;
+
+    return `
+
+You are AskDesk v2.4. Output MUST be valid JSON only. No markdown. No code fences.
+
+DOMAIN: ${domain.toUpperCase()} ${domain === "aviation" ? '(Role: Senior Pilot. Avoid "According to...")' : ''}
+
+TASK:
+
+Return a JSON object with EXACT keys:
+
+{
+
+  "question": string,
+
+  "answer": string,
+
+  "extract": string,
+
+  "citations": [{"start": number, "end": number}],
+
+  "quality_score": number,
+
+  "quality_reasons": string[]
+
 }
-},
 
+LANG:
+
+- Write "question" in ${qLang}.
+
+- Write "answer" in ${aLang}.
+
+RULES:
+
+- If the needed info is not present in the input, return:
+
+  answer: "${notFoundTxt}", extract: "", citations: [], quality_score: 0, quality_reasons: ["Not found"].
+
+- ${groundingRule}
+
+- In TEXT MODE: answer MUST be derived ONLY from extract. If ${aLang} differs from the language of extract, answer should be a faithful translation of extract.
+
+${constraints}
+
+`.trim();
+
+  }
+},
+ 
 // --- MAIN LOGIC ---
 logic: {
 filters: { domain: 'all', status: 'all', search: '' },
@@ -872,3 +915,4 @@ document.addEventListener('DOMContentLoaded', () => App.ui.init());
 </body>
 
 </html>
+
