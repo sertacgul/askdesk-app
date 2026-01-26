@@ -687,7 +687,13 @@ const qLang = document.getElementById('qLangSelect').value;
 const aLang = document.getElementById('aLangSelect').value;
 
 try {
-const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage);
+const promptStr = App.promptBuilder.build(
+ domain, qLang, aLang, sourceText, retryCount, hasImage,
+ {
+   regenNonce: (forcedVersion || 0) + retryCount,
+   prevQuestion: App.data.previewState?.result?.question || ""
+ }
+);
 
 const payload = {
 prompt: promptStr,
@@ -1035,5 +1041,6 @@ document.addEventListener('DOMContentLoaded', () => App.ui.init());
 </body>
 
 </html>
+
 
 
