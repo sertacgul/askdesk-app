@@ -90,19 +90,34 @@
             </div>
             <div>
                 <h1 class="text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.8 (Bulk Intelligence)</p>
+                <p class="text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.8.2 (Stable)</p>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
             <div id="planBadge" class="text-[10px] font-bold px-2 py-1 rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 cursor-pointer" onclick="App.ui.cyclePlan()">Starter</div>
-            <div id="apiStatusChip" class="text-[10px] flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 cursor-help" title="API Endpoint Status">
-                <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="apiStatusDot"></span>
+            <div id="apiStatusChip" class="text-[10px] flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 cursor-pointer hover:bg-slate-700 transition" title="Click to Configure API" onclick="App.ui.toggleSettings()">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500" id="apiStatusDot"></span>
                 <span id="apiStatusText">Initializing...</span>
             </div>
             <select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer ml-2"></select>
         </div>
     </header>
+
+    <!-- SETTINGS PANEL -->
+    <div id="settingsPanel" class="hidden absolute top-16 right-4 w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
+        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-server text-brand-primary"></i> <span data-i18n="settingsTitle">API Configuration</span>
+        </h3>
+        <p class="text-[10px] text-slate-400 mb-3 leading-relaxed" data-i18n="settingsDesc">
+            Enter the URL of your backend (Cloudflare Worker).
+        </p>
+        <input type="text" id="apiUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="https://...">
+        <div class="flex justify-end gap-2">
+            <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Cancel</button>
+            <button onclick="App.storage.saveApiUrl()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Save URL</button>
+        </div>
+    </div>
 
     <!-- MAIN -->
     <div class="flex-1 flex overflow-hidden">
@@ -132,6 +147,23 @@
                     </div>
                 </div>
 
+                <!-- Metadata -->
+                <div class="bg-brand-panel p-4 rounded-xl border border-slate-700 shadow-sm">
+                    <h3 class="text-xs font-bold text-brand-primary uppercase mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-[10px] text-slate-400 mb-1 uppercase" data-i18n="docNameLabel">Document Name</label>
+                            <input type="text" id="docName" class="glass-input w-full rounded px-3 py-2 text-sm font-medium" placeholder="e.g. FCOM / Policy X">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-[10px] text-slate-400 mb-1 uppercase" data-i18n="pageNumLabel">Page Ref</label>
+                            <input type="text" id="pageNum" class="glass-input w-full rounded px-3 py-2 text-sm font-medium text-center" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Source Input -->
                 <div class="flex-1 flex flex-col min-h-[200px]">
                     <div class="flex justify-between items-end mb-2">
@@ -139,7 +171,7 @@
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source Content</span>
                         </label>
                         <div class="flex items-center gap-2">
-                            <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
+                            <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
                             <button onclick="document.getElementById('fileUpload').click()" 
                                 class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2 text-sm cursor-pointer">
                                 <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 
@@ -171,7 +203,7 @@
                     </div>
                 </div>
 
-                <!-- BULK GENERATION PANEL (Hidden initially) -->
+                <!-- BULK GENERATION PANEL -->
                 <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-2 animate-in fade-in slide-in-from-bottom-4">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-xs font-bold text-brand-warning flex items-center gap-1">
@@ -200,6 +232,10 @@
                             <button onclick="document.getElementById('errorBox').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                         <span id="errorMsg">Details...</span>
+                        <details class="text-[10px] text-red-300 mt-1 cursor-pointer">
+                            <summary>Technical Details</summary>
+                            <p id="errorDetails" class="mt-1 font-mono bg-red-950/50 p-2 rounded">No details.</p>
+                        </details>
                     </div>
                     
                     <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden">
@@ -344,7 +380,7 @@
     const App = {
         api: { 
             primary: "https://api.askdesk.app",
-            fallback: "https://askdesk-api.captseracgul.workers.dev",
+            fallback: "https://askdesk-api.captsertacgul.workers.dev",
             current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
         },
 
@@ -377,6 +413,9 @@
             translations: {
                 en: {
                     bannerWarning: "🔒 Secure Mode: API managed server-side.",
+                    serverManagedToast: "API Key managed server-side.",
+                    appSubtitle: "PROD SERVER EDITION",
+                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
                     configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
                     metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
                     sourceTextLabel: "Source Content", clear: "Clear", error: "Error",
@@ -390,11 +429,15 @@
                     viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
                     allDomains: "All Domains", allStatuses: "All Statuses",
                     statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
-                    cancel: "Cancel", save: "Save", limitReached: "Limit reached – Upgrade to Pro",
-                    upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars."
+                    cancel: "Cancel", save: "Save URL", limitReached: "Limit reached – Upgrade to Pro",
+                    upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars.",
+                    fileBinaryWarn: "File format supported but parsing is backend-only."
                 },
                 tr: {
                     bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
+                    serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
+                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
+                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
                     configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
                     metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
                     sourceTextLabel: "Kaynak İçerik", clear: "Temizle", error: "Hata",
@@ -408,8 +451,9 @@
                     viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
                     allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
                     statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
-                    cancel: "İptal", save: "Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
-                    upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı."
+                    cancel: "İptal", save: "URL Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
+                    upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı.",
+                    fileBinaryWarn: "Bu format destekleniyor ancak parse işlemi backend tarafında yapılır."
                 }
             },
             t(key) { return (this.translations[this.currentLang] || this.translations['en'])[key] || key; },
@@ -425,21 +469,34 @@
             getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
             savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
             getPlan: () => localStorage.getItem('askdesk_plan') || 'Starter',
-            setPlan: (p) => localStorage.setItem('askdesk_plan', p) // For testing
+            setPlan: (p) => localStorage.setItem('askdesk_plan', p),
+            saveApiUrl: () => {
+                const url = document.getElementById('apiUrlInput').value.trim();
+                if(url) { 
+                    localStorage.setItem('askdesk_api_base', url); 
+                    App.api.current = url;
+                    App.ui.updateApiStatus(url);
+                    App.ui.toggleSettings();
+                    App.ui.showToast("API URL Updated");
+                }
+            }
         },
 
         // --- PROMPT BUILDER ---
         promptBuilder: {
-            build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText) {
+            build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName) {
                 const activeText = chunkText || sourceText;
                 const constraints = retryCount > 0 ? `- STRICTER MODE: Ensure Question is unambiguous.` : "";
                 const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
                 const inputContext = hasImage ? `Input is an IMAGE. Perform OCR.` : `Input Text provided below.`;
                 let prevContext = prevQuestion ? `\nCONSTRAINT: You previously asked "${prevQuestion}". Generate a DIFFERENT question.` : "";
                 const sourceInjection = hasImage ? "" : `\n\nSOURCE TEXT SEGMENT:\n"""${activeText}"""\n\n`;
+                // INJECT DOC NAME FOR CONTEXT
+                const docContext = docName ? `\nCONTEXT DOCUMENT: "${docName}"` : "";
 
                 return `
-                System: AskDesk v2.8 (Bulk Intelligence). Domain: ${domain.toUpperCase()}
+                System: AskDesk v2.9 (Custom API). Domain: ${domain.toUpperCase()}
+                ${docContext}
                 ${inputContext}
                 Task: Generate JSON {question, answer, extract, citations}.
                 1. Identify the most informative sentence in the Source Text.
@@ -449,6 +506,7 @@
                 Rules:
                 - If info not found, answer: "${notFoundTxt}", extract: "".
                 - NO Markdown. STRICT JSON.
+                - DO NOT mention document name in question unless essential.
                 ${constraints}
                 ${prevContext}
                 ${sourceInjection}
@@ -478,24 +536,63 @@
                 const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0, prevQuestion = null, chunkText = null } = opts;
                 const hasImage = !!App.data.currentImage;
                 let sourceText = document.getElementById('sourceText').value.trim();
+                const docName = document.getElementById('docName').value || ""; // GET DOC NAME
+                const pageNum = document.getElementById('pageNum').value || ""; // GET PAGE NUM
+
                 if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
                 if(!App.data.bulkActive) App.ui.setLoading(true);
+                
                 const domain = document.getElementById('domainSelect').value;
                 const qLang = document.getElementById('qLangSelect').value;
                 const aLang = document.getElementById('aLangSelect').value;
+
                 try {
-                    const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText);
-                    const payload = { prompt: promptStr, sourceText: hasImage ? "" : (chunkText || sourceText), imageDataUrl: hasImage ? App.data.currentImage : null, meta: { domain, qLang, aLang }, regen: { nonce: Date.now() } };
-                    const response = await fetch(App.api.current + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
-                    if (!response.ok) throw new Error("API Error");
+                    // Pass docName to prompt builder
+                    const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName);
+                    
+                    const payload = {
+                        prompt: promptStr,
+                        sourceText: hasImage ? "" : (chunkText || sourceText), 
+                        imageDataUrl: hasImage ? App.data.currentImage : null,
+                        meta: { domain, qLang, aLang, docName, pageNum }, // SEND META TO BACKEND
+                        regen: { nonce: Date.now() }
+                    };
+
+                    let response;
+                    let usedUrl = App.api.current;
+                    try {
+                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
+                    } catch(netErr) {
+                         // Fallback logic
+                         if(usedUrl !== App.api.fallback) {
+                             usedUrl = App.api.fallback;
+                             App.api.current = usedUrl; 
+                             localStorage.setItem('askdesk_api_base', usedUrl); 
+                             App.ui.updateApiStatus(usedUrl);
+                             response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                         } else {
+                             throw netErr;
+                         }
+                    }
+
+                    if (!response.ok) {
+                         let errText = '';
+                         try { errText = await response.text(); } catch (_) {}
+                         throw new Error(`Server Error: ${response.status}${errText ? " | " + errText : ""}`);
+                    }
                     const res = await response.json(); 
+                    
                     const activeSrc = chunkText || sourceText;
                     const realQual = this.calculateRealQuality(activeSrc, res.extract, res.answer, hasImage);
                     res.quality_score = realQual.score; res.quality_reasons = realQual.reasons;
+                    
                     if (!hasImage && res.quality_score < 90 && retryCount < 1) return this.analyzeText({ ...opts, retryCount: retryCount + 1 });
+                    
                     const groupId = forcedGroupId || crypto.randomUUID();
                     const version = forcedGroupId ? (forcedVersion + 1) : 1;
+                    
                     if (App.data.bulkActive) return { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
+                    
                     App.data.previewState = { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
                     App.ui.updatePreview(res, {ok: res.quality_score>0});
                 } catch (e) { if (e.name !== 'AbortError') App.ui.showError(e.message); throw e; } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
@@ -504,7 +601,17 @@
                 if (App.data.bulkActive) return;
                 const bulkInput = document.getElementById('bulkRange');
                 const requestedCount = document.getElementById('bulkPanel').classList.contains('hidden') ? 1 : parseInt(bulkInput.value);
-                if (requestedCount === 1) { this.analyzeText(); return; }
+                
+                // FIX: Ensure single generation is awaited and caught properly
+                if (requestedCount === 1) { 
+                    try {
+                        await this.analyzeText(); 
+                    } catch(e) {
+                        console.warn("Analysis failed:", e);
+                    }
+                    return; 
+                }
+                
                 App.data.bulkActive = true; App.data.abortController = new AbortController(); App.ui.setLoading(true);
                 const sourceText = document.getElementById('sourceText').value;
                 const chunkSize = Math.floor(sourceText.length / requestedCount);
@@ -529,11 +636,20 @@
                 setTimeout(() => { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
             },
             stopBulk() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
-            regenerate() { if (!App.data.previewState) return; const { groupId, version, result } = App.data.previewState; this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question }); },
+            regenerate() { 
+                if (!App.data.previewState) return; 
+                const { groupId, version, result } = App.data.previewState; 
+                // Fix: Catch unhandled rejection for regenerate too
+                this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question }).catch(e => console.warn("Regen failed:", e));
+            },
             addToLog() {
                 if (!App.data.previewState) return;
                 const s = App.data.previewState; const r = s.result;
-                const entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: document.getElementById('docName').value || "N/A", pageNum: document.getElementById('pageNum').value || "-", domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image]" : "", createdAtISO: new Date().toISOString() };
+                // Capture Doc Name/Page Num directly here as well to ensure latest input is used
+                const currentDoc = document.getElementById('docName').value || "N/A";
+                const currentPage = document.getElementById('pageNum').value || "-";
+                
+                const entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image]" : "", createdAtISO: new Date().toISOString() };
                 App.data.qaLog.push(entry); this.renderTable();
                 if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
             },
@@ -543,7 +659,7 @@
                 tbody.innerHTML = '';
                 [...App.data.qaLog].reverse().forEach((item) => {
                     const tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50";
-                    tr.innerHTML = `<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v${item.version}</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24">${item.docName}</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">${item.question}</div><div class="mt-1"><span class="text-[9px] px-1 rounded ${item.qualityScore >= 90 ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}">QS: ${item.qualityScore}%</span></div></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry('${item.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td>`;
+                    tr.innerHTML = `<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v${item.version}</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="${item.docName}">${item.docName}</div><div class="text-brand-primary text-[10px]">p.${item.pageNum}</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">${item.question}</div><div class="mt-1"><span class="text-[9px] px-1 rounded ${item.qualityScore >= 90 ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}">QS: ${item.qualityScore}%</span></div></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry('${item.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td>`;
                     tbody.appendChild(tr);
                 });
             },
@@ -566,6 +682,8 @@
                     this.changeLanguage(prefs.uiLang);
                     this.updateApiStatus(App.api.current);
                     this.updatePlanBadge();
+                    // Load saved API URL into settings input
+                    document.getElementById('apiUrlInput').value = App.api.current;
                 } catch(e) { console.error(e); }
             },
             handleTextChange() {
@@ -578,12 +696,51 @@
             updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
             cyclePlan() { const plans = ['Starter', 'Pro', 'Enterprise']; const current = App.storage.getPlan(); const next = plans[(plans.indexOf(current) + 1) % plans.length]; App.storage.setPlan(next); this.updatePlanBadge(); this.handleTextChange(); this.showToast(`Plan switched to ${next}`); },
             changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
-            updateApiStatus(url) { const isFallback = url.includes("workers.dev"); const text = isFallback ? "API: workers.dev (fallback)" : "API: api.askdesk.app"; document.getElementById('apiStatusText').innerText = text; const dot = document.getElementById('apiStatusDot'); dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; },
+            updateApiStatus(url) { const isFallback = url.includes("workers.dev"); const text = isFallback ? "Connected" : "Connected (Primary)"; document.getElementById('apiStatusText').innerText = text; const dot = document.getElementById('apiStatusDot'); dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; },
             updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-slate-600 ${colors} cursor-pointer hover:opacity-80`; },
             updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
             clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
+            toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
             handleFileUpload(input) {
-                // ... (Kept simplified for brevity, logic remains same)
+                const file = input.files[0];
+                if (!file) return;
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        App.data.currentImage = e.target.result;
+                        document.getElementById('previewImgElement').src = e.target.result;
+                        document.getElementById('sourceText').classList.add('hidden');
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('imagePreviewContainer').classList.add('flex');
+                        App.ui.showToast("Image loaded. Text mode disabled.");
+                    };
+                    reader.readAsDataURL(file);
+                    input.value = '';
+                    return;
+                }
+
+                const name = file.name.toLowerCase();
+                if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        let text = e.target.result;
+                        if (text.length > 150000) {
+                            text = text.substring(0, 150000);
+                            App.ui.showToast(App.i18n.t('textTruncated'));
+                        }
+                        document.getElementById('sourceText').value = text;
+                        App.ui.handleTextChange(); 
+                        App.ui.showToast("Text file loaded (UTF-8).");
+                    };
+                    reader.readAsText(file, "UTF-8");
+                } 
+                else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) {
+                    App.ui.showToast(App.i18n.t('fileBinaryWarn'));
+                } else {
+                    App.ui.showToast(App.i18n.t('uploadError'));
+                }
+                input.value = '';
             },
             setLoading(isLoading) {
                 const btn = document.getElementById('analyzeBtn');
