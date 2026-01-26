@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AskDesk v2.4 | Server Edition</title>
+<title>AskDesk | askdesk.app</title>
 
 <!-- UI Libraries -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -11,8 +11,6 @@
 
 <!-- Data Libraries -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script>
 tailwind.config = {
@@ -32,10 +30,9 @@ info: '#3b82f6'
 }
 }
 }
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 </script>
 <style>
-body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; }
+body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; display: flex; flex-direction: column; min-height: 100vh; }
 .glass-input {
 background: #1e293b;
 border: 1px solid #334155;
@@ -66,12 +63,7 @@ html[dir="rtl"] .text-right { text-align: left; }
 html[dir="rtl"] .text-left { text-align: right; }
 </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden text-slate-200">
-
-<!-- BANNER -->
-<div class="bg-brand-success/10 border-b border-brand-success/30 text-green-400 px-4 py-1 text-xs text-center font-semibold" data-i18n="bannerWarning">
-🔒 Secure Mode: API Key is managed server-side. Do not paste PII.
-</div>
+<body class="overflow-hidden text-slate-200">
 
 <!-- HEADER -->
 <header class="bg-brand-panel border-b border-slate-700 h-16 flex items-center justify-between px-6 shadow-lg z-20 shrink-0">
@@ -92,17 +84,24 @@ html[dir="rtl"] .text-left { text-align: right; }
 </svg>
 </div>
 <div>
-<h1 class="text-xl font-bold text-white tracking-wide">AskDesk <span class="text-brand-primary text-xs align-top">v2.4</span></h1>
-<p class="text-[10px] text-slate-400 font-mono tracking-wider" data-i18n="appSubtitle">PROD SERVER EDITION</p>
+<h1 class="text-xl font-bold text-white tracking-wide">AskDesk</h1>
+<p class="text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.6</p>
 </div>
 </div>
 
-<div class="flex items-center gap-4">
-<select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer"></select>
-<button onclick="App.ui.showToast(App.i18n.t('serverManagedToast'))" class="text-slate-400 hover:text-white transition p-2 relative cursor-pointer" title="Server Managed">
-<i class="fa-solid fa-server"></i>
-<span class="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-</button>
+<div class="flex items-center gap-3">
+<!-- Plan Badge -->
+<div id="planBadge" class="text-[10px] font-bold px-2 py-1 rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600">
+Starter
+</div>
+
+<!-- API Status Chip -->
+<div id="apiStatusChip" class="text-[10px] flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 cursor-help" title="API Endpoint Status">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="apiStatusDot"></span>
+<span id="apiStatusText">Initializing...</span>
+</div>
+
+<select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer ml-2"></select>
 </div>
 </header>
 
@@ -172,7 +171,7 @@ class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white borde
 <div class="relative flex-1 h-full">
 <textarea id="sourceText" oninput="App.ui.updateCharCount()"
 class="glass-input w-full h-full rounded-xl p-4 text-sm font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
-placeholder="Paste text here, or upload PDF, DOCX, Excel, Image..."></textarea>
+placeholder="Paste text here... (PDF/DOCX uploads are handled by backend logic)"></textarea>
 
 <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
 <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
@@ -181,20 +180,22 @@ placeholder="Paste text here, or upload PDF, DOCX, Excel, Image..."></textarea>
 <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
 </div>
 </div>
+</div>
 
-<div id="fileLoader" class="hidden absolute inset-0 bg-slate-900/80 z-20 flex-col items-center justify-center rounded-xl backdrop-blur-sm">
-<div class="loader mb-2"></div>
-<span class="text-xs text-brand-primary font-bold">Extracting Text...</span>
+<div class="flex justify-end mt-1">
+<span id="charCount" class="text-[10px] text-slate-500">0 chars</span>
 </div>
-</div>
-<div class="flex justify-end mt-1"><span id="charCount" class="text-[10px] text-slate-500">0 chars</span></div>
 </div>
 
 <!-- Generate Button -->
 <div class="mt-auto pt-4">
 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1">
-<div class="flex items-center gap-2 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="error">Error</span>:</div>
+<div class="flex items-center gap-2 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> <span>Error</span>:</div>
 <span id="errorMsg">Details...</span>
+<details class="text-[10px] text-red-300 mt-1 cursor-pointer">
+<summary>Technical Details</summary>
+<p id="errorDetails" class="mt-1 font-mono bg-red-950/50 p-2 rounded">No details.</p>
+</details>
 </div>
 <button id="analyzeBtn" onclick="App.logic.analyzeText()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer">
 <span id="btnText" data-i18n="analyzeBtn">Generate Q&A</span>
@@ -308,6 +309,14 @@ placeholder="Paste text here, or upload PDF, DOCX, Excel, Image..."></textarea>
 </div>
 </div>
 
+<footer class="bg-slate-900 border-t border-slate-800 text-[10px] text-slate-500 py-1 px-4 flex justify-between items-center shrink-0">
+<div>&copy; 2026 AskDesk. All rights reserved.</div>
+<div class="flex gap-3">
+<span>Status: <span id="footerApiStatus" class="text-green-500">Connected</span></span>
+<span>Version: 2.6.0 (PROD)</span>
+</div>
+</footer>
+
 <!-- Notes Modal -->
 <div id="notesModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
 <div class="bg-slate-800 border border-slate-600 rounded-xl p-4 w-96 shadow-2xl">
@@ -323,10 +332,11 @@ placeholder="Paste text here, or upload PDF, DOCX, Excel, Image..."></textarea>
 <!-- Toast -->
 <div id="toast" class="fixed bottom-5 right-5 bg-brand-success text-white px-4 py-3 rounded-lg shadow-2xl transform translate-y-24 transition duration-300 flex items-center gap-3 z-50 border border-green-400">
 <i class="fa-solid fa-check-circle text-lg"></i>
-<div>
-<h4 class="font-bold text-sm" data-i18n="success">Success</h4>
+<div class="flex-1">
+<h4 class="font-bold text-sm" id="toastTitle">Success</h4>
 <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
 </div>
+<a id="toastActionBtn" href="#" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100">UPGRADE</a>
 </div>
 
 <!-- APP LOGIC -->
@@ -334,39 +344,28 @@ placeholder="Paste text here, or upload PDF, DOCX, Excel, Image..."></textarea>
 window.onerror = function(msg, url, line) { console.error("AskDesk Error: " + msg + " at " + line); return false; };
 
 const App = {
-api: { baseUrl: "https://askdesk-api.captsertacgul.workers.dev" },
+api: {
+primary: "https://api.askdesk.app",
+fallback: "https://askdesk-api.captsertacgul.workers.dev",
+current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
+},
 
 config: {
 languages: [
-{code: 'en', label: 'English'},
-{code: 'tr', label: 'Türkçe'},
-{code: 'de', label: 'Deutsch'},
-{code: 'fr', label: 'Français'},
-{code: 'es', label: 'Español'},
-{code: 'pt-BR', label: 'Português'},
-{code: 'ja', label: '日本語'},
-{code: 'ko', label: '한국어'},
-{code: 'pl', label: 'Polski'},
-{code: 'ru', label: 'Русский'},
-{code: 'hi', label: 'हिन्दी'},
-{code: 'it', label: 'Italiano'},
+{code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
+{code: 'fr', label: 'Français'}, {code: 'es', label: 'Español'}, {code: 'pt-BR', label: 'Português'},
+{code: 'ja', label: '日本語'}, {code: 'ko', label: '한국어'}, {code: 'pl', label: 'Polski'},
+{code: 'ru', label: 'Русский'}, {code: 'hi', label: 'हिन्दी'}, {code: 'it', label: 'Italiano'},
 {code: 'ar', label: 'العربية', dir: 'rtl'}
 ],
 domains: [
-{id: 'general', label: 'General'},
-{id: 'aviation', label: 'Aviation'},
-{id: 'strategy', label: 'Strategy'},
-{id: 'legal', label: 'Legal'},
-{id: 'medical', label: 'Medical'},
-{id: 'compliance', label: 'Compliance / ISO'}
+{id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
+{id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
 ]
 },
 
 data: {
-qaLog: [],
-previewState: null,
-editingNoteId: null,
-currentImage: null
+qaLog: [], previewState: null, editingNoteId: null, currentImage: null
 },
 
 // --- I18N ---
@@ -374,8 +373,7 @@ i18n: {
 currentLang: 'en',
 translations: {
 en: {
-bannerWarning: "🔒 Secure Mode: API Key is managed server-side. Do not paste PII.",
-serverManagedToast: "API Key managed server-side.",
+bannerWarning: "🔒 Secure Mode: API managed server-side.",
 appSubtitle: "PROD SERVER EDITION",
 configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
 metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
@@ -390,11 +388,14 @@ qualityScore: "Quality Score", groundingStatus: "Grounding",
 viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
 allDomains: "All Domains", allStatuses: "All Statuses",
 statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
-cancel: "Cancel", save: "Save"
+cancel: "Cancel", save: "Save",
+limitReached: "Limit reached – Upgrade to Pro",
+upgradeBtn: "Upgrade",
+fileBinaryWarn: "File format supported but backend parsing is inactive.",
+textTruncated: "Text too long, truncated to first 150,000 chars."
 },
 tr: {
-bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
-serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
+bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
 appSubtitle: "PROD SUNUCU SÜRÜMÜ",
 configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
 metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
@@ -403,14 +404,17 @@ analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
 generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
 logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
 noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
-minCharsErr: "Lütfen metin girin veya görsel yükleyin.",
-notFound: "Metinde bulunamadı",
+minCharsErr: "Lütfen metin girin veya görsel yükleyin.", notFound: "Metinde bulunamadı",
 uploadBtn: "DOSYA YÜKLE", uploadError: "Format desteklenmiyor.",
 qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
 viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
 allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
 statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
-cancel: "İptal", save: "Kaydet"
+cancel: "İptal", save: "Kaydet",
+limitReached: "Limit doldu – Pro pakete geçerek devam edebilirsin",
+upgradeBtn: "Yükselt",
+fileBinaryWarn: "Bu dosya formatı destekleniyor ancak parse işlemi backend modülü ile yapılır. Şu an aktif değil.",
+textTruncated: "Metin çok uzun, ilk 150.000 karakter kullanıldı."
 }
 },
 t(key) { return (this.translations[this.currentLang] || this.translations['en'])[key] || key; },
@@ -424,24 +428,30 @@ document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr
 // --- STORAGE ---
 storage: {
 getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
-savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p}))
+savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
+getPlan: () => localStorage.getItem('askdesk_plan') || 'Starter'
 },
 
 // --- PROMPT BUILDER ---
 promptBuilder: {
-build(domain, qLang, aLang, sourceText, retryCount, hasImage) {
+build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion) {
 const constraints = retryCount > 0 ? `- STRICTER MODE: Ensure Question is unambiguous. Citation indices MUST be exact.` : "";
 const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
 const inputContext = hasImage ? `Input is an IMAGE. Perform OCR. Extract text relevant to domain.` : `Input Text provided in payload.`;
 const groundingRule = hasImage ? `- Image mode: provide extracted text as 'extract'.` : `- Answer must be derived STRICTLY from Input Text. Provide exact 'citations'.`;
 
-// IMPORTANT: INJECT SOURCE TEXT TO FORCE MODEL GROUNDING
+let prevContext = "";
+if (prevQuestion) {
+prevContext = `\nNEGATIVE CONSTRAINT: You previously asked "${prevQuestion}". You MUST generate a COMPLETELY DIFFERENT question focusing on another aspect/sentence of the text. Do NOT repeat the same intent.`;
+}
+
+// Force grounding
 const sourceInjection = hasImage ? "" : `\n\nSOURCE TEXT (STRICT GROUNDING REQUIRED):\n"""${sourceText}"""\n\n`;
 
 return `
-System: AskDesk v2.4 strict QA engine.
+System: AskDesk v2.6 strict QA engine.
 Domain: ${domain.toUpperCase()} ${domain === 'aviation' ? '(Role: Senior Pilot. No "According to..." phrases.)' : ''}
-${sourceInjection}
+${inputContext}
 Task: Generate JSON {question, answer, extract, citations, quality_score, quality_reasons}.
 1. Identify the most informative sentence in the Source Text.
 2. COPY that sentence EXACTLY as the 'answer' (Verbatim Copy).
@@ -453,75 +463,8 @@ Rules:
 - DO NOT HALLUCINATE. USE ONLY THE PROVIDED TEXT.
 ${groundingRule}
 ${constraints}
+${prevContext}
 `;
-}
-},
-
-// --- FILE HANDLERS ---
-files: {
-handleUpload(input) {
-const file = input.files[0];
-if (!file) return;
-const name = file.name.toLowerCase();
-const loader = document.getElementById('fileLoader');
-loader.classList.remove('hidden'); loader.classList.add('flex');
-
-const finish = (text, isImg=false) => {
-if (isImg) {
-App.data.currentImage = text;
-document.getElementById('previewImgElement').src = text;
-document.getElementById('sourceText').classList.add('hidden');
-document.getElementById('imagePreviewContainer').classList.remove('hidden');
-document.getElementById('imagePreviewContainer').classList.add('flex');
-} else {
-document.getElementById('sourceText').value = text;
-App.data.currentImage = null;
-document.getElementById('sourceText').classList.remove('hidden');
-document.getElementById('imagePreviewContainer').classList.add('hidden');
-App.ui.updateCharCount();
-}
-loader.classList.add('hidden'); loader.classList.remove('flex');
-input.value = '';
-};
-
-if (file.type.startsWith('image/')) {
-const r = new FileReader(); r.onload = e => finish(e.target.result, true); r.readAsDataURL(file);
-} else if (name.endsWith('.pdf')) {
-const r = new FileReader();
-r.onload = async function() {
-try {
-const typedarray = new Uint8Array(this.result);
-const pdf = await pdfjsLib.getDocument(typedarray).promise;
-let fullText = "";
-for(let i=1; i<=pdf.numPages; i++) {
-const page = await pdf.getPage(i);
-const textContent = await page.getTextContent();
-fullText += textContent.items.map(s => s.str).join(' ') + "\n";
-}
-finish(fullText);
-} catch(e) { alert("PDF Error: " + e.message); finish(""); }
-};
-r.readAsArrayBuffer(file);
-} else if (name.endsWith('.docx')) {
-const r = new FileReader();
-r.onload = function(e) {
-mammoth.extractRawText({arrayBuffer: e.target.result})
-.then(res => finish(res.value))
-.catch(err => { alert("DOCX Error: " + err.message); finish(""); });
-};
-r.readAsArrayBuffer(file);
-} else if (name.endsWith('.xlsx')) {
-const r = new FileReader();
-r.onload = function(e) {
-const wb = XLSX.read(e.target.result, {type: 'binary'});
-let txt = "";
-wb.SheetNames.forEach(n => txt += XLSX.utils.sheet_to_csv(wb.Sheets[n]) + "\n");
-finish(txt);
-};
-r.readAsBinaryString(file);
-} else {
-const r = new FileReader(); r.onload = e => finish(e.target.result); r.readAsText(file, "UTF-8");
-}
 }
 },
 
@@ -532,18 +475,22 @@ filters: { domain: 'all', status: 'all', search: '' },
 validateGrounding(source, extract, citations, answer, aLang, hasImage) {
 if (hasImage) return { ok: true, reason: "Image Mode (OCR Verified)" };
 if (!extract || extract.trim() === "") return { ok: true, reason: "Not Found case" };
-if (!source.includes(extract)) return { ok: false, reason: "Extract not in source." };
-// Relaxed citation check for UI robustness
+// Normalize for robust check
+const normSource = source.replace(/\s+/g, ' ').trim();
+const normExtract = extract.replace(/\s+/g, ' ').trim();
+if (!normSource.includes(normExtract)) return { ok: false, reason: "Extract not in source." };
 if (!Array.isArray(citations)) return { ok: true, reason: "Verified Text" };
 return { ok: true, reason: "Verified" };
 },
 
 async analyzeText(opts = {}) {
-const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0 } = opts;
+const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0, prevQuestion = null } = opts;
+
 const hasImage = !!App.data.currentImage;
-const sourceText = document.getElementById('sourceText').value.trim();
+let sourceText = document.getElementById('sourceText').value.trim();
 
 if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
+
 if(retryCount === 0) App.ui.setLoading(true);
 
 const domain = document.getElementById('domainSelect').value;
@@ -551,8 +498,7 @@ const qLang = document.getElementById('qLangSelect').value;
 const aLang = document.getElementById('aLangSelect').value;
 
 try {
-// Pass sourceText explicitly to prompt builder to fix "Independence" bug
-const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage);
+const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion);
 const payload = {
 prompt: promptStr,
 sourceText: hasImage ? "" : sourceText,
@@ -561,24 +507,47 @@ meta: { domain, qLang, aLang },
 regen: { nonce: Date.now() }
 };
 
-const response = await fetch(App.api.baseUrl + '/generate', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(payload)
-});
+let response;
+let usedUrl = App.api.current;
 
-if (!response.ok) {
-let errText = '';
-try { errText = await response.text(); } catch (_) {}
-throw new Error(`Server Error: ${response.status} ${errText}`);
+// Fetch Loop with Fallback
+try {
+response = await fetch(usedUrl + '/generate', {
+method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+});
+} catch (netErr) {
+// Network error -> Try fallback if not already on fallback
+if (usedUrl !== App.api.fallback) {
+console.warn("Primary API failed, trying fallback...");
+usedUrl = App.api.fallback;
+App.api.current = usedUrl;
+localStorage.setItem('askdesk_api_base', usedUrl);
+App.ui.updateApiStatus(usedUrl);
+response = await fetch(usedUrl + '/generate', {
+method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+});
+} else {
+throw netErr;
 }
+}
+
+// Handle HTTP Errors
+if (!response.ok) {
+if (response.status === 402 || response.status === 429) {
+App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+throw new Error("Plan limit reached. Please upgrade.");
+}
+const errText = await response.text().catch(()=>"Unknown error");
+throw new Error(`API Error (${response.status}): ${errText}`);
+}
+
 const res = await response.json();
 
 const grounding = this.validateGrounding(sourceText, res.extract, res.citations, res.answer, aLang, hasImage);
 const score = res.quality_score || 0;
 
-if (!hasImage && (!grounding.ok || score < 70) && retryCount < 1) {
-return this.analyzeText({ retryCount: retryCount + 1, groupId: forcedGroupId, version: forcedVersion });
+if (!hasImage && (!grounding.ok || score < 60) && retryCount < 1) {
+return this.analyzeText({ retryCount: retryCount + 1, groupId: forcedGroupId, version: forcedVersion, prevQuestion });
 }
 
 const groupId = forcedGroupId || crypto.randomUUID();
@@ -588,7 +557,7 @@ App.data.previewState = { result: res, grounding, domain, qLang, aLang, groupId,
 App.ui.updatePreview(res, grounding);
 
 } catch (e) {
-App.ui.showError(e.message);
+App.ui.showError(e.message, e.stack || e.toString());
 } finally {
 if (retryCount === 0) App.ui.setLoading(false);
 }
@@ -596,8 +565,9 @@ if (retryCount === 0) App.ui.setLoading(false);
 
 regenerate() {
 if (!App.data.previewState) return;
-const { groupId, version } = App.data.previewState;
-return this.analyzeText({ retryCount: 0, groupId, version });
+const { groupId, version, result } = App.data.previewState;
+// Pass previous question to ensure variety
+return this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question });
 },
 
 addToLog() {
@@ -729,6 +699,9 @@ const prefs = App.storage.getPrefs();
 document.getElementById('uiLangSelect').value = prefs.uiLang;
 document.getElementById('domainSelect').value = prefs.domain || 'general';
 this.changeLanguage(prefs.uiLang);
+
+this.updateApiStatus(App.api.current);
+this.updatePlanBadge();
 } catch(e) { console.error(e); }
 },
 
@@ -738,7 +711,25 @@ App.i18n.updateUI();
 App.storage.savePrefs({ uiLang: code });
 },
 
-toggleSettings: () => {},
+updateApiStatus(url) {
+const isFallback = url.includes("workers.dev");
+const text = isFallback ? "API: workers.dev (fallback)" : "API: api.askdesk.app";
+document.getElementById('apiStatusText').innerText = text;
+const dot = document.getElementById('apiStatusDot');
+dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500";
+},
+
+updatePlanBadge() {
+const plan = App.storage.getPlan();
+const el = document.getElementById('planBadge');
+el.innerText = plan;
+// Colors: Starter(Gray), Pro(Green), Enterprise(Purple)
+let colors = "bg-slate-700 text-slate-300";
+if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700";
+if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700";
+el.className = `text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-slate-600 ${colors}`;
+},
+
 updateCharCount() {
 const len = document.getElementById('sourceText').value.length;
 document.getElementById('charCount').innerText = `${len} chars`;
@@ -755,27 +746,45 @@ this.updateCharCount();
 handleFileUpload(input) {
 const file = input.files[0];
 if (!file) return;
+const name = file.name.toLowerCase();
 
+// Image handling
 if (file.type.startsWith('image/')) {
 const reader = new FileReader();
 reader.onload = (e) => {
 App.data.currentImage = e.target.result;
-const img = document.getElementById('previewImgElement');
-img.src = e.target.result;
+document.getElementById('previewImgElement').src = e.target.result;
 document.getElementById('sourceText').classList.add('hidden');
 document.getElementById('imagePreviewContainer').classList.remove('hidden');
 document.getElementById('imagePreviewContainer').classList.add('flex');
 App.ui.showToast("Image loaded. Text mode disabled.");
 };
 reader.readAsDataURL(file);
-} else {
+input.value = '';
+return;
+}
+
+// Text formats
+if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
 const reader = new FileReader();
 reader.onload = (e) => {
-document.getElementById('sourceText').value = e.target.result;
+let text = e.target.result;
+// Large Text Protection
+if (text.length > 150000) {
+text = text.substring(0, 150000);
+App.ui.showToast(App.i18n.t('textTruncated'));
+}
+document.getElementById('sourceText').value = text;
 App.ui.updateCharCount();
 App.ui.showToast("Text file loaded (UTF-8).");
 };
 reader.readAsText(file, "UTF-8");
+}
+// Binary formats (Mocked as per request)
+else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) {
+App.ui.showToast(App.i18n.t('fileBinaryWarn'));
+} else {
+App.ui.showToast(App.i18n.t('uploadError'));
 }
 input.value = '';
 },
@@ -801,7 +810,6 @@ gBadge.innerText = grounding.ok ? "Pass ✅" : "Fail ❌";
 gBadge.className = `px-2 py-0.5 rounded text-white font-bold ${grounding.ok ? 'bg-brand-success' : 'bg-brand-accent'}`;
 
 const rList = document.getElementById('qReasons');
-// Ensure array for UI safety
 let reasons = res.quality_reasons;
 if (!Array.isArray(reasons)) { reasons = typeof reasons === 'string' ? [reasons] : []; }
 rList.innerHTML = reasons.map(r => `<li>${r}</li>`).join('');
@@ -833,17 +841,30 @@ btn.classList.add('cursor-not-allowed');
 }
 },
 
-showError: (msg) => {
+showError: (msg, details) => {
 const box = document.getElementById('errorBox');
 document.getElementById('errorMsg').innerText = msg;
+const detEl = document.getElementById('errorDetails');
+detEl.innerText = details || "No technical details available.";
 box.classList.remove('hidden');
-setTimeout(() => box.classList.add('hidden'), 5000);
+// Auto hide after 10s if no details interaction
 },
-showToast: (msg) => {
+
+showToast: (msg, actionType) => {
 const t = document.getElementById('toast');
 document.getElementById('toastMsg').innerText = msg;
+const btn = document.getElementById('toastActionBtn');
+
+if (actionType === 'upgrade') {
+btn.innerText = App.i18n.t('upgradeBtn');
+btn.href = "https://lemonsqueezy.com"; // Placeholder
+btn.classList.remove('hidden');
+} else {
+btn.classList.add('hidden');
+}
+
 t.classList.remove('translate-y-24');
-setTimeout(() => t.classList.add('translate-y-24'), 3000);
+setTimeout(() => t.classList.add('translate-y-24'), 4000);
 }
 },
 
@@ -866,7 +887,7 @@ if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
 const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
 const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, ws, "QA Data");
-XLSX.writeFile(wb, `AskDesk_v2.4_${new Date().toISOString().slice(0,10)}.xlsx`);
+XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
 },
 toCSV() {
 if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
@@ -876,14 +897,14 @@ const rows = data.map(row => Object.values(row).map(v => `"${String(v || '').rep
 const csv = "\uFEFF" + [headers, ...rows].join('\n');
 const a = document.createElement('a');
 a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
-a.download = `AskDesk_v2.4.csv`;
+a.download = `AskDesk_PROD.csv`;
 a.click();
 },
 toJSON() {
 if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
 const a = document.createElement('a');
 a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
-a.download = `AskDesk_v2.4.json`;
+a.download = `AskDesk_PROD.json`;
 a.click();
 }
 }
