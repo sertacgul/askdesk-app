@@ -399,11 +399,11 @@
 
     const App = {
         api: { 
-            primary: "https://askdesk-api.captsertacgul.workers.dev",
-            fallback: "https://askdesk-api.captsertacgul.workers.dev",
-            current: localStorage.getItem('askdesk_api_base') || "https://askdesk-api.captsertacgul.workers.dev"
+            primary: "https://api.askdesk.app",
+            fallback: "https://api.askdesk.app",
+            current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
         },
-
+        localStorage.setItem('askdesk_api_base', 'https://api.askdesk.app');
         config: {
             languages: [
                 {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
@@ -949,3 +949,4 @@
     </script>
 </body>
 </html>
+
