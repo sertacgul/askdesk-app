@@ -188,7 +188,7 @@
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source Content</span>
                         </label>
                         <div class="flex items-center gap-2">
-                            <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
+                            <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleUpload(this)">
                             <button onclick="document.getElementById('fileUpload').click()" 
                                 class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2 text-sm cursor-pointer">
                                 <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 
@@ -418,7 +418,7 @@
             plans: {
              starter:   { dailyLimit: 20,   maxBulk: 5,  label: 'Starter' },
              pro:       { dailyLimit: 200,  maxBulk: 10, label: 'Pro' },
-             enterprise:{ dailyLimit: Infinity, maxBulk: 50, label: 'Enterprise' }
+             enterprise:{ dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise' }
             }
             UPGRADE_URL: "https://example.com/upgrade"
         },
@@ -577,7 +577,7 @@
             saveApiUrl: () => {
                 const url = document.getElementById('apiUrlInput').value.trim();
                 if(url) { 
-                    localStorage.setItem('askdesk_api_base', url); 
+                    localStorage.setItem(url); 
                     App.api.current = url;
                     App.ui.updateApiStatus(url);
                     App.ui.toggleSettings();
@@ -678,7 +678,7 @@
                          if(usedUrl !== App.api.fallback) {
                              usedUrl = App.api.fallback;
                              App.api.current = usedUrl; 
-                             localStorage.setItem('askdesk_api_base', usedUrl); 
+                             localStorage.setItem(usedUrl); 
                              App.ui.updateApiStatus(usedUrl);
                              response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                          } else {
@@ -826,6 +826,7 @@
                 const plans = Object.keys(App.config.plans);
                 const current = App.billing.getPlan();
                 const next = plans[(plans.indexOf(current) + 1) % plans.length];
+                localStorage.setItem('askdesk_api_base', App.api.current);
                 App.billing.setPlan(next);
             },
             handleTextChange() {
@@ -955,6 +956,7 @@
     </script>
 </body>
 </html>
+
 
 
 
