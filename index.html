@@ -1,958 +1,900 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>AskDesk | askdesk.app</title>
- 
- <!-- UI Libraries -->
- <script src="https://cdn.tailwindcss.com"></script>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- 
- <!-- Data Libraries -->
- <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AskDesk | askdesk.app</title>
+    
+    <!-- UI Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Data Libraries -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
- <script>
- tailwind.config = {
- theme: {
- extend: {
- colors: {
- brand: {
- dark: '#0f172a', 
- panel: '#1e293b', 
- primary: '#6366f1',
- accent: '#f43f5e',
- success: '#10b981',
- warning: '#f59e0b',
- info: '#3b82f6',
- pro: '#22c55e', 
- enterprise: '#a855f7' 
- }
- }
- }
- }
- }
- </script>
- <style>
- body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; display: flex; flex-direction: column; min-height: 100vh; }
- .glass-input { 
- background: #1e293b; 
- border: 1px solid #334155; 
- color: white; 
- transition: all 0.2s;
- }
- .glass-input:focus { 
- border-color: #6366f1; 
- box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); 
- outline: none; 
- }
- option { background-color: #1e293b; color: white; padding: 5px; }
- select { cursor: pointer; }
- /* Range Slider Styling */
- input[type=range] { -webkit-appearance: none; background: transparent; }
- input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; }
- input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
- 
- ::-webkit-scrollbar { width: 8px; height: 8px; }
- ::-webkit-scrollbar-track { background: #0f172a; }
- ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
- ::-webkit-scrollbar-thumb:hover { background: #475569; }
- .loader {
- border: 3px solid #1e293b;
- border-top: 3px solid #6366f1;
- border-radius: 50%;
- width: 20px; height: 20px;
- animation: spin 1s linear infinite;
- }
- @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
- html[dir="rtl"] .fa-chevron-right { transform: rotate(180deg); }
- html[dir="rtl"] .text-right { text-align: left; } 
- html[dir="rtl"] .text-left { text-align: right; }
- </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',      
+                            panel: '#1e293b',     
+                            primary: '#6366f1',
+                            accent: '#f43f5e',
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            info: '#3b82f6',
+                            pro: '#22c55e',       
+                            enterprise: '#a855f7' 
+                        }
+                    }
+                }
+            }
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; display: flex; flex-direction: column; min-height: 100vh; }
+        .glass-input { 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            color: white; 
+            transition: all 0.2s;
+        }
+        .glass-input:focus { 
+            border-color: #6366f1; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); 
+            outline: none; 
+        }
+        option { background-color: #1e293b; color: white; padding: 5px; }
+        select { cursor: pointer; }
+        
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .loader {
+            border: 3px solid #1e293b;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 20px; height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        html[dir="rtl"] .fa-chevron-right { transform: rotate(180deg); }
+        html[dir="rtl"] .text-right { text-align: left; } 
+        html[dir="rtl"] .text-left { text-align: right; }
+    </style>
 </head>
 <body class="overflow-hidden text-slate-200">
 
- <!-- HEADER -->
- <header class="bg-brand-panel border-b border-slate-700 h-16 flex items-center justify-between px-6 shadow-lg z-20 shrink-0">
- <div class="flex items-center gap-3">
- <div class="relative w-10 h-10 group cursor-pointer">
- <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-lg transform transition group-hover:scale-105 duration-300">
- <rect width="40" height="40" rx="10" fill="url(#brand_gradient)"/>
- <path d="M20 8C13.3726 8 8 13.3726 8 20C8 26.6274 13.3726 32 20 32C26.6274 32 32 26.6274 32 20C32 13.3726 26.6274 8 20 8ZM20 10.4C25.3019 10.4 29.6 14.6981 29.6 20C29.6 25.3019 25.3019 29.6 20 29.6C14.6981 29.6 10.4 25.3019 10.4 20C10.4 14.6981 14.6981 10.4 20 10.4Z" fill="white" fill-opacity="0.1"/>
- <path d="M20 6V12M20 28V34M6 20H12M28 20H34" stroke="white" stroke-width="2" stroke-linecap="round"/>
- <circle cx="20" cy="20" r="5" stroke="white" stroke-width="2"/>
- <circle cx="20" cy="20" r="2" fill="#F43F5E"/>
- <defs>
- <linearGradient id="brand_gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
- <stop stop-color="#6366F1"/>
- <stop offset="1" stop-color="#8B5CF6"/>
- </linearGradient>
- </defs>
- </svg>
- </div>
- <div>
- <h1 class="text-xl font-bold text-white tracking-wide">AskDesk</h1>
- <p class="text-[10px] text-slate-400 font-mono tracking-wider">Generated by ATAOL AI Techs</p>
- </div>
- </div>
+    <!-- HEADER -->
+    <header class="bg-brand-panel border-b border-slate-700 h-auto min-h-[4rem] py-2 flex flex-wrap items-center justify-between px-4 md:px-6 shadow-lg z-20 shrink-0 gap-2">
+        <div class="flex items-center gap-3">
+            <div class="relative w-8 h-8 md:w-10 md:h-10 group cursor-pointer">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-lg transform transition group-hover:scale-105 duration-300">
+                    <rect width="40" height="40" rx="10" fill="url(#brand_gradient)"/>
+                    <path d="M20 8C13.3726 8 8 13.3726 8 20C8 26.6274 13.3726 32 20 32C26.6274 32 32 26.6274 32 20C32 13.3726 26.6274 8 20 8ZM20 10.4C25.3019 10.4 29.6 14.6981 29.6 20C29.6 25.3019 25.3019 29.6 20 29.6C14.6981 29.6 10.4 25.3019 10.4 20C10.4 14.6981 14.6981 10.4 20 10.4Z" fill="white" fill-opacity="0.1"/>
+                    <path d="M20 6V12M20 28V34M6 20H12M28 20H34" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="5" stroke="white" stroke-width="2"/>
+                    <circle cx="20" cy="20" r="2" fill="#F43F5E"/>
+                    <defs>
+                        <linearGradient id="brand_gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#6366F1"/>
+                            <stop offset="1" stop-color="#8B5CF6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.11</p>
+            </div>
+        </div>
 
- <div class="flex items-center gap-3">
- <div class="flex flex-col items-end mr-2">
- <div id="planBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 transition-colors cursor-pointer" onclick="App.ui.cyclePlan()">Starter</div>
- <div id="usageBadge" class="text-[9px] text-slate-400 font-mono mt-0.5">0/20</div>
- </div>
+        <div class="flex items-center gap-2 md:gap-2 ml-auto">
+            <!-- Usage Badge -->
+            <div id="usageBadge" class="h-8 px-3 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-[10px] text-slate-400 font-mono min-w-[3rem]">0/20</div>
+            
+            <!-- Plan Badge -->
+            <button id="planBadge" class="h-8 px-3 text-[10px] font-bold rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 transition-colors cursor-pointer flex items-center justify-center min-w-[4rem]" onclick="App.ui.cyclePlan()">Starter</button>
+            
+            <!-- Lang Select -->
+            <select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="h-8 bg-slate-800 border border-slate-600 text-xs rounded px-2 text-slate-300 outline-none focus:border-brand-primary cursor-pointer w-auto min-w-[4rem]"></select>
+        </div>
+    </header>
 
- <div id="apiStatusChip" class="text-[10px] flex items-center gap-1.5 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-400 cursor-pointer hover:bg-slate-700 transition" title="Click to Configure API" onclick="App.ui.toggleSettings()">
- <span class="w-1.5 h-1.5 rounded-full bg-green-500" id="apiStatusDot"></span>
- <span id="apiStatusText">Connected</span>
- </div>
- <select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="bg-slate-800 border border-slate-600 text-xs rounded px-2 py-1 text-slate-300 outline-none focus:border-brand-primary cursor-pointer ml-2"></select>
- </div>
- </header>
+    <!-- SETTINGS PANEL (Hidden) -->
+    <div id="settingsPanel" class="hidden">
+        <input type="text" id="apiUrlInput" class="hidden">
+    </div>
 
- <!-- SETTINGS PANEL -->
- <div id="settingsPanel" class="hidden absolute top-16 right-4 w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
- <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
- <i class="fa-solid fa-server text-brand-primary"></i> <span data-i18n="settingsTitle">API Configuration</span>
- </h3>
- <p class="text-[10px] text-slate-400 mb-3 leading-relaxed" data-i18n="settingsDesc">
- Enter the URL of your backend (Cloudflare Worker).
- </p>
- <input type="text" id="apiUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="https://...">
- <div class="flex justify-end gap-2">
- <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Cancel</button>
- <button onclick="App.storage.saveApiUrl()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Save URL</button>
- </div>
- </div>
+    <!-- MAIN -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative h-1/2 md:h-full">
+            
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+                <!-- Config -->
+                <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-1">
+                        <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
+                            <i class="fa-solid fa-sliders"></i> <span data-i18n="configTitle">Configuration</span>
+                        </h3>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-0.5 uppercase font-bold" data-i18n="domainLabel">Domain</label>
+                        <select id="domainSelect" class="glass-input w-full rounded px-2 py-1.5 text-xs cursor-pointer"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase font-bold" data-i18n="qLangLabel">Question Lang</label>
+                            <select id="qLangSelect" class="glass-input w-full rounded px-2 py-1.5 text-xs cursor-pointer"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase font-bold" data-i18n="aLangLabel">Answer Lang</label>
+                            <select id="aLangSelect" class="glass-input w-full rounded px-2 py-1.5 text-xs cursor-pointer"></select>
+                        </div>
+                    </div>
+                </div>
 
- <!-- MAIN -->
- <div class="flex-1 flex overflow-hidden">
- <!-- LEFT: INPUTS -->
- <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-r border-slate-700 relative">
- <div class="p-5 flex flex-col gap-4 h-full overflow-y-auto">
- <!-- Config -->
- <div class="bg-brand-panel p-4 rounded-xl border border-slate-700 shadow-sm space-y-3">
- <div class="flex justify-between items-center border-b border-slate-700 pb-2">
- <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
- <i class="fa-solid fa-sliders"></i> <span data-i18n="configTitle">Configuration</span>
- </h3>
- </div>
- 
- <!-- Plan Selector -->
- <div>
- <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="planLabel">Subscription Plan</label>
- <select id="planSelect" class="glass-input w-full rounded px-3 py-2 text-sm cursor-pointer border-l-4 border-l-brand-primary">
- <option value="starter">Starter (Free)</option>
- <option value="pro">Pro (Recommended)</option>
- <option value="enterprise">Enterprise</option>
- </select>
- </div>
+                <!-- Metadata -->
+                <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm hidden md:block shrink-0">
+                    <h3 class="text-xs font-bold text-brand-primary uppercase mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="col-span-2">
+                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase" data-i18n="docNameLabel">Document Name</label>
+                            <input type="text" id="docName" class="glass-input w-full rounded px-2 py-1 text-xs font-medium" placeholder="FCOM">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase" data-i18n="pageNumLabel">Page</label>
+                            <input type="text" id="pageNum" class="glass-input w-full rounded px-2 py-1 text-xs font-medium text-center" placeholder="123">
+                        </div>
+                    </div>
+                </div>
 
- <div>
- <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="domainLabel">Domain</label>
- <select id="domainSelect" class="glass-input w-full rounded px-3 py-2 text-sm cursor-pointer"></select>
- </div>
- <div class="grid grid-cols-2 gap-3">
- <div>
- <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="qLangLabel">Question Lang</label>
- <select id="qLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer"></select>
- </div>
- <div>
- <label class="block text-[10px] text-slate-400 mb-1 uppercase font-bold" data-i18n="aLangLabel">Answer Lang</label>
- <select id="aLangSelect" class="glass-input w-full rounded px-3 py-2 text-xs cursor-pointer"></select>
- </div>
- </div>
- </div>
+                <!-- Source Input (HUGE SIZE - Req 2) -->
+                <div class="flex-1 flex flex-col min-h-[500px]"> <!-- Increased to 500px -->
+                    <div class="flex items-center gap-2 mb-1">
+                        <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
+                        </label>
+                        
+                        <div class="flex-1"></div>
 
- <!-- Metadata -->
- <div class="bg-brand-panel p-4 rounded-xl border border-slate-700 shadow-sm">
- <h3 class="text-xs font-bold text-brand-primary uppercase mb-3 flex items-center gap-2">
- <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
- </h3>
- <div class="grid grid-cols-3 gap-3">
- <div class="col-span-2">
- <label class="block text-[10px] text-slate-400 mb-1 uppercase" data-i18n="docNameLabel">Document Name</label>
- <input type="text" id="docName" class="glass-input w-full rounded px-3 py-2 text-sm font-medium" placeholder="e.g. FCOM / Policy X">
- </div>
- <div class="col-span-1">
- <label class="block text-[10px] text-slate-400 mb-1 uppercase" data-i18n="pageNumLabel">Page Ref</label>
- <input type="text" id="pageNum" class="glass-input w-full rounded px-3 py-2 text-sm font-medium text-center" placeholder="123">
- </div>
- </div>
- </div>
+                        <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
+                        
+                        <button onclick="document.getElementById('fileUpload').click()" 
+                            class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-up text-sm"></i> 
+                            <span data-i18n="uploadBtn">UPLOAD</span>
+                        </button>
+                        
+                        <button onclick="App.ui.clearInput()" class="bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 border border-slate-700 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
+                            <i class="fa-solid fa-eraser"></i>
+                            <span data-i18n="clear">CLEAR</span>
+                        </button>
+                    </div>
 
- <!-- Source Input -->
- <div class="flex-1 flex flex-col min-h-[200px]">
- <div class="flex justify-between items-end mb-2">
- <label class="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
- <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source Content</span>
- </label>
- <div class="flex items-center gap-2">
- <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
- <button onclick="document.getElementById('fileUpload').click()" 
- class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2 text-sm cursor-pointer">
- <i class="fa-solid fa-cloud-arrow-up text-lg"></i> 
- <span data-i18n="uploadBtn">UPLOAD FILE</span>
- </button>
- <button onclick="App.ui.clearInput()" class="text-xs text-slate-500 hover:text-red-400 transition" data-i18n="clear">Clear</button>
- </div>
- </div>
+                    <div class="relative flex-1 h-full">
+                        <!-- Textarea height increased significantly -->
+                        <textarea id="sourceText" oninput="App.ui.handleTextChange()"
+                            class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
+                            placeholder="Paste text here... (Long text enables Multi-Q option)"
+                            data-i18n-placeholder="sourcePlaceholder"></textarea>
+                        
+                        <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
+                            <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
+                            <div class="flex gap-2">
+                                <span class="text-xs text-brand-primary bg-brand-primary/10 px-2 py-1 rounded">Image Mode Active</span>
+                                <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
+                            </div>
+                        </div>
 
- <div class="relative flex-1 h-full">
- <textarea id="sourceText" oninput="App.ui.handleTextChange()"
- class="glass-input w-full h-full rounded-xl p-4 text-sm font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
- placeholder="Paste text here... (Long text enables Multi-Q option)"></textarea>
- 
- <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
- <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
- <div class="flex gap-2">
- <span class="text-xs text-brand-primary bg-brand-primary/10 px-2 py-1 rounded">Image Mode Active</span>
- <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
- </div>
- </div>
- </div>
- 
- <div class="flex justify-between mt-1 items-center">
- <div class="text-[10px] text-slate-500 font-mono">
- Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
- </div>
- <span id="charCount" class="text-[10px] text-slate-500">0 chars</span>
- </div>
- </div>
+                        <div id="fileLoader" class="hidden absolute inset-0 bg-slate-900/80 z-20 flex-col items-center justify-center rounded-xl backdrop-blur-sm">
+                            <div class="loader mb-2"></div>
+                            <span class="text-xs text-brand-primary font-bold">Processing File...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-1 items-center">
+                        <div class="text-[9px] text-slate-500 font-mono">
+                            Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
+                        </div>
+                        <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
+                    </div>
+                </div>
 
- <!-- BULK GENERATION PANEL -->
- <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-2 animate-in fade-in slide-in-from-bottom-4">
- <div class="flex justify-between items-center mb-2">
- <span class="text-xs font-bold text-brand-warning flex items-center gap-1">
- <i class="fa-solid fa-layer-group"></i> Bulk Mode
- </span>
- <span id="bulkLimitLabel" class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Max: 5</span>
- </div>
- 
- <div class="flex items-center gap-3 mb-2">
- <input type="range" id="bulkRange" min="1" max="5" value="1" class="flex-1 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer" oninput="App.ui.updateBulkLabel(this.value)">
- <span id="bulkValue" class="text-sm font-bold text-white w-8 text-center bg-brand-primary rounded px-1">1</span>
- </div>
- 
- <!-- Progress Bar -->
- <div id="bulkProgressContainer" class="hidden w-full bg-slate-700 rounded-full h-2 mb-2">
- <div id="bulkProgressBar" class="bg-brand-success h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
- </div>
- <div id="bulkStatusText" class="hidden text-[10px] text-center text-slate-400 mb-2">Generating 0/0...</div>
- </div>
+                <!-- Bulk Panel -->
+                <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-2 mb-1 animate-in fade-in slide-in-from-bottom-4 shrink-0">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[10px] font-bold text-brand-warning flex items-center gap-1">
+                            <i class="fa-solid fa-layer-group"></i> Bulk Mode
+                        </span>
+                        <span id="bulkLimitLabel" class="text-[9px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Max: 5</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mb-1">
+                        <input type="range" id="bulkRange" min="1" max="5" value="1" class="flex-1 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer" oninput="App.ui.updateBulkLabel(this.value)">
+                        <span id="bulkValue" class="text-xs font-bold text-white w-6 text-center bg-brand-primary rounded px-0.5">1</span>
+                    </div>
+                    
+                    <div id="bulkProgressContainer" class="hidden w-full bg-slate-700 rounded-full h-1.5 mb-1">
+                        <div id="bulkProgressBar" class="bg-brand-success h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="bulkStatusText" class="hidden text-[9px] text-center text-slate-400 mb-1">Generating 0/0...</div>
+                </div>
+            </div>
 
- <!-- Generate Button -->
- <div class="mt-auto flex gap-2">
- <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full absolute bottom-16 left-5 right-5 z-50 shadow-xl backdrop-blur-md">
- <div class="flex items-center justify-between font-bold">
- <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> <span>Error</span></div>
- <button onclick="document.getElementById('errorBox').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
- </div>
- <span id="errorMsg">Details...</span>
- <details class="text-[10px] text-red-300 mt-1 cursor-pointer">
- <summary>Technical Details</summary>
- <p id="errorDetails" class="mt-1 font-mono bg-red-950/50 p-2 rounded">No details.</p>
- </details>
- </div>
- 
- <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
- <span id="btnText" data-i18n="analyzeBtn">Generate Q&A</span>
- <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition-transform"></i>
- <div id="btnLoader" class="loader hidden border-white/20 border-t-white"></div>
- <!-- Stop Button Overlay for Bulk -->
- <div id="stopBtnOverlay" class="hidden absolute inset-0 bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2 cursor-pointer" onclick="event.stopPropagation(); App.logic.stopBulk();">
- <i class="fa-solid fa-stop"></i> STOP GENERATION
- </div>
- </button>
- </div>
- </div>
- </div>
+            <!-- Sticky Generate Button (FIXED VISIBILITY - Req 1) -->
+            <div class="p-4 bg-slate-900 border-t border-slate-800 shrink-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
+                <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
+                    <div class="flex items-center justify-between font-bold">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> <span>Error</span></div>
+                        <button onclick="document.getElementById('errorBox').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <span id="errorMsg">Details...</span>
+                </div>
+                
+                <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="btnText" class="text-sm md:text-base" data-i18n="analyzeBtn">Generate Q&A</span>
+                    <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition-transform"></i>
+                    <div id="btnLoader" class="loader hidden border-white/20 border-t-white"></div>
+                    <div id="stopBtnOverlay" class="hidden absolute inset-0 bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2 cursor-pointer" onclick="event.stopPropagation(); App.logic.stopBulk();">
+                        <i class="fa-solid fa-stop"></i> STOP
+                    </div>
+                </button>
+            </div>
+        </div>
 
- <!-- RIGHT: OUTPUT -->
- <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a]">
- <!-- Preview -->
- <div class="h-[55%] bg-slate-900/50 p-6 border-b border-slate-700 overflow-y-auto relative">
- <div class="flex items-center justify-between mb-4">
- <h2 class="text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
- <i class="fa-solid fa-robot"></i> <span data-i18n="previewTitle">AI Output Preview</span>
- <a href="https://example.com/upgrade" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[10px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
- </h2>
- <span id="statusTag" class="text-[10px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
- </div>
+        <!-- RIGHT: OUTPUT -->
+        <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a] h-1/2 md:h-full">
+            <!-- Preview (Reduced Height) -->
+            <div class="h-[35%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
+                        <a href="https://example.com/upgrade" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
+                    </h2>
+                    <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
+                </div>
 
- <div id="qualityBox" class="hidden mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-xs">
- <div class="flex items-center justify-between mb-2">
- <div class="flex items-center gap-2">
- <span class="font-bold uppercase text-slate-400" data-i18n="qualityScore">Quality Score</span>
- <span id="qScoreBadge" class="px-2 py-0.5 rounded text-white font-bold">0</span>
- </div>
- <div class="flex items-center gap-2">
- <span class="font-bold uppercase text-slate-400" data-i18n="groundingStatus">Grounding</span>
- <span id="groundingBadge" class="px-2 py-0.5 rounded text-white font-bold">-</span>
- </div>
- </div>
- <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-2 italic"></ul>
- <details class="group">
- <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1">
- <i class="fa-solid fa-chevron-right text-[10px] group-open:rotate-90 transition"></i>
- <span data-i18n="viewExtract">View Source Extract</span>
- </summary>
- <div class="mt-2 p-2 bg-slate-900 rounded border border-slate-700 font-mono text-[10px] text-slate-300 whitespace-pre-wrap" id="extractPreview"></div>
- </details>
- </div>
+                <div id="qualityBox" class="hidden mb-3 p-2 bg-slate-800/50 rounded-lg border border-slate-700 text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="qualityScore">Quality Score</span>
+                            <span id="qScoreBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="groundingStatus">Grounding</span>
+                            <span id="groundingBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">-</span>
+                        </div>
+                    </div>
+                    <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-1 italic text-[10px]"></ul>
+                    <details class="group">
+                        <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1 text-[10px]">
+                            <i class="fa-solid fa-chevron-right text-[9px] group-open:rotate-90 transition"></i>
+                            <span data-i18n="viewExtract">View Source Extract</span>
+                        </summary>
+                        <div class="mt-1 p-2 bg-slate-900 rounded border border-slate-700 font-mono text-[9px] text-slate-300 whitespace-pre-wrap" id="extractPreview"></div>
+                    </details>
+                </div>
 
- <div class="space-y-4 pb-10">
- <div>
- <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1" data-i18n="generatedQ">Question</label>
- <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-sm font-bold h-16" readonly></textarea>
- </div>
- <div class="h-40 flex flex-col">
- <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1" data-i18n="generatedA">Answer</label>
- <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-sm font-mono whitespace-pre" readonly></textarea>
- </div>
- <div class="flex justify-end gap-3 pt-2">
- <button id="regenerateBtn" onclick="App.logic.regenerate()" disabled class="text-xs text-brand-primary hover:text-white font-bold px-4 py-2 border border-brand-primary/50 hover:border-brand-primary rounded-lg transition flex items-center gap-2 opacity-50 cursor-not-allowed">
- <i class="fa-solid fa-rotate"></i> <span data-i18n="regenerateBtn">Regenerate</span>
- </button>
- <button id="addToLogBtn" onclick="App.logic.addToLog()" disabled class="bg-slate-800 text-slate-500 font-semibold px-6 py-2 rounded-lg border border-slate-700 transition cursor-not-allowed flex items-center gap-2">
- <i class="fa-solid fa-circle-plus"></i> <span data-i18n="addBtn">Add to Log</span>
- </button>
- </div>
- </div>
- </div>
+                <div class="space-y-3 pb-8">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
+                        <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16" readonly></textarea>
+                    </div>
+                    <div class="h-32 md:h-40 flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
+                        <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre" readonly></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button id="regenerateBtn" onclick="App.logic.regenerate()" disabled class="text-[10px] md:text-xs text-brand-primary hover:text-white font-bold px-3 py-1.5 border border-brand-primary/50 hover:border-brand-primary rounded-lg transition flex items-center gap-2 opacity-50 cursor-not-allowed">
+                            <i class="fa-solid fa-rotate"></i> <span data-i18n="regenerateBtn">Regenerate</span>
+                        </button>
+                        <button id="addToLogBtn" onclick="App.logic.addToLog()" disabled class="bg-slate-800 text-slate-500 font-semibold px-4 py-1.5 rounded-lg border border-slate-700 transition cursor-not-allowed flex items-center gap-2 text-[10px] md:text-xs">
+                            <i class="fa-solid fa-circle-plus"></i> <span data-i18n="addBtn">Add to Log</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
- <!-- Log Table -->
- <div class="h-[45%] flex flex-col bg-[#0f172a]">
- <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
- <div class="flex justify-between items-center">
- <div class="flex items-center gap-4">
- <span class="text-xs font-bold text-slate-300"><span data-i18n="logTitle">Session Log</span> (<span id="counterDisplay">0</span>)</span>
- </div>
- <div class="flex items-center gap-2">
- <div class="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
- <button onclick="App.exporters.toExcel()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export Excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
- <div class="w-px bg-slate-700 my-1"></div>
- <button onclick="App.exporters.toCSV()" class="px-3 py-1 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export CSV"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
- </div>
- <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2"><i class="fa-solid fa-trash"></i></button>
- </div>
- </div>
- 
- <div class="flex gap-2 items-center pb-1">
- <select id="filterDomain" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-1 outline-none focus:border-brand-primary cursor-pointer">
- <option value="all" data-i18n="allDomains">All Domains</option>
- </select>
- <select id="filterStatus" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-1 outline-none focus:border-brand-primary cursor-pointer">
- <option value="all" data-i18n="allStatuses">All Statuses</option>
- <option value="Draft">Draft</option>
- <option value="Reviewed">Reviewed</option>
- <option value="Approved">Approved</option>
- </select>
- <input type="text" id="filterSearch" oninput="App.logic.renderTable()" placeholder="Search..." class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-1 w-40 outline-none focus:border-brand-primary placeholder:text-slate-600">
- </div>
- </div>
- <div class="flex-1 overflow-auto">
- <table class="w-full text-left border-collapse">
- <thead class="bg-slate-800 text-xs uppercase sticky top-0 z-10 shadow-sm text-slate-400">
- <tr>
- <th class="px-4 py-3 font-semibold border-b border-slate-700 w-12">#</th>
- <th class="px-4 py-3 font-semibold border-b border-slate-700 w-24" data-i18n="thDoc">Doc</th>
- <th class="px-4 py-3 font-semibold border-b border-slate-700" data-i18n="thContent">Q & A</th>
- <th class="px-4 py-3 font-semibold border-b border-slate-700 w-28" data-i18n="thMeta">Meta</th>
- <th class="px-4 py-3 font-semibold border-b border-slate-700 w-16"></th>
- </tr>
- </thead>
- <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50">
- <!-- Rows injected here -->
- </tbody>
- </table>
- </div>
- </div>
- </div>
- </div>
+            <!-- Log Table (Expanded) -->
+            <div class="flex-1 flex flex-col bg-[#0f172a] min-h-0">
+                <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-300"><span data-i18n="logTitle">Session Log</span> (<span id="counterDisplay">0</span>)</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                                <button onclick="App.exporters.toExcel()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export Excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
+                                <div class="w-px bg-slate-700 my-1"></div>
+                                <button onclick="App.exporters.toCSV()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export CSV"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
+                            </div>
+                            <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-1 items-center pb-1 overflow-x-auto no-scrollbar">
+                        <select id="filterDomain" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
+                            <option value="all" data-i18n="allDomains">All Domains</option>
+                        </select>
+                        <select id="filterStatus" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
+                            <option value="all" data-i18n="allStatuses">All Statuses</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Reviewed">Reviewed</option>
+                            <option value="Approved">Approved</option>
+                        </select>
+                        <input type="text" id="filterSearch" oninput="App.logic.renderTable()" placeholder="Search..." class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-0.5 w-full md:w-32 outline-none focus:border-brand-primary placeholder:text-slate-600">
+                    </div>
+                </div>
+                <div class="flex-1 overflow-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-800 text-[10px] uppercase sticky top-0 z-10 shadow-sm text-slate-400">
+                            <tr>
+                                <th class="px-2 md:px-4 py-2 font-semibold border-b border-slate-700 w-8">#</th>
+                                <th class="px-2 md:px-4 py-2 font-semibold border-b border-slate-700 w-20" data-i18n="thDoc">Doc</th>
+                                <th class="px-2 md:px-4 py-2 font-semibold border-b border-slate-700" data-i18n="thContent">Q & A</th>
+                                <th class="px-2 md:px-4 py-2 font-semibold border-b border-slate-700 w-20" data-i18n="thMeta">Meta</th>
+                                <th class="px-2 md:px-4 py-2 font-semibold border-b border-slate-700 w-8"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody" class="text-[10px] md:text-sm divide-y divide-slate-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
- <!-- Notes Modal -->
- <div id="notesModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
- <div class="bg-slate-800 border border-slate-600 rounded-xl p-4 w-96 shadow-2xl">
- <h3 class="text-sm font-bold text-white mb-2" data-i18n="reviewerNotes">Reviewer Notes</h3>
- <textarea id="notesInput" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white h-24 mb-3 resize-none focus:border-brand-primary outline-none"></textarea>
- <div class="flex justify-end gap-2">
- <button onclick="document.getElementById('notesModal').classList.add('hidden')" class="text-slate-400 text-xs hover:text-white px-3 py-1" data-i18n="cancel">Cancel</button>
- <button onclick="App.logic.saveNotes()" class="bg-brand-primary text-white text-xs px-4 py-1 rounded hover:bg-indigo-500" data-i18n="save">Save</button>
- </div>
- </div>
- </div>
+    <!-- Notes Modal -->
+    <div id="notesModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm px-4">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl p-4 w-full max-w-sm shadow-2xl">
+            <h3 class="text-sm font-bold text-white mb-2" data-i18n="reviewerNotes">Reviewer Notes</h3>
+            <textarea id="notesInput" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white h-24 mb-3 resize-none focus:border-brand-primary outline-none"></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('notesModal').classList.add('hidden')" class="text-slate-400 text-xs hover:text-white px-3 py-1" data-i18n="cancel">Cancel</button>
+                <button onclick="App.logic.saveNotes()" class="bg-brand-primary text-white text-xs px-4 py-1 rounded hover:bg-indigo-500" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </div>
 
- <!-- Toast -->
- <div id="toast" class="fixed bottom-5 right-5 bg-brand-success text-white px-4 py-3 rounded-lg shadow-2xl transform translate-y-24 transition duration-300 flex items-center gap-3 z-50 border border-green-400">
- <i class="fa-solid fa-check-circle text-lg"></i>
- <div class="flex-1">
- <h4 class="font-bold text-sm" id="toastTitle">Success</h4>
- <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
- </div>
- <a id="toastActionBtn" href="https://example.com/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
- </div>
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 left-5 md:left-auto bg-brand-success text-white px-4 py-3 rounded-lg shadow-2xl transform translate-y-32 transition duration-300 flex items-center gap-3 z-50 border border-green-400">
+        <i class="fa-solid fa-check-circle text-lg"></i>
+        <div class="flex-1">
+            <h4 class="font-bold text-sm" id="toastTitle">Success</h4>
+            <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
+        </div>
+        <a id="toastActionBtn" href="https://example.com/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
+    </div>
 
- <!-- APP LOGIC -->
- <script>
- window.onerror = function(msg, url, line) { console.error("AskDesk Error: " + msg + " at " + line); return false; };
+    <!-- APP LOGIC -->
+    <script>
+    window.onerror = function(msg, url, line) { console.error("AskDesk Error: " + msg + " at " + line); return false; };
 
- const App = {
- api: { 
- primary: "https://api.askdesk.app",
- fallback: "https://askdesk-api.captsertacgul.workers.dev",
- current: localStorage.getItem('askdesk_api_base') || "https://askdesk-api.captsertacgul.workers.dev"
- },
+    const App = {
+        api: { 
+            primary: "https://api.askdesk.app",
+            fallback: "https://askdesk-api.captsertacgul.workers.dev",
+            current: localStorage.getItem('askdesk_api_base') || "https://askdesk-api.captsertacgul.workers.dev"
+        },
 
- config: {
- languages: [
- {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
- {code: 'fr', label: 'Français'}, {code: 'es', label: 'Español'}, {code: 'pt-BR', label: 'Português'},
- {code: 'ar', label: 'العربية', dir: 'rtl'}
- ],
- domains: [
- {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
- {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
- ],
- // PLAN LIMITS
- plans: {
- 'starter': { dailyLimit: 20, label: 'Starter' },
- 'pro': { dailyLimit: 200, label: 'Pro' },
- 'enterprise': { dailyLimit: Infinity, label: 'Enterprise' }
- },
- UPGRADE_URL: "https://example.com/upgrade"
- },
+        config: {
+            languages: [
+                {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
+                {code: 'fr', label: 'Français'}, {code: 'es', label: 'Español'}, {code: 'pt-BR', label: 'Português'},
+                {code: 'ja', label: '日本語'}, {code: 'zh', label: '简体中文'}, {code: 'ko', label: '한국어'},
+                {code: 'pl', label: 'Polski'}, {code: 'nl', label: 'Nederlands'}, {code: 'hi', label: 'हिन्दी'},
+                {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية', dir: 'rtl'}
+            ],
+            domains: [
+                {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
+                {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
+            ],
+            plans: {
+                'starter': { dailyLimit: 20, maxBulk: 5, label: 'Starter' },
+                'pro': { dailyLimit: 200, maxBulk: 20, label: 'Pro' },
+                'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise' }
+            },
+            UPGRADE_URL: "https://example.com/upgrade"
+        },
 
- data: {
- qaLog: [], previewState: null, editingNoteId: null, currentImage: null,
- abortController: null, bulkActive: false
- },
+        data: {
+            qaLog: [], previewState: null, editingNoteId: null, currentImage: null,
+            abortController: null, bulkActive: false
+        },
 
- // --- I18N MODULE ---
- i18n: {
- currentLang: 'en',
- translations: {
- en: {
- bannerWarning: "🔒 Secure Mode: API managed server-side.",
- serverManagedToast: "API Key managed server-side.",
- appSubtitle: "PROD SERVER EDITION",
- settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
- configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
- metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
- sourceTextLabel: "Source Content", clear: "Clear", error: "Error",
- analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
- generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
- logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
- noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
- minCharsErr: "Please provide text or an image.", notFound: "Not found in provided text",
- uploadBtn: "UPLOAD FILE", uploadError: "File format not supported.",
- qualityScore: "Quality Score", groundingStatus: "Grounding",
- viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
- allDomains: "All Domains", allStatuses: "All Statuses",
- statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
- cancel: "Cancel", save: "Save URL", limitReached: "Limit reached – Upgrade to Pro",
- upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars.",
- fileBinaryWarn: "File format supported but parsing is backend-only.",
- planLabel: "Subscription Plan"
- },
- tr: {
- bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
- serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
- appSubtitle: "PROD SUNUCU SÜRÜMÜ",
- settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
- configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
- metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
- sourceTextLabel: "Kaynak İçerik", clear: "Temizle", error: "Hata",
- analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
- generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
- logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
- noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
- minCharsErr: "Lütfen metin girin.", notFound: "Metinde bulunamadı",
- uploadBtn: "DOSYA YÜKLE", uploadError: "Format desteklenmiyor.",
- qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
- viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
- allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
- statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
- cancel: "İptal", save: "URL Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
- upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı.",
- fileBinaryWarn: "Bu format destekleniyor ancak parse işlemi backend tarafında yapılır.",
- planLabel: "Abonelik Planı"
- }
- },
- t(key) { return (this.translations[this.currentLang] || this.translations['en'])[key] || key; },
- updateUI() {
- document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = this.t(el.getAttribute('data-i18n')));
- const langObj = App.config.languages.find(l => l.code === this.currentLang);
- document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
- }
- },
+        // --- I18N MODULE ---
+        i18n: {
+            currentLang: 'en',
+            translations: {
+                en: {
+                    bannerWarning: "🔒 Secure Mode: API managed server-side.",
+                    serverManagedToast: "API Key managed server-side.",
+                    appSubtitle: "PROD SERVER EDITION",
+                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
+                    configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
+                    metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
+                    sourceTextLabel: "Source", clear: "CLEAR", error: "Error",
+                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
+                    generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
+                    logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
+                    noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
+                    minCharsErr: "Please provide text or an image.", notFound: "Not found in provided text",
+                    uploadBtn: "UPLOAD", uploadError: "File format not supported.",
+                    qualityScore: "Quality Score", groundingStatus: "Grounding",
+                    viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
+                    allDomains: "All Domains", allStatuses: "All Statuses",
+                    statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
+                    cancel: "Cancel", save: "Save URL", limitReached: "Limit reached – Upgrade to Pro",
+                    upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars.",
+                    fileBinaryWarn: "File format supported but parsing is backend-only.",
+                    planLabel: "Subscription Plan",
+                    sourcePlaceholder: "Paste text here... (Long text enables Multi-Q option)"
+                },
+                tr: {
+                    bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
+                    serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
+                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
+                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
+                    configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
+                    metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
+                    sourceTextLabel: "Kaynak", clear: "TEMİZLE", error: "Hata",
+                    analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
+                    generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
+                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
+                    noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
+                    minCharsErr: "Lütfen metin girin.", notFound: "Metinde bulunamadı",
+                    uploadBtn: "YÜKLE", uploadError: "Format desteklenmiyor.",
+                    qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
+                    viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
+                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
+                    statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
+                    cancel: "İptal", save: "URL Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
+                    upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı.",
+                    fileBinaryWarn: "Bu format destekleniyor ancak parse işlemi backend tarafında yapılır.",
+                    planLabel: "Abonelik Planı",
+                    sourcePlaceholder: "Metni buraya yapıştırın... (Uzun metin Çoklu Soru modunu açar)"
+                },
+                de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen..." },
+                fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici..." },
+                es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí..." },
+                "pt-BR": { analyzeBtn: "Gerar", addBtn: "Adicionar", clear: "Limpar", configTitle: "Configuração", uploadBtn: "ENVIAR", metaTitle: "Info do Documento", sourceTextLabel: "Conteúdo Fonte", planLabel: "Assinatura", previewTitle: "Visualização", generatedQ: "Pergunta", generatedA: "Resposta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nome do Doc", pageNumLabel: "Página", domainLabel: "Domínio", qLangLabel: "Idioma Pergunta", aLangLabel: "Idioma Resposta", sourcePlaceholder: "Cole o texto aqui..." },
+                ru: { analyzeBtn: "Создать", addBtn: "Добавить", clear: "ОЧИСТИТЬ", configTitle: "Конфигурация", uploadBtn: "ЗАГРУЗИТЬ", metaTitle: "Информация", sourceTextLabel: "Источник", planLabel: "План", previewTitle: "Предпросмотр", generatedQ: "Вопрос", generatedA: "Ответ", logTitle: "Журнал", thDoc: "Док", thContent: "В & О", thMeta: "Мета", docNameLabel: "Имя документа", pageNumLabel: "Страница", domainLabel: "Домен", qLangLabel: "Язык вопроса", aLangLabel: "Язык ответа", sourcePlaceholder: "Вставьте текст здесь..." },
+                ja: { analyzeBtn: "生成", addBtn: "追加", clear: "クリア", configTitle: "設定", uploadBtn: "アップロード", metaTitle: "ドキュメント情報", sourceTextLabel: "ソースコンテンツ", planLabel: "サブスクリプション", previewTitle: "プレビュー", generatedQ: "質問", generatedA: "回答", logTitle: "ログ", thDoc: "文書", thContent: "質疑応答", thMeta: "メタ", docNameLabel: "文書名", pageNumLabel: "ページ", domainLabel: "ドメイン", qLangLabel: "質問言語", aLangLabel: "回答言語", sourcePlaceholder: "ここにテキストを貼り付け..." },
+                zh: { analyzeBtn: "生成", addBtn: "添加", clear: "清除", configTitle: "配置", uploadBtn: "上传", metaTitle: "文档信息", sourceTextLabel: "源内容", planLabel: "订阅计划", previewTitle: "预览", generatedQ: "问题", generatedA: "答案", logTitle: "日志", thDoc: "文档", thContent: "问答", thMeta: "元数据", docNameLabel: "文档名称", pageNumLabel: "页码", domainLabel: "领域", qLangLabel: "问题语言", aLangLabel: "回答语言", sourcePlaceholder: "在此处粘贴文本..." },
+                ko: { analyzeBtn: "생성", addBtn: "추가", clear: "지우기", configTitle: "구성", uploadBtn: "업로드", metaTitle: "문서 정보", sourceTextLabel: "소스 콘텐츠", planLabel: "구독 계획", previewTitle: "미리보기", generatedQ: "질문", generatedA: "답변", logTitle: "로그", thDoc: "문서", thContent: "질의 응답", thMeta: "메타", docNameLabel: "문서 이름", pageNumLabel: "페이지", domainLabel: "도메인", qLangLabel: "질문 언어", aLangLabel: "답변 언어", sourcePlaceholder: "여기에 텍스트 붙여넣기..." },
+                pl: { analyzeBtn: "Generuj", addBtn: "Dodaj", clear: "Wyczyść", configTitle: "Konfiguracja", uploadBtn: "PRZEŚLIJ", metaTitle: "Informacje", sourceTextLabel: "Treść źródłowa", planLabel: "Subskrypcja", previewTitle: "Podgląd", generatedQ: "Pytanie", generatedA: "Odpowiedź", logTitle: "Dziennik", thDoc: "Dok", thContent: "P & O", thMeta: "Meta", docNameLabel: "Nazwa dok", pageNumLabel: "Strona", domainLabel: "Domena", qLangLabel: "Język pytań", aLangLabel: "Język odp", sourcePlaceholder: "Wklej tekst tutaj..." },
+                nl: { analyzeBtn: "Genereren", addBtn: "Toevoegen", clear: "Wissen", configTitle: "Configuratie", uploadBtn: "UPLOADEN", metaTitle: "Info", sourceTextLabel: "Bron", planLabel: "Abonnement", previewTitle: "Voorbeeld", generatedQ: "Vraag", generatedA: "Antwoord", logTitle: "Logboek", thDoc: "Doc", thContent: "V & A", thMeta: "Meta", docNameLabel: "Doc Naam", pageNumLabel: "Pagina", domainLabel: "Domein", qLangLabel: "Vraag Taal", aLangLabel: "Antwoord Taal", sourcePlaceholder: "Plak hier tekst..." },
+                hi: { analyzeBtn: "उत्पन्न करें", addBtn: "जोड़ें", clear: "साफ़ करें", configTitle: "विन्यास", uploadBtn: "अपलोड", metaTitle: "जानकारी", sourceTextLabel: "स्रोत", planLabel: "योजना", previewTitle: "पूर्वावलोकन", generatedQ: "प्रश्न", generatedA: "उत्तर", logTitle: "लॉग", thDoc: "दस्तावेज़", thContent: "प्रश्नोत्तर", thMeta: "मेटा", docNameLabel: "नाम", pageNumLabel: "पृष्ठ", domainLabel: "डोमेन", qLangLabel: "प्रश्न भाषा", aLangLabel: "उत्तर भाषा", sourcePlaceholder: "यहाँ टेक्स्ट पेस्ट करें..." },
+                it: { analyzeBtn: "Generare", addBtn: "Aggiungere", clear: "Cancellare", configTitle: "Configurazione", uploadBtn: "CARICARE", metaTitle: "Info", sourceTextLabel: "Fonte", planLabel: "Abbonamento", previewTitle: "Anteprima", generatedQ: "Domanda", generatedA: "Risposta", logTitle: "Registro", thDoc: "Doc", thContent: "D & R", thMeta: "Meta", docNameLabel: "Nome Doc", pageNumLabel: "Pagina", domainLabel: "Dominio", qLangLabel: "Lingua Domanda", aLangLabel: "Lingua Risposta", sourcePlaceholder: "Incolla il testo qui..." },
+                ar: { analyzeBtn: "توليد", addBtn: "إضافة", clear: "مسح", configTitle: "تكوين", uploadBtn: "رفع", metaTitle: "معلومات", sourceTextLabel: "المصدر", planLabel: "خطة", previewTitle: "معاينة", generatedQ: "سؤال", generatedA: "إجابة", logTitle: "سجل", thDoc: "مستند", thContent: "س & ج", thMeta: "ميتا", docNameLabel: "اسم المستند", pageNumLabel: "صفحة", domainLabel: "نطاق", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة", sourcePlaceholder: "لصق النص هنا...", dir: 'rtl' }
+            },
+            t(key) { 
+                const dict = this.translations[this.currentLang] || this.translations['en'];
+                // Fallback to English if key missing in selected lang
+                return dict[key] || this.translations['en'][key] || key; 
+            },
+            updateUI() {
+                document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = this.t(el.getAttribute('data-i18n')));
+                // Handle placeholders
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    el.placeholder = this.t(el.getAttribute('data-i18n-placeholder'));
+                });
+                const langObj = App.config.languages.find(l => l.code === this.currentLang);
+                document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
+            }
+        },
 
- // --- BILLING MODULE ---
- billing: {
- init() {
- const savedPlan = localStorage.getItem('askdesk_plan') || 'pro'; 
- const planSelect = document.getElementById('planSelect');
- if (planSelect) {
- planSelect.value = savedPlan;
- planSelect.onchange = (e) => this.setPlan(e.target.value);
- }
- this.updateUI();
- },
- getPlan() {
- return localStorage.getItem('askdesk_plan') || 'pro';
- },
- setPlan(plan) {
- localStorage.setItem('askdesk_plan', plan);
- this.updateUI();
- App.ui.showToast(`Plan updated to ${App.config.plans[plan].label}`);
- },
- getUsageToday() {
- const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
- const data = JSON.parse(localStorage.getItem(key) || '{"count":0}');
- return data.count;
- },
- incrementUsage() {
- const plan = this.getPlan();
- if (plan === 'enterprise') return;
+        // --- BILLING MODULE ---
+        billing: {
+            init() {
+                const savedPlan = localStorage.getItem('askdesk_plan') || 'pro'; 
+                this.updateUI();
+            },
+            getPlan() {
+                return localStorage.getItem('askdesk_plan') || 'pro';
+            },
+            setPlan(plan) {
+                localStorage.setItem('askdesk_plan', plan);
+                this.updateUI();
+                App.ui.showToast(`Plan updated to ${App.config.plans[plan].label}`);
+            },
+            getUsageToday() {
+                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
+                const data = JSON.parse(localStorage.getItem(key) || '{"count":0}');
+                return data.count;
+            },
+            incrementUsage() {
+                const plan = this.getPlan();
+                if (plan === 'enterprise') return;
 
- const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
- const count = this.getUsageToday() + 1;
- localStorage.setItem(key, JSON.stringify({ count }));
- this.updateUI();
- },
- isLimitReached() {
- const plan = this.getPlan();
- if (plan === 'enterprise') return false;
- 
- const limit = App.config.plans[plan].dailyLimit;
- return this.getUsageToday() >= limit;
- },
- updateUI() {
- const planKey = this.getPlan();
- const planConfig = App.config.plans[planKey];
- const usage = this.getUsageToday();
- const limitDisplay = planConfig.dailyLimit === Infinity ? "Unlimited" : planConfig.dailyLimit;
- 
- const badge = document.getElementById('planBadge');
- badge.innerText = planConfig.label;
- 
- let colors = "bg-slate-700 text-slate-300 border-slate-600";
- if(planKey === 'pro') colors = "bg-brand-pro/20 text-brand-pro border-brand-pro/50";
- if(planKey === 'enterprise') colors = "bg-brand-enterprise/20 text-brand-enterprise border-brand-enterprise/50";
- 
- badge.className = `text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide border transition-colors cursor-pointer ${colors}`;
- 
- const usageBadge = document.getElementById('usageBadge');
- usageBadge.innerText = `${usage} / ${limitDisplay}`;
- 
- const isLimit = this.isLimitReached();
- const genBtn = document.getElementById('analyzeBtn');
- 
- if (!genBtn.disabled || (genBtn.disabled && genBtn.classList.contains('opacity-50'))) {
- if (isLimit) {
- genBtn.disabled = true;
- genBtn.classList.add('opacity-50', 'cursor-not-allowed');
- genBtn.querySelector('span').innerText = App.i18n.t('upgradeBtn');
- } else {
- if (genBtn.querySelector('span').innerText === App.i18n.t('upgradeBtn')) {
- genBtn.disabled = false;
- genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
- genBtn.querySelector('span').innerText = App.i18n.t('analyzeBtn');
- }
- }
- }
- 
- const previewUpgrade = document.getElementById('previewUpgradeBtn');
- if (previewUpgrade) {
- if (isLimit) previewUpgrade.classList.remove('hidden');
- else previewUpgrade.classList.add('hidden');
- }
- }
- },
+                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
+                const count = this.getUsageToday() + 1;
+                localStorage.setItem(key, JSON.stringify({ count }));
+                this.updateUI();
+            },
+            isLimitReached() {
+                const plan = this.getPlan();
+                if (plan === 'enterprise') return false;
+                
+                const limit = App.config.plans[plan].dailyLimit;
+                return this.getUsageToday() >= limit;
+            },
+            updateUI() {
+                const planKey = this.getPlan();
+                const planConfig = App.config.plans[planKey];
+                const usage = this.getUsageToday();
+                const limitDisplay = planConfig.dailyLimit === Infinity ? "Unlimited" : planConfig.dailyLimit;
+                
+                const badge = document.getElementById('planBadge');
+                badge.innerText = planConfig.label;
+                
+                let colors = "bg-slate-700 text-slate-300 border-slate-600";
+                if(planKey === 'pro') colors = "bg-brand-pro/20 text-brand-pro border-brand-pro/50";
+                if(planKey === 'enterprise') colors = "bg-brand-enterprise/20 text-brand-enterprise border-brand-enterprise/50";
+                
+                badge.className = `h-8 px-3 text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`;
+                
+                const usageBadge = document.getElementById('usageBadge');
+                usageBadge.innerText = `${usage} / ${limitDisplay}`;
+                
+                const isLimit = this.isLimitReached();
+                const genBtn = document.getElementById('analyzeBtn');
+                
+                if (!genBtn.disabled || (genBtn.disabled && genBtn.classList.contains('opacity-50'))) {
+                   if (isLimit) {
+                       genBtn.disabled = true;
+                       genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                       genBtn.querySelector('span').innerText = App.i18n.t('upgradeBtn');
+                   } else {
+                       if (genBtn.querySelector('span').innerText === App.i18n.t('upgradeBtn')) {
+                           genBtn.disabled = false;
+                           genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                           genBtn.querySelector('span').innerText = App.i18n.t('analyzeBtn');
+                       }
+                   }
+                }
+                
+                const previewUpgrade = document.getElementById('previewUpgradeBtn');
+                if (previewUpgrade) {
+                    if (isLimit) previewUpgrade.classList.remove('hidden');
+                    else previewUpgrade.classList.add('hidden');
+                }
+            }
+        },
 
- // --- STORAGE ---
- storage: {
- getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
- savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
- saveApiUrl: () => {
- const url = document.getElementById('apiUrlInput').value.trim();
- if(url) { 
- localStorage.setItem('askdesk_api_base', url); 
- App.api.current = url;
- App.ui.updateApiStatus(url);
- App.ui.toggleSettings();
- App.ui.showToast("API URL Updated");
- }
- }
- },
+        // --- STORAGE ---
+        storage: {
+            getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
+            savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
+            saveApiUrl: () => {
+                const url = document.getElementById('apiUrlInput').value.trim();
+                if(url) { 
+                    localStorage.setItem('askdesk_api_base', url); 
+                    App.api.current = url;
+                    App.ui.toggleSettings();
+                    App.ui.showToast("API URL Updated");
+                }
+            }
+        },
 
- // --- PROMPT BUILDER ---
- promptBuilder: {
- build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName) {
- const activeText = chunkText || sourceText;
- const constraints = retryCount > 0 ? `- STRICTER MODE: Ensure Question is unambiguous.` : "";
- const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
- const inputContext = hasImage ? `Input is an IMAGE. Perform OCR.` : `Input Text provided below.`;
- let prevContext = prevQuestion ? `\nCONSTRAINT: You previously asked "${prevQuestion}". Generate a DIFFERENT question.` : "";
- const sourceInjection = hasImage ? "" : `\n\nSOURCE TEXT SEGMENT:\n"""${activeText}"""\n\n`;
- const docContext = docName ? `\nCONTEXT DOCUMENT: "${docName}"` : "";
+        // --- PROMPT BUILDER ---
+        promptBuilder: {
+            build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName) {
+                const activeText = chunkText || sourceText;
+                const constraints = retryCount > 0 ? `- STRICTER MODE: Ensure Question is unambiguous.` : "";
+                const notFoundTxt = App.i18n.translations[aLang]?.notFound || "Not found";
+                const inputContext = hasImage ? `Input is an IMAGE. Perform OCR.` : `Input Text provided below.`;
+                let prevContext = prevQuestion ? `\nCONSTRAINT: You previously asked "${prevQuestion}". Generate a DIFFERENT question.` : "";
+                const sourceInjection = hasImage ? "" : `\n\nSOURCE TEXT SEGMENT:\n"""${activeText}"""\n\n`;
+                const docContext = docName ? `\nCONTEXT DOCUMENT: "${docName}"` : "";
 
- return `
- System: AskDesk v2.9 (Custom API). Domain: ${domain.toUpperCase()}
- ${docContext}
- ${inputContext}
- Task: Generate JSON {question, answer, extract, citations}.
- 1. Identify the most informative sentence in the Source Text.
- 2. COPY that sentence EXACTLY as the 'answer' (Verbatim Copy).
- 3. Formulate a professional Question in ${qLang}.
- 4. Set 'extract' = 'answer'.
- Rules:
- - If info not found, answer: "${notFoundTxt}", extract: "".
- - NO Markdown. STRICT JSON.
- - DO NOT mention document name in question unless essential.
- ${constraints}
- ${prevContext}
- ${sourceInjection}
- `;
- }
- },
+                return `
+                System: AskDesk v2.9.11 (Global). Domain: ${domain.toUpperCase()}
+                ${docContext}
+                ${inputContext}
+                Task: Generate JSON {question, answer, extract, citations}.
+                1. Identify the most informative sentence in the Source Text.
+                2. COPY that sentence EXACTLY as the 'extract' (Verbatim Copy).
+                3. Formulate a professional Question in ${qLang}.
+                4. TRANSLATE the 'extract' into ${aLang} to create the 'answer'.
+                Rules:
+                - If info not found, answer: "${notFoundTxt}", extract: "".
+                - NO Markdown. STRICT JSON.
+                ${constraints}
+                ${prevContext}
+                ${sourceInjection}
+                `;
+            }
+        },
 
- // --- MAIN LOGIC ---
- logic: {
- calculateRealQuality(source, extract, answer, hasImage) {
- if (!extract || extract.length < 5) return { score: 0, reason: "No extract found" };
- let score = 100;
- const reasons = [];
- const normSource = source.replace(/\s+/g, ' ').toLowerCase();
- const normExtract = extract.replace(/\s+/g, ' ').toLowerCase();
- if (!hasImage && !normSource.includes(normExtract)) { score = 0; reasons.push("Grounding Failed: Extract not found in source text."); } 
- else { reasons.push("Grounding Verified (+50)"); if (answer.trim() === extract.trim()) { reasons.push("Verbatim match (+50)"); } else { score -= 10; reasons.push("Minor deviation in translation/formatting"); } }
- return { score: Math.max(0, score), reasons };
- },
- calculateCapacity(textLen) {
- const planKey = App.billing.getPlan();
- const limits = App.config.plans[planKey];
- const estimatedQ = Math.max(1, Math.floor(textLen / 1500));
- return Math.min(estimatedQ, limits.maxBulk || 5);
- },
- async analyzeText(opts = {}) {
- if (App.billing.isLimitReached()) {
- App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
- App.billing.updateUI(); 
- return;
- }
+        // --- MAIN LOGIC ---
+        logic: {
+            calculateRealQuality(source, extract, answer, hasImage) {
+                if (!extract || extract.length < 5) return { score: 0, reason: "No extract found" };
+                let score = 100;
+                const reasons = [];
+                const normSource = source.replace(/\s+/g, ' ').toLowerCase();
+                const normExtract = extract.replace(/\s+/g, ' ').toLowerCase();
+                if (!hasImage && !normSource.includes(normExtract)) { 
+                    score = 0; reasons.push("Grounding Failed: Extract not found in source text."); 
+                } else { 
+                    reasons.push("Grounding Verified (+50)"); reasons.push("Translation Mode (+50)");
+                }
+                return { score: Math.max(0, score), reasons };
+            },
+            calculateCapacity(textLen) {
+                const planKey = App.billing.getPlan();
+                const limits = App.config.plans[planKey];
+                const estimatedQ = Math.max(1, Math.floor(textLen / 1500));
+                return Math.min(estimatedQ, limits.maxBulk || 5);
+            },
+            async analyzeText(opts = {}) {
+                if (App.billing.isLimitReached()) {
+                    App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                    App.billing.updateUI(); 
+                    return;
+                }
 
- const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0, prevQuestion = null, chunkText = null } = opts;
- const hasImage = !!App.data.currentImage;
- let sourceText = document.getElementById('sourceText').value.trim();
- const docName = document.getElementById('docName').value || "";
- const pageNum = document.getElementById('pageNum').value || "";
+                const { retryCount = 0, groupId: forcedGroupId = null, version: forcedVersion = 0, prevQuestion = null, chunkText = null } = opts;
+                const hasImage = !!App.data.currentImage;
+                let sourceText = document.getElementById('sourceText').value.trim();
+                const docName = document.getElementById('docName').value || "";
+                const pageNum = document.getElementById('pageNum').value || "";
 
- if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
- if(!App.data.bulkActive) App.ui.setLoading(true);
- 
- const domain = document.getElementById('domainSelect').value;
- const qLang = document.getElementById('qLangSelect').value;
- const aLang = document.getElementById('aLangSelect').value;
+                if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
+                if(!App.data.bulkActive) App.ui.setLoading(true);
+                
+                const domain = document.getElementById('domainSelect').value;
+                const qLang = document.getElementById('qLangSelect').value;
+                const aLang = document.getElementById('aLangSelect').value;
 
- try {
- if (retryCount === 0 && !App.data.bulkActive) {
- App.billing.incrementUsage();
- }
- 
- const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName);
- 
- const payload = {
- prompt: promptStr,
- sourceText: hasImage ? "" : (chunkText || sourceText), 
- imageDataUrl: hasImage ? App.data.currentImage : null,
- meta: { domain, qLang, aLang, docName, pageNum },
- regen: { nonce: Date.now() }
- };
+                try {
+                    if (retryCount === 0 && !App.data.bulkActive) {
+                         App.billing.incrementUsage();
+                    }
+                    
+                    const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName);
+                    
+                    const payload = {
+                        prompt: promptStr,
+                        sourceText: hasImage ? "" : (chunkText || sourceText), 
+                        imageDataUrl: hasImage ? App.data.currentImage : null,
+                        meta: { domain, qLang, aLang, docName, pageNum },
+                        regen: { nonce: Date.now() }
+                    };
 
- let response;
- let usedUrl = App.api.current;
- try {
- response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
- } catch(netErr) {
- if(usedUrl !== App.api.fallback) {
- usedUrl = App.api.fallback;
- App.api.current = usedUrl; 
- localStorage.setItem('askdesk_api_base', usedUrl); 
- App.ui.updateApiStatus(usedUrl);
- response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
- } else {
- throw netErr;
- }
- }
+                    let response;
+                    let usedUrl = App.api.current;
+                    try {
+                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
+                    } catch(netErr) {
+                         if(usedUrl !== App.api.fallback) {
+                             usedUrl = App.api.fallback;
+                             App.api.current = usedUrl; 
+                             localStorage.setItem('askdesk_api_base', usedUrl); 
+                             response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                         } else {
+                             throw netErr;
+                         }
+                    }
 
- if (!response.ok) {
- if (response.status === 429 || response.status === 402) {
- App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
- throw new Error("Plan limit reached (Server).");
- }
- 
- let errText = '';
- try { errText = await response.text(); } catch (_) {}
- 
- if (errText.toLowerCase().includes('limit')) {
- App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
- throw new Error("Plan limit reached (Server Message).");
- }
+                    if (!response.ok) {
+                         if (response.status === 429 || response.status === 402) {
+                            App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                            throw new Error("Plan limit reached (Server).");
+                         }
+                         throw new Error(`Server Error: ${response.status}`);
+                    }
+                    const res = await response.json(); 
+                    
+                    if (res.error && (res.error === 'LIMIT_REACHED' || res.code === 'LIMIT_REACHED')) {
+                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                        throw new Error("Plan limit reached (Backend Logic).");
+                    }
 
- if (response.status === 404 || response.status === 502) {
- throw new Error(`Connection Error: Ensure Cloudflare Worker URL is correct. (${response.status})`);
- }
- throw new Error(`Server Error: ${response.status}${errText ? " | " + errText : ""}`);
- }
- const res = await response.json(); 
- 
- if (res.error && (res.error === 'LIMIT_REACHED' || res.code === 'LIMIT_REACHED')) {
- App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
- throw new Error("Plan limit reached (Backend Logic).");
- }
+                    const activeSrc = chunkText || sourceText;
+                    const realQual = this.calculateRealQuality(activeSrc, res.extract, res.answer, hasImage);
+                    res.quality_score = realQual.score; res.quality_reasons = realQual.reasons;
+                    
+                    if (!hasImage && res.quality_score < 90 && retryCount < 1) return this.analyzeText({ ...opts, retryCount: retryCount + 1 });
+                    
+                    const groupId = forcedGroupId || crypto.randomUUID();
+                    const version = forcedGroupId ? (forcedVersion + 1) : 1;
+                    
+                    if (App.data.bulkActive) return { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
+                    
+                    App.data.previewState = { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
+                    App.ui.updatePreview(res, {ok: res.quality_score>0});
+                } catch (e) { 
+                    if (e.name !== 'AbortError') App.ui.showError(e.message); 
+                    if(!App.data.bulkActive) App.ui.setLoading(false);
+                    throw e; 
+                } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
+            },
+            async startGeneration() {
+                if (App.data.bulkActive) return;
+                const bulkInput = document.getElementById('bulkRange');
+                const requestedCount = document.getElementById('bulkPanel').classList.contains('hidden') ? 1 : parseInt(bulkInput.value);
+                
+                if (requestedCount === 1) { 
+                    try { await this.analyzeText(); } catch(e) { console.warn("Analysis failed:", e); }
+                    return; 
+                }
+                
+                App.data.bulkActive = true; App.data.abortController = new AbortController(); App.ui.setLoading(true);
+                const sourceText = document.getElementById('sourceText').value;
+                const chunkSize = Math.floor(sourceText.length / requestedCount);
+                document.getElementById('bulkProgressContainer').classList.remove('hidden');
+                document.getElementById('bulkStatusText').classList.remove('hidden');
+                const pBar = document.getElementById('bulkProgressBar');
+                const pText = document.getElementById('bulkStatusText');
+                let lowQualityCount = 0;
+                for (let i = 0; i < requestedCount; i++) {
+                    if (App.billing.isLimitReached()) {
+                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                        break;
+                    }
+                    App.billing.incrementUsage();
 
- const activeSrc = chunkText || sourceText;
- const realQual = this.calculateRealQuality(activeSrc, res.extract, res.answer, hasImage);
- res.quality_score = realQual.score; res.quality_reasons = realQual.reasons;
- 
- if (!hasImage && res.quality_score < 90 && retryCount < 1) return this.analyzeText({ ...opts, retryCount: retryCount + 1 });
- 
- const groupId = forcedGroupId || crypto.randomUUID();
- const version = forcedGroupId ? (forcedVersion + 1) : 1;
- 
- if (App.data.bulkActive) return { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
- 
- App.data.previewState = { result: res, grounding: {ok: res.quality_score>0}, domain, qLang, aLang, groupId, version, hasImage };
- App.ui.updatePreview(res, {ok: res.quality_score>0});
- } catch (e) { 
- if (e.name !== 'AbortError') App.ui.showError(e.message); 
- if(!App.data.bulkActive) App.ui.setLoading(false);
- throw e; 
- } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
- },
- async startGeneration() {
- if (App.data.bulkActive) return;
- const bulkInput = document.getElementById('bulkRange');
- const requestedCount = document.getElementById('bulkPanel').classList.contains('hidden') ? 1 : parseInt(bulkInput.value);
- 
- if (requestedCount === 1) { 
- try { await this.analyzeText(); } catch(e) { console.warn("Analysis failed:", e); }
- return; 
- }
- 
- App.data.bulkActive = true; App.data.abortController = new AbortController(); App.ui.setLoading(true);
- const sourceText = document.getElementById('sourceText').value;
- const chunkSize = Math.floor(sourceText.length / requestedCount);
- document.getElementById('bulkProgressContainer').classList.remove('hidden');
- document.getElementById('bulkStatusText').classList.remove('hidden');
- const pBar = document.getElementById('bulkProgressBar');
- const pText = document.getElementById('bulkStatusText');
- let lowQualityCount = 0;
- for (let i = 0; i < requestedCount; i++) {
- if (App.billing.isLimitReached()) {
- App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
- break;
- }
- App.billing.incrementUsage();
+                    pText.innerText = `Generating ${i+1}/${requestedCount}...`;
+                    pBar.style.width = `${((i)/requestedCount)*100}%`;
+                    const start = i * chunkSize;
+                    const end = start + chunkSize + 500;
+                    const chunk = sourceText.substring(start, end);
+                    try {
+                        const data = await this.analyzeText({ chunkText: chunk });
+                        if (data.result.quality_score < 50) { lowQualityCount++; if (lowQualityCount >= 3) { App.ui.showToast("Stopping: Quality dropped too low.", "warning"); break; } } else { lowQualityCount = 0; }
+                        App.data.previewState = data; this.addToLog();
+                    } catch (e) { if (e.name === 'AbortError') break; }
+                }
+                pBar.style.width = '100%'; App.data.bulkActive = false; App.ui.setLoading(false);
+                setTimeout(() => { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
+            },
+            stopBulk() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
+            regenerate() { 
+                if (!App.data.previewState) return; 
+                const { groupId, version, result } = App.data.previewState; 
+                this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question }).catch(e => console.warn("Regen failed:", e));
+            },
+            addToLog() {
+                if (!App.data.previewState) return;
+                const s = App.data.previewState; const r = s.result;
+                const currentDoc = document.getElementById('docName').value || "N/A";
+                const currentPage = document.getElementById('pageNum').value || "-";
+                
+                const entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image]" : "", createdAtISO: new Date().toISOString() };
+                App.data.qaLog.push(entry); this.renderTable();
+                if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
+            },
+            renderTable() {
+                const tbody = document.getElementById('logTableBody');
+                const f = { domain: 'all', status: 'all', search: '' };
+                tbody.innerHTML = '';
+                [...App.data.qaLog].reverse().forEach((item) => {
+                    const tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50 group";
+                    tr.innerHTML = `<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v${item.version}</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="${item.docName}">${item.docName}</div><div class="text-brand-primary text-[10px]">p.${item.pageNum}</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">${item.question}</div><div class="text-slate-400 text-[10px] font-mono truncate w-64" title="${item.answer}">${item.answer}</div><div class="mt-1 flex gap-2"><span class="text-[9px] px-1 rounded ${item.qualityScore >= 70 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}">QS: ${item.qualityScore}</span>${item.reviewerNotes ? `<i class="fa-solid fa-note-sticky text-yellow-500 text-[10px]" title="${item.reviewerNotes}"></i>` : ''}</div></td><td class="px-4 py-3 align-top"><select onchange="App.logic.updateStatus('${item.id}', this.value)" class="bg-slate-800 border border-slate-600 text-[9px] text-white rounded px-1 py-0.5 outline-none mb-1 w-full"><option value="Draft" ${item.status==='Draft'?'selected':''}>Draft</option><option value="Reviewed" ${item.status==='Reviewed'?'selected':''}>Review</option><option value="Approved" ${item.status==='Approved'?'selected':''}>Approve</option></select><button onclick="App.logic.openNotes('${item.id}')" class="text-[9px] text-brand-info hover:underline flex items-center gap-1"><i class="fa-solid fa-pen"></i> Notes</button></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry('${item.id}')" class="text-slate-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-2"><i class="fa-solid fa-trash"></i></button></td>`;
+                    tbody.appendChild(tr);
+                });
+            },
+            deleteEntry(id) { App.data.qaLog = App.data.qaLog.filter(x => x.id !== id); this.renderTable(); },
+            clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } }
+        },
 
- pText.innerText = `Generating ${i+1}/${requestedCount}...`;
- pBar.style.width = `${((i)/requestedCount)*100}%`;
- const start = i * chunkSize;
- const end = start + chunkSize + 500;
- const chunk = sourceText.substring(start, end);
- try {
- const data = await this.analyzeText({ chunkText: chunk });
- if (data.result.quality_score < 50) { lowQualityCount++; if (lowQualityCount >= 3) { App.ui.showToast("Stopping: Quality dropped too low.", "warning"); break; } } else { lowQualityCount = 0; }
- App.data.previewState = data; this.addToLog();
- } catch (e) { if (e.name === 'AbortError') break; }
- }
- pBar.style.width = '100%'; App.data.bulkActive = false; App.ui.setLoading(false);
- setTimeout(() => { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
- },
- stopBulk() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
- regenerate() { 
- if (!App.data.previewState) return; 
- const { groupId, version, result } = App.data.previewState; 
- this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question }).catch(e => console.warn("Regen failed:", e));
- },
- addToLog() {
- if (!App.data.previewState) return;
- const s = App.data.previewState; const r = s.result;
- const currentDoc = document.getElementById('docName').value || "N/A";
- const currentPage = document.getElementById('pageNum').value || "-";
- 
- const entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image]" : "", createdAtISO: new Date().toISOString() };
- App.data.qaLog.push(entry); this.renderTable();
- if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
- },
- renderTable() {
- const tbody = document.getElementById('logTableBody');
- const f = { domain: 'all', status: 'all', search: '' };
- tbody.innerHTML = '';
- [...App.data.qaLog].reverse().forEach((item) => {
- const tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50";
- tr.innerHTML = `<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v${item.version}</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="${item.docName}">${item.docName}</div><div class="text-brand-primary text-[10px]">p.${item.pageNum}</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">${item.question}</div><div class="mt-1"><span class="text-[9px] px-1 rounded ${item.qualityScore >= 90 ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'}">QS: ${item.qualityScore}%</span></div></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry('${item.id}')" class="text-red-400"><i class="fa-solid fa-trash"></i></button></td>`;
- tbody.appendChild(tr);
- });
- },
- deleteEntry(id) { App.data.qaLog = App.data.qaLog.filter(x => x.id !== id); this.renderTable(); },
- clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } }
- },
+        // --- EXPORTERS ---
+        exporters: {
+            sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
+            getDataForExport() {
+                return App.data.qaLog.map(i => ({
+                    ID: i.id, GroupID: i.groupId, Version: i.version,
+                    Doc: this.sanitize(i.docName), Page: this.sanitize(i.pageNum),
+                    Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
+                    Question: this.sanitize(i.question), Answer: this.sanitize(i.answer),
+                    Quality: i.qualityScore, Grounded: i.groundingOk,
+                    Status: i.status, Notes: this.sanitize(i.reviewerNotes),
+                    Created: i.createdAtISO
+                }));
+            },
+            toExcel() {
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "QA Data");
+                XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
+            },
+            toCSV() {
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const data = this.getDataForExport();
+                const headers = Object.keys(data[0]).join(',');
+                const rows = data.map(row => Object.values(row).map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(','));
+                const csv = "\uFEFF" + [headers, ...rows].join('\n');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+                a.download = `AskDesk_PROD.csv`;
+                a.click();
+            },
+            toJSON() {
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
+                a.download = `AskDesk_PROD.json`;
+                a.click();
+            }
+        },
 
- // --- UI MODULE ---
- ui: {
- init() {
- try {
- // Populate missing translations with EN defaults to prevent empty UI
- const en = App.i18n.translations.en;
- App.config.languages.forEach(l => {
- if (!App.i18n.translations[l.code]) {
- App.i18n.translations[l.code] = { ...en };
- }
- });
+        // --- UI MODULE ---
+        ui: {
+            init() {
+                try {
+                    const en = App.i18n.translations.en;
+                    App.config.languages.forEach(l => { if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = { ...en }; });
+                    const populate = (id, options) => { const el = document.getElementById(id); if(el) { if(!id.startsWith('filter')) el.innerHTML = ''; options.forEach(o => el.add(new Option(o.label, o.id || o.code))); } };
+                    populate('domainSelect', App.config.domains); populate('filterDomain', App.config.domains);
+                    ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(id => populate(id, App.config.languages));
+                    const prefs = App.storage.getPrefs();
+                    document.getElementById('uiLangSelect').value = prefs.uiLang;
+                    document.getElementById('domainSelect').value = prefs.domain || 'general';
+                    this.changeLanguage(prefs.uiLang);
+                    App.billing.init();
+                    document.getElementById('apiUrlInput').value = App.api.current;
+                } catch(e) { console.error(e); }
+            },
+            cyclePlan() { const plans = Object.keys(App.config.plans); const current = App.billing.getPlan(); const next = plans[(plans.indexOf(current) + 1) % plans.length]; App.billing.setPlan(next); },
+            handleTextChange() {
+                const val = document.getElementById('sourceText').value; this.updateCharCount();
+                const maxQ = App.logic.calculateCapacity(val.length);
+                const bulkPanel = document.getElementById('bulkPanel'); const range = document.getElementById('bulkRange'); const label = document.getElementById('bulkLimitLabel');
+                document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
+                if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = `Max: ${maxQ}`; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
+            },
+            updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
+            changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
+            toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
+            updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `h-8 px-3 text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`; },
+            updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
+            clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
+            handleFileUpload(input) {
+                const file = input.files[0];
+                if (!file) return;
+                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
+                const name = file.name.toLowerCase();
+                if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) { const r = new FileReader(); r.onload = (e) => { let text = e.target.result; if (text.length > 150000) { text = text.substring(0, 150000); App.ui.showToast(App.i18n.t('textTruncated')); } document.getElementById('sourceText').value = text; App.ui.handleTextChange(); App.ui.showToast("Text loaded."); }; r.readAsText(file, "UTF-8"); } 
+                else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) { App.ui.showToast(App.i18n.t('fileBinaryWarn')); } else { App.ui.showToast(App.i18n.t('uploadError')); }
+                input.value = '';
+            },
+            setLoading(isLoading) {
+                const btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive; 
+                const stopOverlay = document.getElementById('stopBtnOverlay'); const btnText = document.getElementById('btnText'); const icon = document.getElementById('btnIcon'); const loader = document.getElementById('btnLoader');
+                if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
+            },
+            updatePreview(res, grounding) {
+                document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
+                document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
+                document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
+                this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+            },
+            enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
+            showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
+            showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-32'); setTimeout(() => t.classList.add('translate-y-32'), 4000); }
+        }
+    };
 
- const domSelect = document.getElementById('domainSelect');
- const domFilter = document.getElementById('filterDomain');
- domSelect.innerHTML = '';
- App.config.domains.forEach(d => { domSelect.add(new Option(d.label, d.id)); domFilter.add(new Option(d.label, d.id)); });
- ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(id => { const el = document.getElementById(id); el.innerHTML = ''; App.config.languages.forEach(l => el.add(new Option(l.label, l.code))); });
- const prefs = App.storage.getPrefs();
- document.getElementById('uiLangSelect').value = prefs.uiLang;
- document.getElementById('domainSelect').value = prefs.domain || 'general';
- this.changeLanguage(prefs.uiLang);
- this.updateApiStatus(App.api.current);
- 
- // Initialize Billing / Plan / Usage
- App.billing.init();
-
- document.getElementById('apiUrlInput').value = App.api.current;
- } catch(e) { console.error(e); }
- },
- cyclePlan() { 
- const plans = Object.keys(App.config.plans);
- const current = App.billing.getPlan();
- const next = plans[(plans.indexOf(current) + 1) % plans.length];
- App.billing.setPlan(next);
- },
- handleTextChange() {
- const val = document.getElementById('sourceText').value; this.updateCharCount();
- const maxQ = App.logic.calculateCapacity(val.length);
- const bulkPanel = document.getElementById('bulkPanel'); const range = document.getElementById('bulkRange'); const label = document.getElementById('bulkLimitLabel');
- document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
- if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = `Max Capacity: ${maxQ}`; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
- },
- updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
- changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
- updateApiStatus(url) { const isFallback = url.includes("workers.dev"); const text = isFallback ? "Connected" : "Connected (Primary)"; document.getElementById('apiStatusText').innerText = text; const dot = document.getElementById('apiStatusDot'); dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; },
- updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-slate-600 ${colors} cursor-pointer hover:opacity-80`; },
- updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
- clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
- toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
- handleFileUpload(input) {
- const file = input.files[0];
- if (!file) return;
-
- if (file.type.startsWith('image/')) {
- const reader = new FileReader();
- reader.onload = (e) => {
- App.data.currentImage = e.target.result;
- document.getElementById('previewImgElement').src = e.target.result;
- document.getElementById('sourceText').classList.add('hidden');
- document.getElementById('imagePreviewContainer').classList.remove('hidden');
- document.getElementById('imagePreviewContainer').classList.add('flex');
- App.ui.showToast("Image loaded. Text mode disabled.");
- };
- reader.readAsDataURL(file);
- input.value = '';
- return;
- }
-
- const name = file.name.toLowerCase();
- if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
- const reader = new FileReader();
- reader.onload = (e) => {
- let text = e.target.result;
- if (text.length > 150000) {
- text = text.substring(0, 150000);
- App.ui.showToast(App.i18n.t('textTruncated'));
- }
- document.getElementById('sourceText').value = text;
- App.ui.handleTextChange(); 
- App.ui.showToast("Text file loaded (UTF-8).");
- };
- reader.readAsText(file, "UTF-8");
- } 
- else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) {
- App.ui.showToast(App.i18n.t('fileBinaryWarn'));
- } else {
- App.ui.showToast(App.i18n.t('uploadError'));
- }
- input.value = '';
- },
- setLoading(isLoading) {
- const btn = document.getElementById('analyzeBtn');
- btn.disabled = isLoading && !App.data.bulkActive; 
- const stopOverlay = document.getElementById('stopBtnOverlay');
- const btnText = document.getElementById('btnText');
- const icon = document.getElementById('btnIcon');
- const loader = document.getElementById('btnLoader');
- if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
- },
- updatePreview(res, grounding) {
- document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
- document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
- document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
- this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
- },
- enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
- showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
- showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-24'); setTimeout(() => t.classList.add('translate-y-24'), 4000); }
- },
-
- // --- EXPORTERS ---
- exporters: {
- sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
- getDataForExport() {
- return App.data.qaLog.map(i => ({
- ID: i.id, GroupID: i.groupId, Version: i.version,
- Doc: this.sanitize(i.docName), Page: this.sanitize(i.pageNum),
- Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
- Question: this.sanitize(i.question), Answer: this.sanitize(i.answer),
- Quality: i.qualityScore, Grounded: i.groundingOk,
- Status: i.status, Notes: this.sanitize(i.reviewerNotes),
- Created: i.createdAtISO
- }));
- },
- toExcel() {
- if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
- const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
- const wb = XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb, ws, "QA Data");
- XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
- },
- toCSV() {
- if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
- const data = this.getDataForExport();
- const headers = Object.keys(data[0]).join(',');
- const rows = data.map(row => Object.values(row).map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(','));
- const csv = "\uFEFF" + [headers, ...rows].join('\n');
- const a = document.createElement('a');
- a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
- a.download = `AskDesk_PROD.csv`;
- a.click();
- },
- toJSON() {
- if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
- const a = document.createElement('a');
- a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
- a.download = `AskDesk_PROD.json`;
- a.click();
- }
- }
- };
-
- document.addEventListener('DOMContentLoaded', () => App.ui.init());
- </script>
+    document.addEventListener('DOMContentLoaded', () => App.ui.init());
+    </script>
 </body>
 </html>
