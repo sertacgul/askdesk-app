@@ -170,9 +170,19 @@
                     <div class="flex items-center gap-2 mb-1">
                         <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
-                        </label>
                         
-                        <div class="flex-1"></div>
+</label>
+
+<!-- YAPIŞTIRDIĞINIZ BÖLÜM -->
+<div class="flex gap-4 ml-3 items-center">
+    <div class="text-[9px] text-slate-500 font-mono">
+        Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
+    </div>
+    <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
+</div>
+
+<div class="flex-1"></div>
+<!-- ... -->
 
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.files.handleUpload(this)">
                         
@@ -210,12 +220,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex justify-between mt-1 items-center">
-                        <div class="text-[9px] text-slate-500 font-mono">
-                            Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
-                        </div>
-                        <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
-                    </div>
+                   
                 </div>
 
                 <!-- Bulk Panel -->
