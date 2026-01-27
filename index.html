@@ -403,7 +403,7 @@
             fallback: "https://api.askdesk.app",
             current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
         },
-        localStorage.setItem('askdesk_api_base', 'https://api.askdesk.app');
+        
         config: {
             languages: [
                 {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
@@ -416,10 +416,10 @@
             ],
             // PLAN LIMITS
             plans: {
-                'starter': { dailyLimit: 20, label: 'Starter' },
-                'pro': { dailyLimit: 200, label: 'Pro' },
-                'enterprise': { dailyLimit: Infinity, label: 'Enterprise' }
-            },
+             starter:   { dailyLimit: 20,   maxBulk: 5,  label: 'Starter' },
+             pro:       { dailyLimit: 200,  maxBulk: 10, label: 'Pro' },
+             enterprise:{ dailyLimit: Infinity, maxBulk: 50, label: 'Enterprise' }
+            }
             UPGRADE_URL: "https://example.com/upgrade"
         },
 
@@ -837,7 +837,7 @@
             },
             updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
             changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
-            updateApiStatus(url) { const isFallback = url.includes("workers.dev"); const text = isFallback ? "Connected" : "Connected (Primary)"; document.getElementById('apiStatusText').innerText = text; const dot = document.getElementById('apiStatusDot'); dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; },
+            updateApiStatus(url) { const isFallback = url.includes("workers.dev"); const text = isFallback ? "Connected (Fallback)" : "Connected"; document.getElementById('apiStatusText').innerText = text; const dot = document.getElementById('apiStatusDot'); dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; },
             updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-slate-600 ${colors} cursor-pointer hover:opacity-80`; },
             updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
             clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
@@ -944,9 +944,16 @@
             }
         }
     };
+    localStorage.setItem('askdesk_api_base', 'https://api.askdesk.app');
+    // Ensure API base is set once (safe)
+    if (!localStorage.getItem('askdesk_api_base')) {
+    localStorage.setItem('askdesk_api_base', 'https://api.askdesk.app');
 
+    }
+ 
     document.addEventListener('DOMContentLoaded', () => App.ui.init());
     </script>
 </body>
 </html>
+
 
