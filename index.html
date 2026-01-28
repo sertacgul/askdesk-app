@@ -114,7 +114,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">Generated with responsibiity by ATAOL AI Techs/p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.15</p>
             </div>
         </div>
 
@@ -131,8 +131,16 @@
     </header>
 
     <!-- SETTINGS PANEL (Hidden) -->
-    <div id="settingsPanel" class="hidden">
-        <input type="text" id="apiUrlInput" class="hidden">
+    <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
+        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-server text-brand-primary"></i> <span data-i18n="settingsTitle">API Configuration</span>
+        </h3>
+        <p class="text-[10px] text-slate-400 mb-3 leading-relaxed" data-i18n="settingsDesc">Enter backend URL (Cloudflare Worker).</p>
+        <input type="text" id="apiUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="https://...">
+        <div class="flex justify-end gap-2">
+            <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Cancel</button>
+            <button onclick="App.storage.saveApiUrl()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Save URL</button>
+        </div>
     </div>
 
     <!-- MAIN -->
@@ -142,7 +150,7 @@
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative h-auto md:h-full">
             
             <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-20">
                 <!-- Config -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
@@ -281,7 +289,7 @@
 
         <!-- RIGHT: OUTPUT -->
         <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a] h-1/2 md:h-full">
-            <!-- Preview -->
+            <!-- Preview (Reduced Height) -->
             <div class="h-[35%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
@@ -341,9 +349,9 @@
                         </div>
                         <div class="flex items-center gap-1">
                             <div class="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-                                <button id="btnExportExcel" onclick="App.exporters.toExcel()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export Excel" data-export="excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
+                                <button onclick="App.exporters.toExcel()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export Excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
                                 <div class="w-px bg-slate-700 my-1"></div>
-                                <button id="btnExportCSV" onclick="App.exporters.toCSV()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export CSV" data-export="csv"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
+                                <button onclick="App.exporters.toCSV()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition" title="Export CSV"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
                             </div>
                             <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -842,7 +850,6 @@
                 }));
             },
             toExcel() {
-                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
                 if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
                 const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
                 const wb = XLSX.utils.book_new();
@@ -850,7 +857,6 @@
                 XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
             },
             toCSV() {
-                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
                 if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
                 const data = this.getDataForExport();
                 const headers = Object.keys(data[0]).join(',');
@@ -862,10 +868,6 @@
                 a.click();
             },
             toJSON() {
-                // Only Enterprise
-                const plan = App.billing.getPlan();
-                if (plan !== 'enterprise') return App.ui.showToast(App.i18n.t('copyRestricted'));
-
                 if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
