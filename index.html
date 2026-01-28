@@ -37,6 +37,7 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
+        /* SCROLL BAR FIX: overflow-hidden kaldırıldı, overflow-auto yapıldı */
         body { background-color: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s; display: flex; flex-direction: column; min-height: 100vh; }
         .glass-input { 
             background: #1e293b; 
@@ -56,10 +57,12 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
         .loader {
             border: 3px solid #1e293b;
             border-top: 3px solid #6366f1;
@@ -72,12 +75,11 @@
         html[dir="rtl"] .text-right { text-align: left; } 
         html[dir="rtl"] .text-left { text-align: right; }
 
-        /* COPY GUARD: Protected Text Class */
         .protected-text {
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* IE10+/Edge */
-            user-select: none; /* Standard */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
     </style>
     <!-- PWA Manifest & Service Worker -->
@@ -92,7 +94,7 @@
     }
     </script>
 </head>
-<body class="overflow-auto text-slate-200">
+<body class="overflow-auto text-slate-200"> <!-- SCROLL ENABLED -->
 
     <!-- HEADER -->
     <header class="bg-brand-panel border-b border-slate-700 h-auto min-h-[4rem] py-2 flex flex-wrap items-center justify-between px-4 md:px-6 shadow-lg z-20 shrink-0 gap-2">
@@ -114,7 +116,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.16</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.18</p>
             </div>
         </div>
 
@@ -136,13 +138,13 @@
     </div>
 
     <!-- MAIN -->
-    <div class="flex-1 flex flex-col md:flex-row overflow-visible">
+    <div class="flex-1 flex flex-col md:flex-row overflow-visible"> <!-- SCROLL ENABLED -->
         
         <!-- LEFT: INPUTS -->
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative h-auto md:h-full">
             
             <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-20">
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                 <!-- Config -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
@@ -438,6 +440,53 @@
             abortController: null, bulkActive: false
         },
 
+        // --- EXPORTERS ---
+        exporters: {
+            sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
+            getDataForExport() {
+                return App.data.qaLog.map(i => ({
+                    ID: i.id, GroupID: i.groupId, Version: i.version,
+                    Doc: this.sanitize(i.docName), Page: this.sanitize(i.pageNum),
+                    Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
+                    Question: this.sanitize(i.question), Answer: this.sanitize(i.answer),
+                    Quality: i.qualityScore, Grounded: i.groundingOk,
+                    Status: i.status, Notes: this.sanitize(i.reviewerNotes),
+                    Created: i.createdAtISO
+                }));
+            },
+            toExcel() {
+                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "QA Data");
+                XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
+            },
+            toCSV() {
+                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const data = this.getDataForExport();
+                const headers = Object.keys(data[0]).join(',');
+                const rows = data.map(row => Object.values(row).map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(','));
+                const csv = "\uFEFF" + [headers, ...rows].join('\n');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+                a.download = `AskDesk_PROD.csv`;
+                a.click();
+            },
+            toJSON() {
+                // Only Enterprise
+                const plan = App.billing.getPlan();
+                if (plan !== 'enterprise') return App.ui.showToast(App.i18n.t('copyRestricted'));
+
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
+                a.download = `AskDesk_PROD.json`;
+                a.click();
+            }
+        },
+
         // --- I18N MODULE ---
         i18n: {
             currentLang: 'en',
@@ -626,7 +675,7 @@
                 const docContext = docName ? `\nCONTEXT DOCUMENT: "${docName}"` : "";
 
                 return `
-                System: AskDesk v2.9.16 (Global). Domain: ${domain.toUpperCase()}
+                System: AskDesk v2.9.11 (Global). Domain: ${domain.toUpperCase()}
                 ${docContext}
                 ${inputContext}
                 Task: Generate JSON {question, answer, extract, citations}.
@@ -817,53 +866,6 @@
             clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } }
         },
 
-        // --- EXPORTERS ---
-        exporters: {
-            sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
-            getDataForExport() {
-                return App.data.qaLog.map(i => ({
-                    ID: i.id, GroupID: i.groupId, Version: i.version,
-                    Doc: this.sanitize(i.docName), Page: this.sanitize(i.pageNum),
-                    Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
-                    Question: this.sanitize(i.question), Answer: this.sanitize(i.answer),
-                    Quality: i.qualityScore, Grounded: i.groundingOk,
-                    Status: i.status, Notes: this.sanitize(i.reviewerNotes),
-                    Created: i.createdAtISO
-                }));
-            },
-            toExcel() {
-                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                const ws = XLSX.utils.json_to_sheet(this.getDataForExport());
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "QA Data");
-                XLSX.writeFile(wb, `AskDesk_PROD_${new Date().toISOString().slice(0,10)}.xlsx`);
-            },
-            toCSV() {
-                if(!App.billing.canExport()) return App.ui.showToast(App.i18n.t('copyRestricted')); 
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                const data = this.getDataForExport();
-                const headers = Object.keys(data[0]).join(',');
-                const rows = data.map(row => Object.values(row).map(v => `"${String(v || '').replace(/"/g,'""')}"`).join(','));
-                const csv = "\uFEFF" + [headers, ...rows].join('\n');
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
-                a.download = `AskDesk_PROD.csv`;
-                a.click();
-            },
-            toJSON() {
-                // Only Enterprise
-                const plan = App.billing.getPlan();
-                if (plan !== 'enterprise') return App.ui.showToast(App.i18n.t('copyRestricted'));
-
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
-                a.download = `AskDesk_PROD.json`;
-                a.click();
-            }
-        },
-
         // --- UI MODULE ---
         ui: {
             init() {
@@ -881,12 +883,7 @@
                     document.getElementById('apiUrlInput').value = App.api.current;
                 } catch(e) { console.error(e); }
             },
-            cyclePlan() { 
-                const plans = Object.keys(App.config.plans);
-                const current = App.billing.getPlan();
-                const next = plans[(plans.indexOf(current) + 1) % plans.length];
-                App.billing.setPlan(next);
-            },
+            cyclePlan() { const plans = Object.keys(App.config.plans); const current = App.billing.getPlan(); const next = plans[(plans.indexOf(current) + 1) % plans.length]; App.billing.setPlan(next); },
             handleTextChange() {
                 const val = document.getElementById('sourceText').value; this.updateCharCount();
                 const maxQ = App.logic.calculateCapacity(val.length);
@@ -897,7 +894,7 @@
             updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
             changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
             toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
-            updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `h-8 px-3 text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`; },
+            updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `h-8 px-3 text-[10px] md:text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`; },
             updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
             clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
             handleFileUpload(input) {
@@ -922,7 +919,15 @@
             },
             enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
             showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
-            showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-32'); setTimeout(() => t.classList.add('translate-y-32'), 4000); }
+            showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-32'); setTimeout(() => t.classList.add('translate-y-32'), 4000); },
+            updateApiStatus(url) { 
+                const isFallback = url.includes("workers.dev"); 
+                const text = isFallback ? "Connected (Fallback)" : "Connected"; 
+                const statusText = document.getElementById('apiStatusText');
+                if (statusText) statusText.innerText = text;
+                const dot = document.getElementById('apiStatusDot'); 
+                if (dot) dot.className = isFallback ? "w-1.5 h-1.5 rounded-full bg-yellow-500" : "w-1.5 h-1.5 rounded-full bg-green-500"; 
+            }
         }
     };
 
