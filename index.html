@@ -34,6 +34,7 @@
                 }
             }
         }
+        // PDF.js Worker Configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
@@ -56,10 +57,12 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
         .loader {
             border: 3px solid #1e293b;
             border-top: 3px solid #6366f1;
@@ -72,12 +75,11 @@
         html[dir="rtl"] .text-right { text-align: left; } 
         html[dir="rtl"] .text-left { text-align: right; }
 
-        /* COPY GUARD: Protected Text Class */
         .protected-text {
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none; /* Firefox */
-            -ms-user-select: none; /* IE10+/Edge */
-            user-select: none; /* Standard */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
     </style>
     <!-- PWA Manifest & Service Worker -->
@@ -92,7 +94,7 @@
     }
     </script>
 </head>
-<body class="overflow-y-auto md:overflow-hidden text-slate-200">
+<body class="overflow-auto text-slate-200">
 
     <!-- HEADER -->
     <header class="bg-brand-panel border-b border-slate-700 h-auto min-h-[4rem] py-2 flex flex-wrap items-center justify-between px-4 md:px-6 shadow-lg z-20 shrink-0 gap-2">
@@ -114,7 +116,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.19</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.20</p>
             </div>
         </div>
 
@@ -136,7 +138,7 @@
     </div>
 
     <!-- MAIN -->
-    <div class="flex-1 flex flex-col md:flex-row overflow-visible md:overflow-hidden">
+    <div class="flex-1 flex flex-col md:flex-row overflow-visible">
         
         <!-- LEFT: INPUTS -->
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative h-auto md:h-full">
@@ -200,8 +202,10 @@
                         
                         <div class="flex-1"></div>
 
+                        <!-- Fixed: Call App.ui.handleFileUpload -->
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
                         
+                        <!-- Buttons Aligned and Sized -->
                         <button onclick="document.getElementById('fileUpload').click()" 
                             class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
                             <i class="fa-solid fa-cloud-arrow-up text-sm"></i> 
@@ -279,7 +283,7 @@
 
         <!-- RIGHT: OUTPUT -->
         <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a] h-1/2 md:h-full">
-            <!-- Preview (Reduced Height) -->
+            <!-- Preview -->
             <div class="h-[35%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
@@ -313,12 +317,10 @@
                 <div class="space-y-3 pb-8">
                     <div>
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
-                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16 protected-text" readonly></textarea>
                     </div>
                     <div class="h-32 md:h-40 flex flex-col">
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
-                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre protected-text" readonly></textarea>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -427,7 +429,6 @@
                 {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
                 {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
             ],
-            // PLAN CONFIGURATION (REQUEST 1)
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: false, canCopy: false, allowedExports: [] },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: true, canCopy: false, allowedExports: ['excel', 'csv'] },
@@ -456,6 +457,181 @@
             }
         },
 
+        // --- I18N MODULE ---
+        i18n: {
+            currentLang: 'en',
+            translations: {
+                en: {
+                    bannerWarning: "🔒 Secure Mode: API managed server-side.",
+                    serverManagedToast: "API Key managed server-side.",
+                    appSubtitle: "PROD SERVER EDITION",
+                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
+                    configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
+                    metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
+                    sourceTextLabel: "Source", clear: "CLEAR", error: "Error",
+                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
+                    generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
+                    logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
+                    noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
+                    minCharsErr: "Please provide text or an image.", notFound: "Not found in provided text",
+                    uploadBtn: "UPLOAD", uploadError: "File format not supported.",
+                    qualityScore: "Quality Score", groundingStatus: "Grounding",
+                    viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
+                    allDomains: "All Domains", allStatuses: "All Statuses",
+                    statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
+                    cancel: "Cancel", save: "Save URL", limitReached: "Limit reached – Upgrade to Pro",
+                    upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars.",
+                    fileBinaryWarn: "File format supported but parsing is backend-only.",
+                    planLabel: "Subscription Plan",
+                    sourcePlaceholder: "Paste text here... (Long text enables Multi-Q option)",
+                    copyRestricted: "This content is protected. Upgrade to export."
+                },
+                tr: {
+                    bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
+                    serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
+                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
+                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
+                    configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
+                    metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
+                    sourceTextLabel: "Kaynak", clear: "TEMİZLE", error: "Hata",
+                    analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
+                    generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
+                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
+                    noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
+                    minCharsErr: "Lütfen metin girin.", notFound: "Metinde bulunamadı",
+                    uploadBtn: "YÜKLE", uploadError: "Format desteklenmiyor.",
+                    qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
+                    viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
+                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
+                    statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
+                    cancel: "İptal", save: "URL Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
+                    upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı.",
+                    fileBinaryWarn: "Bu format destekleniyor ancak parse işlemi backend tarafında yapılır.",
+                    planLabel: "Abonelik Planı",
+                    sourcePlaceholder: "Metni buraya yapıştırın... (Uzun metin Çoklu Soru modunu açar)"
+                },
+                de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
+                fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici...", copyRestricted: "Protégé. Utilisez l'exportation." },
+                es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí...", copyRestricted: "Protegido. Usar exportar." },
+                "pt-BR": { analyzeBtn: "Gerar", addBtn: "Adicionar", clear: "Limpar", configTitle: "Configuração", uploadBtn: "ENVIAR", metaTitle: "Info do Documento", sourceTextLabel: "Conteúdo Fonte", planLabel: "Assinatura", previewTitle: "Visualização", generatedQ: "Pergunta", generatedA: "Resposta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nome do Doc", pageNumLabel: "Página", domainLabel: "Domínio", qLangLabel: "Idioma Pergunta", aLangLabel: "Idioma Resposta", sourcePlaceholder: "Cole o texto aqui...", copyRestricted: "Protegido. Usar exportar." },
+                ru: { analyzeBtn: "Создать", addBtn: "Добавить", clear: "ОЧИСТИТЬ", configTitle: "Конфигурация", uploadBtn: "ЗАГРУЗИТЬ", metaTitle: "Информация", sourceTextLabel: "Источник", planLabel: "План", previewTitle: "Предпросмотр", generatedQ: "Вопрос", generatedA: "Ответ", logTitle: "Журнал", thDoc: "Док", thContent: "В & О", thMeta: "Мета", docNameLabel: "Имя документа", pageNumLabel: "Страница", domainLabel: "Домен", qLangLabel: "Язык вопроса", aLangLabel: "Язык ответа", sourcePlaceholder: "Вставьте текст здесь...", copyRestricted: "Защищено. Исп. экспорт." },
+                ja: { analyzeBtn: "生成", addBtn: "追加", clear: "クリア", configTitle: "設定", uploadBtn: "アップロード", metaTitle: "ドキュメント情報", sourceTextLabel: "ソースコンテンツ", planLabel: "サブスクリプション", previewTitle: "プレビュー", generatedQ: "質問", generatedA: "回答", logTitle: "ログ", thDoc: "文書", thContent: "質疑応答", thMeta: "メタ", docNameLabel: "文書名", pageNumLabel: "ページ", domainLabel: "ドメイン", qLangLabel: "質問言語", aLangLabel: "回答言語", sourcePlaceholder: "ここにテキストを貼り付け...", copyRestricted: "保護されています。エクスポートを使用してください。" },
+                zh: { analyzeBtn: "生成", addBtn: "添加", clear: "清除", configTitle: "配置", uploadBtn: "上传", metaTitle: "文档信息", sourceTextLabel: "源内容", planLabel: "订阅计划", previewTitle: "预览", generatedQ: "问题", generatedA: "答案", logTitle: "日志", thDoc: "文档", thContent: "问答", thMeta: "元数据", docNameLabel: "文档名称", pageNumLabel: "页码", domainLabel: "领域", qLangLabel: "问题语言", aLangLabel: "回答语言", sourcePlaceholder: "在此处粘贴文本...", copyRestricted: "受保护。使用导出。" },
+                ko: { analyzeBtn: "생성", addBtn: "추가", clear: "지우기", configTitle: "구성", uploadBtn: "업로드", metaTitle: "문서 정보", sourceTextLabel: "소스 콘텐츠", planLabel: "구독 계획", previewTitle: "미리보기", generatedQ: "질문", generatedA: "답변", logTitle: "로그", thDoc: "문서", thContent: "질의 응답", thMeta: "메타", docNameLabel: "문서 이름", pageNumLabel: "페이지", domainLabel: "도메인", qLangLabel: "질문 언어", aLangLabel: "답변 언어", sourcePlaceholder: "여기에 텍스트 붙여넣기...", copyRestricted: "보호됨. 내보내기 사용." },
+                pl: { analyzeBtn: "Generuj", addBtn: "Dodaj", clear: "Wyczyść", configTitle: "Konfiguracja", uploadBtn: "PRZEŚLIJ", metaTitle: "Informacje", sourceTextLabel: "Treść źródłowa", planLabel: "Subskrypcja", previewTitle: "Podgląd", generatedQ: "Pytanie", generatedA: "Odpowiedź", logTitle: "Dziennik", thDoc: "Dok", thContent: "P & O", thMeta: "Meta", docNameLabel: "Nazwa dok", pageNumLabel: "Strona", domainLabel: "Domena", qLangLabel: "Język pytań", aLangLabel: "Język odp", sourcePlaceholder: "Wklej tekst tutaj...", copyRestricted: "Chronione. Użyj eksportu." },
+                nl: { analyzeBtn: "Genereren", addBtn: "Toevoegen", clear: "Wissen", configTitle: "Configuratie", uploadBtn: "UPLOADEN", metaTitle: "Info", sourceTextLabel: "Bron", planLabel: "Abonnement", previewTitle: "Voorbeeld", generatedQ: "Vraag", generatedA: "Antwoord", logTitle: "Logboek", thDoc: "Doc", thContent: "V & A", thMeta: "Meta", docNameLabel: "Doc Naam", pageNumLabel: "Pagina", domainLabel: "Domein", qLangLabel: "Vraag Taal", aLangLabel: "Antwoord Taal", sourcePlaceholder: "Plak hier tekst...", copyRestricted: "Beschermd. Gebruik export." },
+                hi: { analyzeBtn: "उत्पन्न करें", addBtn: "जोड़ें", clear: "साफ़ करें", configTitle: "विन्यास", uploadBtn: "अपलोड", metaTitle: "जानकारी", sourceTextLabel: "स्रोत", planLabel: "योजना", previewTitle: "पूर्वावलोकन", generatedQ: "प्रश्न", generatedA: "उत्तर", logTitle: "लॉग", thDoc: "दस्तावेज़", thContent: "प्रश्नोत्तर", thMeta: "मेटा", docNameLabel: "नाम", pageNumLabel: "पृष्ठ", domainLabel: "डोमेन", qLangLabel: "प्रश्न भाषा", aLangLabel: "उत्तर भाषा", sourcePlaceholder: "यहाँ टेक्स्ट पेस्ट करें...", copyRestricted: "सुरक्षित। निर्यात का उपयोग करें।" },
+                it: { analyzeBtn: "Generare", addBtn: "Aggiungere", clear: "Cancellare", configTitle: "Configurazione", uploadBtn: "CARICARE", metaTitle: "Info", sourceTextLabel: "Fonte", planLabel: "Abbonamento", previewTitle: "Anteprima", generatedQ: "Domanda", generatedA: "Risposta", logTitle: "Registro", thDoc: "Doc", thContent: "D & R", thMeta: "Meta", docNameLabel: "Nome Doc", pageNumLabel: "Pagina", domainLabel: "Dominio", qLangLabel: "Lingua Domanda", aLangLabel: "Lingua Risposta", sourcePlaceholder: "Incolla il testo qui...", copyRestricted: "Protetto. Usa esportazione." },
+                ar: { analyzeBtn: "توليد", addBtn: "إضافة", clear: "مسح", configTitle: "تكوين", uploadBtn: "رفع", metaTitle: "معلومات", sourceTextLabel: "المصدر", planLabel: "خطة", previewTitle: "معاينة", generatedQ: "سؤال", generatedA: "إجابة", logTitle: "سجل", thDoc: "مستند", thContent: "س & ج", thMeta: "ميتا", docNameLabel: "اسم المستند", pageNumLabel: "صفحة", domainLabel: "نطاق", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة", sourcePlaceholder: "لصق النص هنا...", dir: 'rtl', copyRestricted: "محمي. استخدم التصدير." }
+            },
+            t(key) { 
+                const dict = this.translations[this.currentLang] || this.translations['en'];
+                // Fallback to English if key missing in selected lang
+                return dict[key] || this.translations['en'][key] || key; 
+            },
+            updateUI() {
+                document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = this.t(el.getAttribute('data-i18n')));
+                // Handle placeholders
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    el.placeholder = this.t(el.getAttribute('data-i18n-placeholder'));
+                });
+                const langObj = App.config.languages.find(l => l.code === this.currentLang);
+                document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
+            }
+        },
+
+        // --- BILLING MODULE (PLAN + COPY GUARD) ---
+        billing: {
+            init() {
+                const savedPlan = localStorage.getItem('askdesk_plan') || 'starter'; 
+                this.updateUI();
+                this.setupCopyGuard(); 
+            },
+            getPlan() { return localStorage.getItem('askdesk_plan') || 'starter'; },
+            setPlan(plan) {
+                localStorage.setItem('askdesk_plan', plan);
+                this.updateUI();
+                App.ui.showToast(`Plan updated to ${App.config.plans[plan].label}`);
+            },
+            getUsageToday() {
+                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
+                const data = JSON.parse(localStorage.getItem(key) || '{"count":0}');
+                return data.count;
+            },
+            incrementUsage() {
+                const plan = this.getPlan();
+                if (plan === 'enterprise') return;
+                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
+                const count = this.getUsageToday() + 1;
+                localStorage.setItem(key, JSON.stringify({ count }));
+                this.updateUI();
+            },
+            isLimitReached() {
+                const plan = this.getPlan();
+                if (plan === 'enterprise') return false;
+                const limit = App.config.plans[plan].dailyLimit;
+                return this.getUsageToday() >= limit;
+            },
+            canExport(type) { 
+                const allowed = App.config.plans[this.getPlan()].allowedExports; 
+                return type ? allowed.includes(type) : allowed.length > 0;
+            }, 
+            canCopy() { return App.config.plans[this.getPlan()].canCopy; }, 
+            
+            setupCopyGuard() {
+                document.addEventListener('contextmenu', (e) => {
+                    if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
+                });
+                document.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+                        if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
+                    }
+                });
+            },
+
+            updateUI() {
+                const planKey = this.getPlan();
+                const planConfig = App.config.plans[planKey];
+                const usage = this.getUsageToday();
+                const limitDisplay = planConfig.dailyLimit === Infinity ? "Unlimited" : planConfig.dailyLimit;
+                
+                const badge = document.getElementById('planBadge');
+                badge.innerText = planConfig.label;
+                let colors = "bg-slate-700 text-slate-300 border-slate-600";
+                if(planKey === 'pro') colors = "bg-brand-pro/20 text-brand-pro border-brand-pro/50";
+                if(planKey === 'enterprise') colors = "bg-brand-enterprise/20 text-brand-enterprise border-brand-enterprise/50";
+                badge.className = `h-8 px-3 text-[10px] md:text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`;
+                
+                document.getElementById('usageBadge').innerText = `${usage} / ${limitDisplay}`;
+                
+                const isLimit = this.isLimitReached();
+                const genBtn = document.getElementById('analyzeBtn');
+                
+                if (!genBtn.disabled || (genBtn.disabled && genBtn.classList.contains('opacity-50'))) {
+                   if (isLimit) {
+                       genBtn.disabled = true;
+                       genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                       genBtn.querySelector('span').innerText = App.i18n.t('upgradeBtn');
+                   } else {
+                       if (genBtn.querySelector('span').innerText === App.i18n.t('upgradeBtn')) {
+                           genBtn.disabled = false;
+                           genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                           genBtn.querySelector('span').innerText = App.i18n.t('analyzeBtn');
+                       }
+                   }
+                }
+                
+                const exportBtns = document.querySelectorAll('[data-export]');
+                exportBtns.forEach(btn => {
+                    const type = btn.getAttribute('data-export');
+                    if (!this.canExport(type)) { btn.classList.add('hidden'); } else { btn.classList.remove('hidden'); }
+                });
+
+                const previewUpgrade = document.getElementById('previewUpgradeBtn');
+                if (previewUpgrade) isLimit ? previewUpgrade.classList.remove('hidden') : previewUpgrade.classList.add('hidden');
+            }
+        },
+
         // --- PROMPT BUILDER ---
         promptBuilder: {
             build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName) {
@@ -468,7 +644,7 @@
                 const docContext = docName ? `\nCONTEXT DOCUMENT: "${docName}"` : "";
 
                 return `
-                System: AskDesk v2.9.19 (Monetization). Domain: ${domain.toUpperCase()}
+                System: AskDesk v2.9.20 (Global). Domain: ${domain.toUpperCase()}
                 ${docContext}
                 ${inputContext}
                 Task: Generate JSON {question, answer, extract, citations}.
@@ -659,181 +835,6 @@
             clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } }
         },
 
-        // --- I18N MODULE ---
-        i18n: {
-            currentLang: 'en',
-            translations: {
-                en: {
-                    bannerWarning: "🔒 Secure Mode: API managed server-side.",
-                    serverManagedToast: "API Key managed server-side.",
-                    appSubtitle: "PROD SERVER EDITION",
-                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
-                    configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
-                    metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
-                    sourceTextLabel: "Source", clear: "CLEAR", error: "Error",
-                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
-                    generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
-                    logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
-                    noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
-                    minCharsErr: "Please provide text or an image.", notFound: "Not found in provided text",
-                    uploadBtn: "UPLOAD", uploadError: "File format not supported.",
-                    qualityScore: "Quality Score", groundingStatus: "Grounding",
-                    viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
-                    allDomains: "All Domains", allStatuses: "All Statuses",
-                    statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
-                    cancel: "Cancel", save: "Save URL", limitReached: "Limit reached – Upgrade to Pro",
-                    upgradeBtn: "Upgrade", textTruncated: "Text truncated to 150k chars.",
-                    fileBinaryWarn: "File format supported but parsing is backend-only.",
-                    planLabel: "Subscription Plan",
-                    sourcePlaceholder: "Paste text here... (Long text enables Multi-Q option)",
-                    copyRestricted: "This content is protected. Upgrade to export."
-                },
-                tr: {
-                    bannerWarning: "🔒 Güvenli Mod: API sunucuda yönetilir.",
-                    serverManagedToast: "API anahtarı sunucuda yönetiliyor.",
-                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
-                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
-                    configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
-                    metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
-                    sourceTextLabel: "Kaynak", clear: "TEMİZLE", error: "Hata",
-                    analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
-                    generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
-                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
-                    noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
-                    minCharsErr: "Lütfen metin girin.", notFound: "Metinde bulunamadı",
-                    uploadBtn: "YÜKLE", uploadError: "Format desteklenmiyor.",
-                    qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
-                    viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
-                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
-                    statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
-                    cancel: "İptal", save: "URL Kaydet", limitReached: "Limit doldu – Pro'ya Geç",
-                    upgradeBtn: "Yükselt", textTruncated: "Metin 150k karaktere kırpıldı.",
-                    fileBinaryWarn: "Bu format destekleniyor ancak parse işlemi backend tarafında yapılır.",
-                    planLabel: "Abonelik Planı",
-                    sourcePlaceholder: "Metni buraya yapıştırın... (Uzun metin Çoklu Soru modunu açar)",
-                    copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
-                },
-                // Populate simple defaults for other languages to ensure UI updates
-                de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
-                fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici...", copyRestricted: "Protégé. Utilisez l'exportation." },
-                es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí...", copyRestricted: "Protegido. Usar exportar." },
-                "pt-BR": { analyzeBtn: "Gerar", addBtn: "Adicionar", clear: "Limpar", configTitle: "Configuração", uploadBtn: "ENVIAR", metaTitle: "Info do Documento", sourceTextLabel: "Conteúdo Fonte", planLabel: "Assinatura", previewTitle: "Visualização", generatedQ: "Pergunta", generatedA: "Resposta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nome do Doc", pageNumLabel: "Página", domainLabel: "Domínio", qLangLabel: "Idioma Pergunta", aLangLabel: "Idioma Resposta", sourcePlaceholder: "Cole o texto aqui...", copyRestricted: "Protegido. Usar exportar." },
-                ru: { analyzeBtn: "Создать", addBtn: "Добавить", clear: "ОЧИСТИТЬ", configTitle: "Конфигурация", uploadBtn: "ЗАГРУЗИТЬ", metaTitle: "Информация", sourceTextLabel: "Источник", planLabel: "План", previewTitle: "Предпросмотр", generatedQ: "Вопрос", generatedA: "Ответ", logTitle: "Журнал", thDoc: "Док", thContent: "В & О", thMeta: "Мета", docNameLabel: "Имя документа", pageNumLabel: "Страница", domainLabel: "Домен", qLangLabel: "Язык вопроса", aLangLabel: "Язык ответа", sourcePlaceholder: "Вставьте текст здесь...", copyRestricted: "Защищено. Исп. экспорт." },
-                ja: { analyzeBtn: "生成", addBtn: "追加", clear: "クリア", configTitle: "設定", uploadBtn: "アップロード", metaTitle: "ドキュメント情報", sourceTextLabel: "ソースコンテンツ", planLabel: "サブスクリプション", previewTitle: "プレビュー", generatedQ: "質問", generatedA: "回答", logTitle: "ログ", thDoc: "文書", thContent: "質疑応答", thMeta: "メタ", docNameLabel: "文書名", pageNumLabel: "ページ", domainLabel: "ドメイン", qLangLabel: "質問言語", aLangLabel: "回答言語", sourcePlaceholder: "ここにテキストを貼り付け...", copyRestricted: "保護されています。エクスポートを使用してください。" },
-                zh: { analyzeBtn: "生成", addBtn: "添加", clear: "清除", configTitle: "配置", uploadBtn: "上传", metaTitle: "文档信息", sourceTextLabel: "源内容", planLabel: "订阅计划", previewTitle: "预览", generatedQ: "问题", generatedA: "答案", logTitle: "日志", thDoc: "文档", thContent: "问答", thMeta: "元数据", docNameLabel: "文档名称", pageNumLabel: "页码", domainLabel: "领域", qLangLabel: "问题语言", aLangLabel: "回答语言", sourcePlaceholder: "在此处粘贴文本...", copyRestricted: "受保护。使用导出。" },
-                ko: { analyzeBtn: "생성", addBtn: "추가", clear: "지우기", configTitle: "구성", uploadBtn: "업로드", metaTitle: "문서 정보", sourceTextLabel: "소스 콘텐츠", planLabel: "구독 계획", previewTitle: "미리보기", generatedQ: "질문", generatedA: "답변", logTitle: "로그", thDoc: "문서", thContent: "질의 응답", thMeta: "메타", docNameLabel: "문서 이름", pageNumLabel: "페이지", domainLabel: "도메인", qLangLabel: "질문 언어", aLangLabel: "답변 언어", sourcePlaceholder: "여기에 텍스트 붙여넣기...", copyRestricted: "보호됨. 내보내기 사용." },
-                pl: { analyzeBtn: "Generuj", addBtn: "Dodaj", clear: "Wyczyść", configTitle: "Konfiguracja", uploadBtn: "PRZEŚLIJ", metaTitle: "Informacje", sourceTextLabel: "Treść źródłowa", planLabel: "Subskrypcja", previewTitle: "Podgląd", generatedQ: "Pytanie", generatedA: "Odpowiedź", logTitle: "Dziennik", thDoc: "Dok", thContent: "P & O", thMeta: "Meta", docNameLabel: "Nazwa dok", pageNumLabel: "Strona", domainLabel: "Domena", qLangLabel: "Język pytań", aLangLabel: "Język odp", sourcePlaceholder: "Wklej tekst tutaj...", copyRestricted: "Chronione. Użyj eksportu." },
-                nl: { analyzeBtn: "Genereren", addBtn: "Toevoegen", clear: "Wissen", configTitle: "Configuratie", uploadBtn: "UPLOADEN", metaTitle: "Info", sourceTextLabel: "Bron", planLabel: "Abonnement", previewTitle: "Voorbeeld", generatedQ: "Vraag", generatedA: "Antwoord", logTitle: "Logboek", thDoc: "Doc", thContent: "V & A", thMeta: "Meta", docNameLabel: "Doc Naam", pageNumLabel: "Pagina", domainLabel: "Domein", qLangLabel: "Vraag Taal", aLangLabel: "Antwoord Taal", sourcePlaceholder: "Plak hier tekst...", copyRestricted: "Beschermd. Gebruik export." },
-                hi: { analyzeBtn: "उत्पन्न करें", addBtn: "जोड़ें", clear: "साफ़ करें", configTitle: "विन्यास", uploadBtn: "अपलोड", metaTitle: "जानकारी", sourceTextLabel: "स्रोत", planLabel: "योजना", previewTitle: "पूर्वावलोकन", generatedQ: "प्रश्न", generatedA: "उत्तर", logTitle: "लॉग", thDoc: "दस्तावेज़", thContent: "प्रश्नोत्तर", thMeta: "मेटा", docNameLabel: "नाम", pageNumLabel: "पृष्ठ", domainLabel: "डोमेन", qLangLabel: "प्रश्न भाषा", aLangLabel: "उत्तर भाषा", sourcePlaceholder: "यहाँ टेक्स्ट पेस्ट करें...", copyRestricted: "सुरक्षित। निर्यात का उपयोग करें।" },
-                it: { analyzeBtn: "Generare", addBtn: "Aggiungere", clear: "Cancellare", configTitle: "Configurazione", uploadBtn: "CARICARE", metaTitle: "Info", sourceTextLabel: "Fonte", planLabel: "Abbonamento", previewTitle: "Anteprima", generatedQ: "Domanda", generatedA: "Risposta", logTitle: "Registro", thDoc: "Doc", thContent: "D & R", thMeta: "Meta", docNameLabel: "Nome Doc", pageNumLabel: "Pagina", domainLabel: "Dominio", qLangLabel: "Lingua Domanda", aLangLabel: "Lingua Risposta", sourcePlaceholder: "Incolla il testo qui...", copyRestricted: "Protetto. Usa esportazione." },
-                ar: { analyzeBtn: "توليد", addBtn: "إضافة", clear: "مسح", configTitle: "تكوين", uploadBtn: "رفع", metaTitle: "معلومات", sourceTextLabel: "المصدر", planLabel: "خطة", previewTitle: "معاينة", generatedQ: "سؤال", generatedA: "إجابة", logTitle: "سجل", thDoc: "مستند", thContent: "س & ج", thMeta: "ميتا", docNameLabel: "اسم المستند", pageNumLabel: "صفحة", domainLabel: "نطاق", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة", sourcePlaceholder: "لصق النص هنا...", dir: 'rtl', copyRestricted: "محمي. استخدم التصدير." }
-            },
-            t(key) { 
-                const dict = this.translations[this.currentLang] || this.translations['en'];
-                return dict[key] || this.translations['en'][key] || key; 
-            },
-            updateUI() {
-                document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = this.t(el.getAttribute('data-i18n')));
-                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                    el.placeholder = this.t(el.getAttribute('data-i18n-placeholder'));
-                });
-                const langObj = App.config.languages.find(l => l.code === this.currentLang);
-                document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
-            }
-        },
-
-        // --- BILLING MODULE (PLAN + COPY GUARD) ---
-        billing: {
-            init() {
-                const savedPlan = localStorage.getItem('askdesk_plan') || 'starter'; 
-                this.updateUI();
-                this.setupCopyGuard(); 
-            },
-            getPlan() { return localStorage.getItem('askdesk_plan') || 'starter'; },
-            setPlan(plan) {
-                localStorage.setItem('askdesk_plan', plan);
-                this.updateUI();
-                App.ui.showToast(`Plan updated to ${App.config.plans[plan].label}`);
-            },
-            getUsageToday() {
-                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
-                const data = JSON.parse(localStorage.getItem(key) || '{"count":0}');
-                return data.count;
-            },
-            incrementUsage() {
-                const plan = this.getPlan();
-                if (plan === 'enterprise') return;
-                const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
-                const count = this.getUsageToday() + 1;
-                localStorage.setItem(key, JSON.stringify({ count }));
-                this.updateUI();
-            },
-            isLimitReached() {
-                const plan = this.getPlan();
-                if (plan === 'enterprise') return false;
-                const limit = App.config.plans[plan].dailyLimit;
-                return this.getUsageToday() >= limit;
-            },
-            canExport(type) { 
-                const allowed = App.config.plans[this.getPlan()].allowedExports; 
-                return type ? allowed.includes(type) : allowed.length > 0;
-            }, 
-            canCopy() { return App.config.plans[this.getPlan()].canCopy; }, 
-            
-            setupCopyGuard() {
-                document.addEventListener('contextmenu', (e) => {
-                    if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
-                });
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-                        if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
-                    }
-                });
-            },
-
-            updateUI() {
-                const planKey = this.getPlan();
-                const planConfig = App.config.plans[planKey];
-                const usage = this.getUsageToday();
-                const limitDisplay = planConfig.dailyLimit === Infinity ? "Unlimited" : planConfig.dailyLimit;
-                
-                const badge = document.getElementById('planBadge');
-                badge.innerText = planConfig.label;
-                let colors = "bg-slate-700 text-slate-300 border-slate-600";
-                if(planKey === 'pro') colors = "bg-brand-pro/20 text-brand-pro border-brand-pro/50";
-                if(planKey === 'enterprise') colors = "bg-brand-enterprise/20 text-brand-enterprise border-brand-enterprise/50";
-                badge.className = `h-8 px-3 text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`;
-                
-                document.getElementById('usageBadge').innerText = `${usage} / ${limitDisplay}`;
-                
-                const isLimit = this.isLimitReached();
-                const genBtn = document.getElementById('analyzeBtn');
-                
-                if (!genBtn.disabled || (genBtn.disabled && genBtn.classList.contains('opacity-50'))) {
-                   if (isLimit) {
-                       genBtn.disabled = true;
-                       genBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                       genBtn.querySelector('span').innerText = App.i18n.t('upgradeBtn');
-                   } else {
-                       if (genBtn.querySelector('span').innerText === App.i18n.t('upgradeBtn')) {
-                           genBtn.disabled = false;
-                           genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                           genBtn.querySelector('span').innerText = App.i18n.t('analyzeBtn');
-                       }
-                   }
-                }
-                
-                const exportBtns = document.querySelectorAll('[data-export]');
-                exportBtns.forEach(btn => {
-                    const type = btn.getAttribute('data-export');
-                    if (!this.canExport(type)) { btn.classList.add('hidden'); } else { btn.classList.remove('hidden'); }
-                });
-
-                const previewUpgrade = document.getElementById('previewUpgradeBtn');
-                if (previewUpgrade) isLimit ? previewUpgrade.classList.remove('hidden') : previewUpgrade.classList.add('hidden');
-            }
-        },
-
         // --- EXPORTERS ---
         exporters: {
             sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
@@ -917,10 +918,98 @@
             handleFileUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
-                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        App.data.currentImage = e.target.result;
+                        document.getElementById('previewImgElement').src = e.target.result;
+                        document.getElementById('sourceText').classList.add('hidden');
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('imagePreviewContainer').classList.add('flex');
+                        App.ui.showToast("Image loaded.");
+                    };
+                    reader.readAsDataURL(file);
+                    input.value = '';
+                    return;
+                }
+
                 const name = file.name.toLowerCase();
-                if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) { const r = new FileReader(); r.onload = (e) => { let text = e.target.result; if (text.length > 150000) { text = text.substring(0, 150000); App.ui.showToast(App.i18n.t('textTruncated')); } document.getElementById('sourceText').value = text; App.ui.handleTextChange(); App.ui.showToast("Text loaded."); }; r.readAsText(file, "UTF-8"); } 
-                else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) { App.ui.showToast(App.i18n.t('fileBinaryWarn')); } else { App.ui.showToast(App.i18n.t('uploadError')); }
+                
+                // PDF Parsing
+                if (name.endsWith('.pdf')) {
+                    App.ui.showToast("Parsing PDF...");
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const typedarray = new Uint8Array(e.target.result);
+                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                            let fullText = "";
+                            for(let i=1; i<=pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                const pageText = textContent.items.map(item => item.str).join(' ');
+                                fullText += pageText + "\n";
+                            }
+                            document.getElementById('sourceText').value = fullText;
+                            App.ui.handleTextChange();
+                            App.ui.showToast("PDF Loaded!");
+                        } catch (err) {
+                            console.error(err);
+                            App.ui.showError("PDF Parse Error: " + err.message);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // DOCX Parsing
+                else if (name.endsWith('.docx')) {
+                    App.ui.showToast("Parsing DOCX...");
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mammoth.extractRawText({arrayBuffer: e.target.result})
+                            .then(result => {
+                                document.getElementById('sourceText').value = result.value;
+                                App.ui.handleTextChange();
+                                App.ui.showToast("DOCX Loaded!");
+                            })
+                            .catch(err => App.ui.showError("DOCX Error: " + err.message));
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // XLSX Parsing
+                else if (name.endsWith('.xlsx')) {
+                    App.ui.showToast("Parsing Excel...");
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const csv = XLSX.utils.sheet_to_csv(worksheet);
+                        document.getElementById('sourceText').value = csv;
+                        App.ui.handleTextChange();
+                        App.ui.showToast("Excel Loaded!");
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // Text Files
+                else if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        let text = e.target.result;
+                        if (text.length > 150000) {
+                            text = text.substring(0, 150000);
+                            App.ui.showToast(App.i18n.t('textTruncated'));
+                        }
+                        document.getElementById('sourceText').value = text;
+                        App.ui.handleTextChange(); 
+                        App.ui.showToast("Text loaded.");
+                    };
+                    reader.readAsText(file, "UTF-8");
+                } 
+                else {
+                    App.ui.showToast(App.i18n.t('uploadError'));
+                }
                 input.value = '';
             },
             setLoading(isLoading) {
