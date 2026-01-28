@@ -11,10 +11,8 @@
     
     <!-- Data Libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <!-- PDF.js (Reverted to 3.11.174 for global variable support) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- DOCX parser -->
-    <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -36,7 +34,6 @@
                 }
             }
         }
-        // Set Worker Src for PDF.js 3.11.174
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
@@ -95,7 +92,7 @@
     }
     </script>
 </head>
-<body class="overflow-y-auto md:overflow-hidden text-slate-200">
+<body class="overflow-auto text-slate-200">
 
     <!-- HEADER -->
     <header class="bg-brand-panel border-b border-slate-700 h-auto min-h-[4rem] py-2 flex flex-wrap items-center justify-between px-4 md:px-6 shadow-lg z-20 shrink-0 gap-2">
@@ -139,7 +136,7 @@
     </div>
 
     <!-- MAIN -->
-    <div class="flex-1 flex flex-col md:flex-row overflow-visible md:overflow-hidden">
+    <div class="flex-1 flex flex-col md:flex-row overflow-visible">
         
         <!-- LEFT: INPUTS -->
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative h-auto md:h-full">
@@ -906,99 +903,10 @@
             handleFileUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
-                
-                // Add PDF.js and Mammoth logic here to fix "backend-only" toast
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        App.data.currentImage = e.target.result;
-                        document.getElementById('previewImgElement').src = e.target.result;
-                        document.getElementById('sourceText').classList.add('hidden');
-                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                        document.getElementById('imagePreviewContainer').classList.add('flex');
-                        App.ui.showToast("Image loaded.");
-                    };
-                    reader.readAsDataURL(file);
-                    input.value = '';
-                    return;
-                }
-
+                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
                 const name = file.name.toLowerCase();
-                
-                // PDF Parsing
-                if (name.endsWith('.pdf')) {
-                    App.ui.showToast("Parsing PDF...");
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                        try {
-                            const typedarray = new Uint8Array(e.target.result);
-                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                            let fullText = "";
-                            for(let i=1; i<=pdf.numPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const textContent = await page.getTextContent();
-                                const pageText = textContent.items.map(item => item.str).join(' ');
-                                fullText += pageText + "\n";
-                            }
-                            document.getElementById('sourceText').value = fullText;
-                            App.ui.handleTextChange();
-                            App.ui.showToast("PDF Loaded!");
-                        } catch (err) {
-                            console.error(err);
-                            App.ui.showError("PDF Parse Error: " + err.message);
-                        }
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-                // DOCX Parsing
-                else if (name.endsWith('.docx')) {
-                    App.ui.showToast("Parsing DOCX...");
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        mammoth.extractRawText({arrayBuffer: e.target.result})
-                            .then(result => {
-                                document.getElementById('sourceText').value = result.value;
-                                App.ui.handleTextChange();
-                                App.ui.showToast("DOCX Loaded!");
-                            })
-                            .catch(err => App.ui.showError("DOCX Error: " + err.message));
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-                // XLSX Parsing
-                else if (name.endsWith('.xlsx')) {
-                    App.ui.showToast("Parsing Excel...");
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const csv = XLSX.utils.sheet_to_csv(worksheet);
-                        document.getElementById('sourceText').value = csv;
-                        App.ui.handleTextChange();
-                        App.ui.showToast("Excel Loaded!");
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-                // Text Files
-                else if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        let text = e.target.result;
-                        if (text.length > 150000) {
-                            text = text.substring(0, 150000);
-                            App.ui.showToast(App.i18n.t('textTruncated'));
-                        }
-                        document.getElementById('sourceText').value = text;
-                        App.ui.handleTextChange(); 
-                        App.ui.showToast("Text loaded.");
-                    };
-                    reader.readAsText(file, "UTF-8");
-                } 
-                else {
-                    App.ui.showToast(App.i18n.t('uploadError'));
-                }
+                if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) { const r = new FileReader(); r.onload = (e) => { let text = e.target.result; if (text.length > 150000) { text = text.substring(0, 150000); App.ui.showToast(App.i18n.t('textTruncated')); } document.getElementById('sourceText').value = text; App.ui.handleTextChange(); App.ui.showToast("Text loaded."); }; r.readAsText(file, "UTF-8"); } 
+                else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) { App.ui.showToast(App.i18n.t('fileBinaryWarn')); } else { App.ui.showToast(App.i18n.t('uploadError')); }
                 input.value = '';
             },
             setLoading(isLoading) {
