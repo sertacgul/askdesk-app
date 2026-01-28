@@ -11,8 +11,10 @@
     
     <!-- Data Libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- PDF.js (Reverted to 3.11.174 for global variable support) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- DOCX parser -->
+    <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -34,6 +36,7 @@
                 }
             }
         }
+        // Set Worker Src for PDF.js 3.11.174
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
@@ -201,7 +204,6 @@
                         
                         <div class="flex-1"></div>
 
-                        <!-- UPDATED: Point to correct UI function -->
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
                         
                         <!-- Buttons Aligned and Sized -->
@@ -333,7 +335,7 @@
                 </div>
             </div>
 
-            <!-- Log Table (Expanded) -->
+            <!-- Log Table -->
             <div class="flex-1 flex flex-col bg-[#0f172a] min-h-0">
                 <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
                     <div class="flex justify-between items-center">
@@ -439,21 +441,6 @@
             abortController: null, bulkActive: false
         },
 
-        // --- STORAGE ---
-        storage: {
-            getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
-            savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
-            saveApiUrl: () => {
-                const url = document.getElementById('apiUrlInput').value.trim();
-                if(url) { 
-                    localStorage.setItem('askdesk_api_base', url); 
-                    App.api.current = url;
-                    App.ui.toggleSettings();
-                    App.ui.showToast("API URL Updated");
-                }
-            }
-        },
-
         // --- I18N MODULE ---
         i18n: {
             currentLang: 'en',
@@ -523,6 +510,7 @@
             },
             t(key) { 
                 const dict = this.translations[this.currentLang] || this.translations['en'];
+                // Fallback to English if key missing in selected lang
                 return dict[key] || this.translations['en'][key] || key; 
             },
             updateUI() {
@@ -539,11 +527,12 @@
         // --- BILLING MODULE ---
         billing: {
             init() {
-                const savedPlan = localStorage.getItem('askdesk_plan') || 'starter'; 
+                const savedPlan = localStorage.getItem('askdesk_plan') || 'pro'; 
                 this.updateUI();
-                this.setupCopyGuard(); 
             },
-            getPlan() { return localStorage.getItem('askdesk_plan') || 'starter'; },
+            getPlan() {
+                return localStorage.getItem('askdesk_plan') || 'pro';
+            },
             setPlan(plan) {
                 localStorage.setItem('askdesk_plan', plan);
                 this.updateUI();
@@ -557,6 +546,7 @@
             incrementUsage() {
                 const plan = this.getPlan();
                 if (plan === 'enterprise') return;
+
                 const key = `askdesk_usage_${new Date().toISOString().slice(0, 10)}`;
                 const count = this.getUsageToday() + 1;
                 localStorage.setItem(key, JSON.stringify({ count }));
@@ -565,23 +555,10 @@
             isLimitReached() {
                 const plan = this.getPlan();
                 if (plan === 'enterprise') return false;
+                
                 const limit = App.config.plans[plan].dailyLimit;
                 return this.getUsageToday() >= limit;
             },
-            canExport() { return App.config.plans[this.getPlan()].canExport; }, 
-            canCopy() { return App.config.plans[this.getPlan()].canCopy; }, 
-            
-            setupCopyGuard() {
-                document.addEventListener('contextmenu', (e) => {
-                    if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
-                });
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-                        if (!this.canCopy()) { e.preventDefault(); App.ui.showToast(App.i18n.t('copyRestricted')); }
-                    }
-                });
-            },
-
             updateUI() {
                 const planKey = this.getPlan();
                 const planConfig = App.config.plans[planKey];
@@ -590,12 +567,15 @@
                 
                 const badge = document.getElementById('planBadge');
                 badge.innerText = planConfig.label;
+                
                 let colors = "bg-slate-700 text-slate-300 border-slate-600";
                 if(planKey === 'pro') colors = "bg-brand-pro/20 text-brand-pro border-brand-pro/50";
                 if(planKey === 'enterprise') colors = "bg-brand-enterprise/20 text-brand-enterprise border-brand-enterprise/50";
+                
                 badge.className = `h-8 px-3 text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`;
                 
-                document.getElementById('usageBadge').innerText = `${usage} / ${limitDisplay}`;
+                const usageBadge = document.getElementById('usageBadge');
+                usageBadge.innerText = `${usage} / ${limitDisplay}`;
                 
                 const isLimit = this.isLimitReached();
                 const genBtn = document.getElementById('analyzeBtn');
@@ -614,13 +594,26 @@
                    }
                 }
                 
-                const exportBtns = document.querySelectorAll('[data-export]');
-                exportBtns.forEach(btn => {
-                    if (!this.canExport()) { btn.classList.add('hidden'); } else { btn.classList.remove('hidden'); }
-                });
-
                 const previewUpgrade = document.getElementById('previewUpgradeBtn');
-                if (previewUpgrade) isLimit ? previewUpgrade.classList.remove('hidden') : previewUpgrade.classList.add('hidden');
+                if (previewUpgrade) {
+                    if (isLimit) previewUpgrade.classList.remove('hidden');
+                    else previewUpgrade.classList.add('hidden');
+                }
+            }
+        },
+
+        // --- STORAGE ---
+        storage: {
+            getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
+            savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
+            saveApiUrl: () => {
+                const url = document.getElementById('apiUrlInput').value.trim();
+                if(url) { 
+                    localStorage.setItem('askdesk_api_base', url); 
+                    App.api.current = url;
+                    App.ui.toggleSettings();
+                    App.ui.showToast("API URL Updated");
+                }
             }
         },
 
@@ -913,10 +906,99 @@
             handleFileUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
-                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
+                
+                // Add PDF.js and Mammoth logic here to fix "backend-only" toast
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        App.data.currentImage = e.target.result;
+                        document.getElementById('previewImgElement').src = e.target.result;
+                        document.getElementById('sourceText').classList.add('hidden');
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('imagePreviewContainer').classList.add('flex');
+                        App.ui.showToast("Image loaded.");
+                    };
+                    reader.readAsDataURL(file);
+                    input.value = '';
+                    return;
+                }
+
                 const name = file.name.toLowerCase();
-                if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) { const r = new FileReader(); r.onload = (e) => { let text = e.target.result; if (text.length > 150000) { text = text.substring(0, 150000); App.ui.showToast(App.i18n.t('textTruncated')); } document.getElementById('sourceText').value = text; App.ui.handleTextChange(); App.ui.showToast("Text loaded."); }; r.readAsText(file, "UTF-8"); } 
-                else if (name.endsWith('.pdf') || name.endsWith('.docx') || name.endsWith('.xlsx')) { App.ui.showToast(App.i18n.t('fileBinaryWarn')); } else { App.ui.showToast(App.i18n.t('uploadError')); }
+                
+                // PDF Parsing
+                if (name.endsWith('.pdf')) {
+                    App.ui.showToast("Parsing PDF...");
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const typedarray = new Uint8Array(e.target.result);
+                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                            let fullText = "";
+                            for(let i=1; i<=pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                const pageText = textContent.items.map(item => item.str).join(' ');
+                                fullText += pageText + "\n";
+                            }
+                            document.getElementById('sourceText').value = fullText;
+                            App.ui.handleTextChange();
+                            App.ui.showToast("PDF Loaded!");
+                        } catch (err) {
+                            console.error(err);
+                            App.ui.showError("PDF Parse Error: " + err.message);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // DOCX Parsing
+                else if (name.endsWith('.docx')) {
+                    App.ui.showToast("Parsing DOCX...");
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        mammoth.extractRawText({arrayBuffer: e.target.result})
+                            .then(result => {
+                                document.getElementById('sourceText').value = result.value;
+                                App.ui.handleTextChange();
+                                App.ui.showToast("DOCX Loaded!");
+                            })
+                            .catch(err => App.ui.showError("DOCX Error: " + err.message));
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // XLSX Parsing
+                else if (name.endsWith('.xlsx')) {
+                    App.ui.showToast("Parsing Excel...");
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const csv = XLSX.utils.sheet_to_csv(worksheet);
+                        document.getElementById('sourceText').value = csv;
+                        App.ui.handleTextChange();
+                        App.ui.showToast("Excel Loaded!");
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+                // Text Files
+                else if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv') || name.endsWith('.json') || name.endsWith('.xml')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        let text = e.target.result;
+                        if (text.length > 150000) {
+                            text = text.substring(0, 150000);
+                            App.ui.showToast(App.i18n.t('textTruncated'));
+                        }
+                        document.getElementById('sourceText').value = text;
+                        App.ui.handleTextChange(); 
+                        App.ui.showToast("Text loaded.");
+                    };
+                    reader.readAsText(file, "UTF-8");
+                } 
+                else {
+                    App.ui.showToast(App.i18n.t('uploadError'));
+                }
                 input.value = '';
             },
             setLoading(isLoading) {
