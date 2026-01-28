@@ -72,6 +72,17 @@
         html[dir="rtl"] .text-right { text-align: left; } 
         html[dir="rtl"] .text-left { text-align: right; }
     </style>
+    <!-- PWA Manifest & Service Worker -->
+<link rel="manifest" href="manifest.json">
+<script>
+   if ('serviceWorker' in navigator) {
+       window.addEventListener('load', () => {
+           navigator.serviceWorker.register('sw.js')
+               .then(reg => console.log('Service Worker registered'))
+               .catch(err => console.log('Service Worker failed', err));
+       });
+   }
+</script>
 </head>
 <body class="overflow-hidden text-slate-200">
 
@@ -909,4 +920,5 @@
     </script>
 </body>
 </html>
+
 
