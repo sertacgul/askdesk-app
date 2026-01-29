@@ -288,7 +288,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
                         <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
-                        <a href="https://example.com/upgrade" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
+                        <a href="https://askdesk.app/upgrade" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
                     </h2>
                     <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
                 </div>
@@ -403,7 +403,7 @@
             <h4 class="font-bold text-sm" id="toastTitle">Success</h4>
             <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
         </div>
-        <a id="toastActionBtn" href="https://example.com/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
+        <a id="toastActionBtn" href="https://askdesk.app/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
     </div>
 
     <!-- APP LOGIC -->
@@ -412,10 +412,10 @@
 
     const App = {
         api: { 
-            primary: "https://api.askdesk.app",
-            fallback: "https://askdesk-api.captsertacgul.workers.dev",
-            current: localStorage.getItem('askdesk_api_base') || "https://askdesk-api.captsertacgul.workers.dev"
-        },
+  primary: "https://api.askdesk.app",
+  fallback: "https://askdesk-api.captsertacgul.workers.dev",
+  current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
+},
 
         config: {
             languages: [
@@ -434,7 +434,7 @@
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: true, canCopy: false, allowedExports: ['excel', 'csv'] },
                 'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise', canExport: true, canCopy: true, allowedExports: ['excel', 'csv', 'json'] }
             },
-            UPGRADE_URL: "https://example.com/upgrade"
+            UPGRADE_URL: "https://askdesk.app/upgrade"
         },
 
         data: {
@@ -1029,7 +1029,15 @@
         }
     };
 
-    document.addEventListener('DOMContentLoaded', () => App.ui.init());
+   document.addEventListener('DOMContentLoaded', () => {
+  // Auto-fix old stored base URL
+  if (App.api.current.includes("workers.dev")) {
+    App.api.current = App.api.primary;
+    localStorage.setItem('askdesk_api_base', App.api.primary);
+  }
+  App.ui.init();
+});
     </script>
 </body>
 </html>
+
