@@ -412,8 +412,8 @@
 
     const App = {
         api: { 
-  primary: "https://api.askdesk.app",
-  fallback: "https://askdesk-api.captsertacgul.workers.dev",
+  primary: "https://api.askdesk.app/api",
+  fallback: "https://askdesk-api.captsertacgul.workers.dev/api",
   current: localStorage.getItem('askdesk_api_base') || "https://api.askdesk.app"
 },
 
@@ -721,7 +721,7 @@
                     let response;
                     let usedUrl = App.api.current;
                     try {
-                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AskDesk-User':ASKDESK_USER_ID }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
+                         response = await fetch(usedUrl + 'api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AskDesk-User':ASKDESK_USER_ID }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
                     } catch(netErr) {
                          if(usedUrl !== App.api.fallback) {
                              usedUrl = App.api.fallback;
@@ -1045,6 +1045,7 @@
     </script>
 </body>
 </html>
+
 
 
 
