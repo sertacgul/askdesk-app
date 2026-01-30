@@ -127,7 +127,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">Deneme 2</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">Deneme 3</p>
             </div>
         </div>
 
@@ -144,18 +144,8 @@
     </header>
 
     <!-- SETTINGS PANEL (Hidden) -->
-    <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
-        <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-server text-brand-primary"></i> <span data-i18n="settingsTitle">API Configuration</span>
-        </h3>
-        <p class="text-[10px] text-slate-400 mb-3 leading-relaxed" data-i18n="settingsDesc">
-            Enter the URL of your backend (Cloudflare Worker).
-        </p>
-        <input type="text" id="apiUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="https://...">
-        <div class="flex justify-end gap-2">
-            <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Cancel</button>
-            <button onclick="App.storage.saveApiUrl()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Save URL</button>
-        </div>
+    <div id="settingsPanel" class="hidden">
+        <input type="text" id="apiUrlInput" class="hidden">
     </div>
 
     <!-- MAIN -->
@@ -426,19 +416,15 @@
             <h4 class="font-bold text-sm" data-i18n="success">Success</h4>
             <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
         </div>
-        <a id="toastActionBtn" href="https://example.com/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
     </div>
 
     <!-- APP LOGIC -->
     <script>
-    window.onerror = function(msg, url, line) { console.error("AskDesk Error: " + msg + " at " + line); return false; };
-
     const App = {
         api: {
             // Changed to production API
             primary: "https://api.askdesk.app",
-            fallback: "https://askdesk-api.captsertacgul.workers.dev",
-            current: localStorage.getItem('askdesk_api_base') || "https://askdesk-api.captsertacgul.workers.dev"
+            current: "https://api.askdesk.app"
         },
 
         config: {
@@ -450,9 +436,14 @@
                 {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية', dir: 'rtl'}
             ],
             domains: [
-                {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
-                {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
+                {id: 'general', label: 'General'},
+                {id: 'aviation', label: 'Aviation'},
+                {id: 'strategy', label: 'Strategy'},
+                {id: 'legal', label: 'Legal'},
+                {id: 'medical', label: 'Medical'},
+                {id: 'compliance', label: 'Compliance / ISO'}
             ],
+            // PLAN LOGIC - DEFINED AS REQUESTED
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
@@ -462,8 +453,10 @@
         },
 
         data: {
-            qaLog: [], previewState: null, editingNoteId: null, currentImage: null,
-            abortController: null, bulkActive: false
+            qaLog: [],
+            previewState: null,
+            editingNoteId: null,
+            currentImage: null
         },
 
         // --- STORAGE ---
@@ -546,7 +539,7 @@
             }
         },
 
-        // --- BILLING MODULE ---
+        // --- BILLING MODULE (PLAN + COPY GUARD) ---
         billing: {
             init() {
                 const savedPlan = localStorage.getItem('askdesk_plan') || 'starter';
@@ -605,10 +598,17 @@
                 });
             },
             cyclePlan() {
-                const plans = Object.keys(App.config.plans);
                 const current = this.getPlan();
-                const next = plans[(plans.indexOf(current) + 1) % plans.length];
-                this.setPlan(next);
+                let nextPlan = 'pro';
+               
+                // Logic: Redirect to payment link instead of free switch
+                if (current === 'starter') nextPlan = 'pro';
+                else if (current === 'pro') nextPlan = 'enterprise';
+                else nextPlan = 'enterprise'; // If ent, stay or manage
+               
+                // Redirect to backend billing endpoint which handles LemonSqueezy
+                const url = `${App.config.UPGRADE_URL}?plan=${nextPlan}`;
+                window.open(url, '_blank');
             },
             updateUI() {
                 const planKey = this.getPlan();
@@ -732,9 +732,6 @@
                 const qLang = document.getElementById('qLangSelect').value;
                 const aLang = document.getElementById('aLangSelect').value;
 
-                // USER IDENTITY HEADER (Guest if empty)
-                const userId = localStorage.getItem('askdesk_user_email') || 'guest_user';
-
                 try {
                     if (retryCount === 0 && !App.data.bulkActive) {
                          App.billing.incrementUsage();
@@ -753,22 +750,13 @@
                     let response;
                     let usedUrl = App.api.current;
                     try {
-                         // SEND USER HEADER FOR BACKEND COMPATIBILITY
-                         response = await fetch(usedUrl + '/generate', {
-                             method: 'POST',
-                             headers: {
-                                 'Content-Type': 'application/json',
-                                 'X-AskDesk-User': userId
-                             },
-                             body: JSON.stringify(payload),
-                             signal: App.data.abortController ? App.data.abortController.signal : null
-                         });
+                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
                     } catch(netErr) {
                          if(usedUrl !== App.api.fallback) {
                              usedUrl = App.api.fallback;
                              App.api.current = usedUrl;
                              localStorage.setItem('askdesk_api_base', usedUrl);
-                             response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, body: JSON.stringify(payload) });
+                             response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                          } else {
                              throw netErr;
                          }
@@ -872,21 +860,6 @@
                     tbody.appendChild(tr);
                 });
             },
-            updateStatus(id, newStatus) {
-                const item = App.data.qaLog.find(x => x.id === id);
-                if (item) { item.status = newStatus; this.renderTable(); }
-            },
-            openNotes(id) {
-                App.data.editingNoteId = id;
-                const item = App.data.qaLog.find(x => x.id === id);
-                document.getElementById('notesInput').value = item.reviewerNotes || '';
-                document.getElementById('notesModal').classList.remove('hidden');
-            },
-            saveNotes() {
-                const item = App.data.qaLog.find(x => x.id === App.data.editingNoteId);
-                if (item) { item.reviewerNotes = document.getElementById('notesInput').value; this.renderTable(); }
-                document.getElementById('notesModal').classList.add('hidden');
-            },
             deleteEntry(id) { App.data.qaLog = App.data.qaLog.filter(x => x.id !== id); this.renderTable(); },
             clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } }
         },
@@ -953,10 +926,7 @@
                 } catch(e) { console.error(e); }
             },
             cyclePlan() {
-                const plans = Object.keys(App.config.plans);
-                const current = App.billing.getPlan();
-                const next = plans[(plans.indexOf(current) + 1) % plans.length];
-                App.billing.setPlan(next);
+                App.billing.cyclePlan();
             },
             handleTextChange() {
                 const val = document.getElementById('sourceText').value; this.updateCharCount();
@@ -1001,3 +971,4 @@
     </script>
 </body>
 </html>
+
