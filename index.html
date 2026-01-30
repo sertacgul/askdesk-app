@@ -288,7 +288,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
                         <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
-                        <a href="https://askdesk.app/upgrade" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
+                        <a href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
                     </h2>
                     <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
                 </div>
@@ -403,7 +403,7 @@
             <h4 class="font-bold text-sm" id="toastTitle">Success</h4>
             <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
         </div>
-        <a id="toastActionBtn" href="https://askdesk.app/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
+        <a id="toastActionBtn" href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
     </div>
 
     <!-- APP LOGIC -->
@@ -434,7 +434,7 @@
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: true, canCopy: false, allowedExports: ['excel', 'csv'] },
                 'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise', canExport: true, canCopy: true, allowedExports: ['excel', 'csv', 'json'] }
             },
-            UPGRADE_URL: "https://askdesk.app/upgrade"
+            UPGRADE_URL: "https://api.askdesk.app/billing/upgrade?plan=pro"
         },
 
         data: {
@@ -714,14 +714,14 @@
                         prompt: promptStr,
                         sourceText: hasImage ? "" : (chunkText || sourceText), 
                         imageDataUrl: hasImage ? App.data.currentImage : null,
-                        meta: { domain, qLang, aLang, docName, pageNum },
+                        meta: { domain, qLang, aLang, docName, pageNum, userId: ASKDESK_USER_ID  },
                         regen: { nonce: Date.now() }
                     };
 
                     let response;
                     let usedUrl = App.api.current;
                     try {
-                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
+                         response = await fetch(usedUrl + '/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AskDesk-User':ASKDESK_USER_ID }, body: JSON.stringify(payload), signal: App.data.abortController ? App.data.abortController.signal : null });
                     } catch(netErr) {
                          if(usedUrl !== App.api.fallback) {
                              usedUrl = App.api.fallback;
@@ -1025,11 +1025,16 @@
             },
             enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
             showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
-            showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-32'); setTimeout(() => t.classList.add('translate-y-32'), 4000); }
+            showToast: (msg, actionType) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; const btn = document.getElementById('toastActionBtn'); if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = ${App.config.UPGRADE_URL;}?plan=pro&user_id=${encodeURIComponent(ASKDESK_USER_ID)&return_to=$encodeURIComponent(location.origin) } else { btn.classList.add('hidden'); } t.classList.remove('translate-y-32'); setTimeout(() => t.classList.add('translate-y-32'), 4000); }
         }
     };
 
-   document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', () => {
+ App.ui.init();
+ const u = `${App.config.UPGRADE_URL}?plan=pro&user_id=${encodeURIComponent(ASKDESK_USER_ID)}&return_to=${encodeURIComponent(location.origin)}`;
+ const p = document.getElementById("previewUpgradeBtn");
+ if (p) p.href = u;
+});
   // Auto-fix old stored base URL
   if (App.api.current.includes("workers.dev")) {
     App.api.current = App.api.primary;
@@ -1040,5 +1045,6 @@
     </script>
 </body>
 </html>
+
 
 
