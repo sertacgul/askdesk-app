@@ -612,6 +612,8 @@
                 this.updateUI();
             },
             isLimitReached: function() {
+                // UI Limit Control Disabled - Backend will handle 402
+                // Keep function for UI badge display purposes
                 var plan = this.getPlan();
                 if (plan === 'enterprise') return false;
                 var limit = App.config.plans[plan].dailyLimit;
@@ -661,7 +663,7 @@
                     window.open(url, '_blank');
                     
                     // Simulate plan upgrade locally for instant UX
-                    this.setPlan(nextPlan);
+                    // this.setPlan(nextPlan); 
                 }
             },
             updateUI: function() {
@@ -688,16 +690,15 @@
                 var upgradeBtn = document.getElementById('previewUpgradeBtn');
                 
                 if (genBtn && btnText) {
+                    // Always enable button, let backend handle limits via 402
+                    genBtn.disabled = false;
+                    genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnText.innerText = App.i18n.t('analyzeBtn');
+                    
                     if (isLimit) {
-                        genBtn.disabled = true;
-                        genBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        btnText.innerText = App.i18n.t('upgradeBtn');
-                        if(upgradeBtn) upgradeBtn.classList.remove('hidden');
+                         if(upgradeBtn) upgradeBtn.classList.remove('hidden');
                     } else {
-                        genBtn.disabled = false;
-                        genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnText.innerText = App.i18n.t('analyzeBtn');
-                        if(upgradeBtn) upgradeBtn.classList.add('hidden');
+                         if(upgradeBtn) upgradeBtn.classList.add('hidden');
                     }
                 }
 
@@ -733,7 +734,7 @@
                 var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
                 var docContext = "";
 
-                return "System: AskDesk v2.9.33 (Global). Domain: " + domain.toUpperCase() + "\n" +
+                return "System: AskDesk v2.9.36 (Global). Domain: " + domain.toUpperCase() + "\n" +
                 docContext + "\n" +
                 inputContext + "\n" +
                 "Task: Generate JSON {question, answer, extract, citations}.\n" +
@@ -777,11 +778,8 @@
                 var forcedGroupId = opts.groupId || null;
                 var forcedVersion = opts.version || 0;
                 
-                if (App.billing.isLimitReached()) {
-                    App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                    App.billing.updateUI();
-                    return;
-                }
+                // DISABLED FRONTEND BLOCKER - Let Backend decide 402
+                // if (App.billing.isLimitReached()) ...
 
                 var hasImage = !!App.data.currentImage;
                 var sourceText = document.getElementById('sourceText').value.trim();
@@ -799,6 +797,7 @@
                 var userId = localStorage.getItem('askdesk_user_email') || 'guest';
 
                 try {
+                    // Optimistic Increment - will correct if fails
                     if (retryCount === 0 && !App.data.bulkActive) {
                          App.billing.incrementUsage();
                     }
@@ -889,10 +888,8 @@
                 var pText = document.getElementById('bulkStatusText');
                 var lowQualityCount = 0;
                 for (var i = 0; i < requestedCount; i++) {
-                    if (App.billing.isLimitReached()) {
-                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                        break;
-                    }
+                    // DISABLED FRONTEND BLOCKER FOR BULK
+                    // if (App.billing.isLimitReached()) { ... }
                     App.billing.incrementUsage();
 
                     pText.innerText = "Generating " + (i+1) + "/" + requestedCount + "...";
