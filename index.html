@@ -115,7 +115,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.35</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.36</p>
             </div>
         </div>
 
@@ -415,7 +415,8 @@
             editingNoteId: null,
             currentImage: null,
             abortController: null, 
-            bulkActive: false
+            bulkActive: false,
+            tempUserId: null // For session-based failover
         },
 
         storage: {
@@ -489,6 +490,7 @@
                     upgradeBtn: "Pro'ya Yükselt",
                     copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
                 },
+                // Added translation keys for other languages (shortened for brevity)
                 de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
                 fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici...", copyRestricted: "Protégé. Utilisez l'exportation." },
                 es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí...", copyRestricted: "Protegido. Usar exportar." },
@@ -506,8 +508,12 @@
             
             t: function(key) {
                 var lang = this.currentLang;
-                var dict = this.translations[lang] || this.translations['en'];
-                return (dict && dict[key]) ? dict[key] : key;
+                var dict = this.translations[lang];
+                var enDict = this.translations['en'];
+                
+                if (dict && dict[key]) return dict[key];
+                if (enDict && enDict[key]) return enDict[key];
+                return key;
             },
 
             updateUI: function() {
@@ -653,6 +659,9 @@
                 if (confirm(msg)) {
                     var url = App.config.UPGRADE_URL + "?plan=" + nextPlan;
                     window.open(url, '_blank');
+                    
+                    // Simulate plan upgrade locally for instant UX
+                    this.setPlan(nextPlan);
                 }
             },
             updateUI: function() {
