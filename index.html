@@ -115,7 +115,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.36</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.37</p>
             </div>
         </div>
 
@@ -415,8 +415,7 @@
             editingNoteId: null,
             currentImage: null,
             abortController: null, 
-            bulkActive: false,
-            tempUserId: null // For session-based failover
+            bulkActive: false
         },
 
         storage: {
@@ -490,7 +489,6 @@
                     upgradeBtn: "Pro'ya Yükselt",
                     copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
                 },
-                // Added translation keys for other languages (shortened for brevity)
                 de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
                 fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici...", copyRestricted: "Protégé. Utilisez l'exportation." },
                 es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí...", copyRestricted: "Protegido. Usar exportar." },
@@ -508,12 +506,8 @@
             
             t: function(key) {
                 var lang = this.currentLang;
-                var dict = this.translations[lang];
-                var enDict = this.translations['en'];
-                
-                if (dict && dict[key]) return dict[key];
-                if (enDict && enDict[key]) return enDict[key];
-                return key;
+                var dict = this.translations[lang] || this.translations['en'];
+                return (dict && dict[key]) ? dict[key] : key;
             },
 
             updateUI: function() {
@@ -612,8 +606,6 @@
                 this.updateUI();
             },
             isLimitReached: function() {
-                // UI Limit Control Disabled - Backend will handle 402
-                // Keep function for UI badge display purposes
                 var plan = this.getPlan();
                 if (plan === 'enterprise') return false;
                 var limit = App.config.plans[plan].dailyLimit;
@@ -734,7 +726,7 @@
                 var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
                 var docContext = "";
 
-                return "System: AskDesk v2.9.36 (Global). Domain: " + domain.toUpperCase() + "\n" +
+                return "System: AskDesk v2.9.37 (Global). Domain: " + domain.toUpperCase() + "\n" +
                 docContext + "\n" +
                 inputContext + "\n" +
                 "Task: Generate JSON {question, answer, extract, citations}.\n" +
@@ -778,8 +770,11 @@
                 var forcedGroupId = opts.groupId || null;
                 var forcedVersion = opts.version || 0;
                 
-                // DISABLED FRONTEND BLOCKER - Let Backend decide 402
-                // if (App.billing.isLimitReached()) ...
+                if (App.billing.isLimitReached()) {
+                    App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                    App.billing.updateUI();
+                    return;
+                }
 
                 var hasImage = !!App.data.currentImage;
                 var sourceText = document.getElementById('sourceText').value.trim();
@@ -797,7 +792,6 @@
                 var userId = localStorage.getItem('askdesk_user_email') || 'guest';
 
                 try {
-                    // Optimistic Increment - will correct if fails
                     if (retryCount === 0 && !App.data.bulkActive) {
                          App.billing.incrementUsage();
                     }
@@ -888,8 +882,10 @@
                 var pText = document.getElementById('bulkStatusText');
                 var lowQualityCount = 0;
                 for (var i = 0; i < requestedCount; i++) {
-                    // DISABLED FRONTEND BLOCKER FOR BULK
-                    // if (App.billing.isLimitReached()) { ... }
+                    if (App.billing.isLimitReached()) {
+                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+                        break;
+                    }
                     App.billing.incrementUsage();
 
                     pText.innerText = "Generating " + (i+1) + "/" + requestedCount + "...";
