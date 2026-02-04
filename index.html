@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AskDesk | askdesk.app</title>
-   
+    
     <!-- UI Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   
+    
     <!-- Data Libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -21,14 +21,14 @@
                     colors: {
                         brand: {
                             dark: '#0f172a',      
-                            panel: '#1e293b',    
+                            panel: '#1e293b',     
                             primary: '#6366f1',
                             accent: '#f43f5e',
                             success: '#10b981',
                             warning: '#f59e0b',
                             info: '#3b82f6',
-                            pro: '#22c55e',      
-                            enterprise: '#a855f7'
+                            pro: '#22c55e',       
+                            enterprise: '#a855f7' 
                         }
                     }
                 }
@@ -39,26 +39,26 @@
         }
     </script>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
+        body { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            transition: all 0.3s; 
+            display: flex; 
+            flex-direction: column; 
             min-height: 100vh;
-            overflow-y: auto;
+            overflow-y: auto; 
         }
-        .glass-input {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: white;
+        .glass-input { 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            color: white; 
             transition: all 0.2s;
         }
-        .glass-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            outline: none;
+        .glass-input:focus { 
+            border-color: #6366f1; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); 
+            outline: none; 
         }
         option { background-color: #1e293b; color: white; padding: 5px; }
         select { cursor: pointer; }
@@ -115,7 +115,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.33</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.35</p>
             </div>
         </div>
 
@@ -186,7 +186,7 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col min-h-[500px]">
+                <div class="flex-1 flex flex-col min-h-[500px]"> 
                     <div class="flex items-center gap-2 mb-1">
                         <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
@@ -327,7 +327,7 @@
                             <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
-                   
+                    
                     <div class="flex gap-1 items-center pb-1 overflow-x-auto no-scrollbar">
                         <select id="filterDomain" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
                             <option value="all" data-i18n="allDomains">All Domains</option>
@@ -384,9 +384,9 @@
     <!-- APP LOGIC -->
     <script>
     var App = {
-        api: {
+        api: { 
             primary: "https://api.askdesk.app",
-            current: "https://api.askdesk.app"
+            current: "https://api.askdesk.app" 
         },
 
         config: {
@@ -414,25 +414,25 @@
             previewState: null,
             editingNoteId: null,
             currentImage: null,
-            abortController: null,
+            abortController: null, 
             bulkActive: false
         },
 
         storage: {
-            getPrefs: function() {
+            getPrefs: function() { 
                 var prefs = localStorage.getItem('askdesk_prefs');
                 if (prefs) return JSON.parse(prefs);
                 return { uiLang: "en", domain: "general" };
             },
-            savePrefs: function(p) {
+            savePrefs: function(p) { 
                 var current = this.getPrefs();
                 for (var key in p) { current[key] = p[key]; }
                 localStorage.setItem('askdesk_prefs', JSON.stringify(current));
             },
             saveApiUrl: function() {
                 var url = document.getElementById('apiUrlInput').value.trim();
-                if(url) {
-                    localStorage.setItem('askdesk_api_base', url);
+                if(url) { 
+                    localStorage.setItem('askdesk_api_base', url); 
                     App.api.current = url;
                     App.ui.toggleSettings();
                     App.ui.showToast("API URL Updated");
@@ -503,7 +503,7 @@
                 it: { analyzeBtn: "Generare", addBtn: "Aggiungere", clear: "Cancellare", configTitle: "Configurazione", uploadBtn: "CARICARE", metaTitle: "Info", sourceTextLabel: "Fonte", planLabel: "Abbonamento", previewTitle: "Anteprima", generatedQ: "Domanda", generatedA: "Risposta", logTitle: "Registro", thDoc: "Doc", thContent: "D & R", thMeta: "Meta", docNameLabel: "Nome Doc", pageNumLabel: "Pagina", domainLabel: "Dominio", qLangLabel: "Lingua Domanda", aLangLabel: "Lingua Risposta", sourcePlaceholder: "Incolla il testo qui...", copyRestricted: "Protetto. Usa esportazione." },
                 ar: { analyzeBtn: "توليد", addBtn: "إضافة", clear: "مسح", configTitle: "تكوين", uploadBtn: "رفع", metaTitle: "معلومات", sourceTextLabel: "المصدر", planLabel: "خطة", previewTitle: "معاينة", generatedQ: "سؤال", generatedA: "إجابة", logTitle: "سجل", thDoc: "مستند", thContent: "س & ج", thMeta: "ميتا", docNameLabel: "اسم المستند", pageNumLabel: "صفحة", domainLabel: "نطاق", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة", sourcePlaceholder: "لصق النص هنا...", dir: 'rtl', copyRestricted: "محمي. استخدم التصدير." }
             },
-           
+            
             t: function(key) {
                 var lang = this.currentLang;
                 var dict = this.translations[lang] || this.translations['en'];
@@ -523,7 +523,7 @@
                     var pKey = pl.getAttribute('data-i18n-placeholder');
                     pl.placeholder = this.t(pKey);
                 }
-               
+                
                 var foundLang = false;
                 for(var k=0; k<App.config.languages.length; k++) {
                     if(App.config.languages[k].code === this.currentLang) {
@@ -552,7 +552,7 @@
                 if(!emailInput) return;
                 var email = emailInput.value.trim();
                 if(!email) return;
-               
+                
                 App.ui.setLoading(true);
                 try {
                     localStorage.setItem('askdesk_user_email', email);
@@ -561,7 +561,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
                     });
-                   
+                    
                     if (res.ok) {
                         App.ui.showToast("Magic Link sent to " + email);
                         App.ui.toggleSettings();
@@ -592,7 +592,7 @@
                     try {
                         var parsed = JSON.parse(data);
                         if (parsed && typeof parsed.count === 'number') return parsed.count;
-                        return parseInt(data) || 0;
+                        return parseInt(data) || 0; 
                     } catch(e) { return parseInt(data) || 0; }
                 }
                 return 0;
@@ -611,17 +611,17 @@
                 var limit = App.config.plans[plan].dailyLimit;
                 return this.getUsageToday() >= limit;
             },
-            canCopy: function() {
+            canCopy: function() { 
                 var planKey = this.getPlan();
                 var planConfig = App.config.plans[planKey];
-                return planConfig ? planConfig.canCopy : false;
+                return planConfig ? planConfig.canCopy : false; 
             },
-            canExport: function(type) {
+            canExport: function(type) { 
                 var planKey = this.getPlan();
                 var planConfig = App.config.plans[planKey];
                 if (!planConfig) return false;
                 var allowed = planConfig.canExport;
-                return allowed.indexOf(type) !== -1;
+                return allowed.indexOf(type) !== -1; 
             },
             setupCopyGuard: function() {
                 var events = ['contextmenu', 'copy', 'cut'];
@@ -638,16 +638,16 @@
                     });
                 });
             },
-            cyclePlan: function() {
+            cyclePlan: function() { 
                 var current = this.getPlan();
                 var nextPlan = 'pro';
-               
+                
                 if (current === 'starter') nextPlan = 'pro';
                 else if (current === 'pro') nextPlan = 'enterprise';
-                else nextPlan = 'enterprise';
-               
-                var msg = App.i18n.currentLang === 'tr'
-                    ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?"
+                else nextPlan = 'enterprise'; 
+                
+                var msg = App.i18n.currentLang === 'tr' 
+                    ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?" 
                     : "You are about to be redirected to the secure payment page. Do you want to continue?";
 
                 if (confirm(msg)) {
@@ -677,7 +677,7 @@
                 var genBtn = document.getElementById('analyzeBtn');
                 var btnText = document.getElementById('btnText');
                 var upgradeBtn = document.getElementById('previewUpgradeBtn');
-               
+                
                 if (genBtn && btnText) {
                     if (isLimit) {
                         genBtn.disabled = true;
@@ -703,12 +703,12 @@
                         else btn.classList.add('hidden');
                     }
                 }
-               
+                
                 // Toggle copy guard class
                 var areas = document.querySelectorAll('.protected-text');
                 for (var j = 0; j < areas.length; j++) {
                     var el = areas[j];
-                    if(this.canCopy()) el.classList.remove('select-none');
+                    if(this.canCopy()) el.classList.remove('select-none'); 
                     else el.classList.add('select-none');
                 }
             }
@@ -720,7 +720,7 @@
                 var constraints = retryCount > 0 ? "- STRICTER MODE: Ensure Question is unambiguous." : "";
                 var notFoundTxt = (App.i18n.translations[aLang] && App.i18n.translations[aLang].notFound) ? App.i18n.translations[aLang].notFound : "Not found";
                 var inputContext = hasImage ? "Input is an IMAGE. Perform OCR." : "Input Text provided below.";
-                var prevContext = "";
+                var prevContext = ""; 
                 var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
                 var docContext = "";
 
@@ -767,7 +767,7 @@
                 var retryCount = opts.retryCount || 0;
                 var forcedGroupId = opts.groupId || null;
                 var forcedVersion = opts.version || 0;
-               
+                
                 if (App.billing.isLimitReached()) {
                     App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
                     App.billing.updateUI();
@@ -782,7 +782,7 @@
 
                 if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
                 if(!App.data.bulkActive) App.ui.setLoading(true);
-               
+                
                 var domain = document.getElementById('domainSelect').value;
                 var qLang = document.getElementById('qLangSelect').value;
                 var aLang = document.getElementById('aLangSelect').value;
@@ -793,10 +793,10 @@
                     if (retryCount === 0 && !App.data.bulkActive) {
                          App.billing.incrementUsage();
                     }
-                   
+                    
                     var activeText = chunkText || sourceText;
                     var promptStr = App.promptBuilder.build(domain, qLang, aLang, activeText, retryCount, hasImage);
-                   
+                    
                     var payload = {
                         prompt: promptStr,
                         sourceText: hasImage ? "" : activeText,
@@ -808,21 +808,21 @@
                     var response;
                     var usedUrl = App.api.current;
                     try {
-                         response = await fetch(usedUrl + '/generate', {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId },
-                             body: JSON.stringify(payload),
-                             signal: App.data.abortController ? App.data.abortController.signal : null
+                         response = await fetch(usedUrl + '/generate', { 
+                             method: 'POST', 
+                             headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
+                             body: JSON.stringify(payload), 
+                             signal: App.data.abortController ? App.data.abortController.signal : null 
                         });
                     } catch(netErr) {
                          if(usedUrl !== App.api.fallback) {
                              usedUrl = App.api.fallback;
-                             App.api.current = usedUrl;
-                             localStorage.setItem('askdesk_api_base', usedUrl);
-                             response = await fetch(usedUrl + '/generate', {
-                                 method: 'POST',
-                                 headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId },
-                                 body: JSON.stringify(payload)
+                             App.api.current = usedUrl; 
+                             localStorage.setItem('askdesk_api_base', usedUrl); 
+                             response = await fetch(usedUrl + '/generate', { 
+                                 method: 'POST', 
+                                 headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
+                                 body: JSON.stringify(payload) 
                             });
                          } else {
                              throw netErr;
@@ -836,28 +836,28 @@
                          }
                          throw new Error("Server Error: " + response.status);
                     }
-                    var res = await response.json();
-                   
+                    var res = await response.json(); 
+                    
                     if (res.error && (res.error === 'LIMIT_REACHED' || res.code === 'LIMIT_REACHED')) {
                         App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
                         throw new Error("Plan limit reached (Backend Logic).");
                     }
 
                     var realQual = this.calculateRealQuality(activeSrc, res.extract, res.answer, hasImage);
-                    res.quality_score = realQual.score;
+                    res.quality_score = realQual.score; 
                     res.quality_reasons = realQual.reasons;
-                   
+                    
                     if (!hasImage && res.quality_score < 90 && retryCount < 1) return this.analyzeText({ ...opts, retryCount: retryCount + 1 });
-                   
+                    
                     var groupId = forcedGroupId || crypto.randomUUID();
                     var version = forcedGroupId ? (forcedVersion + 1) : 1;
-                   
+                    
                     if (App.data.bulkActive) return { result: res, grounding: {ok: res.quality_score>0}, domain: domain, qLang: qLang, aLang: aLang, groupId: groupId, version: version, hasImage: hasImage };
-                   
+                    
                     App.data.previewState = { result: res, grounding: {ok: res.quality_score>0}, domain: domain, qLang: qLang, aLang: aLang, groupId: groupId, version: version, hasImage: hasImage };
                     App.ui.updatePreview(res, {ok: res.quality_score>0});
-                } catch (e) {
-                    if (e.name !== 'AbortError') App.ui.showError(e.message);
+                } catch (e) { 
+                    if (e.name !== 'AbortError') App.ui.showError(e.message); 
                     if(!App.data.bulkActive) App.ui.setLoading(false);
                 } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
             },
@@ -865,12 +865,12 @@
                 if (App.data.bulkActive) return;
                 var bulkInput = document.getElementById('bulkRange');
                 var requestedCount = document.getElementById('bulkPanel').classList.contains('hidden') ? 1 : parseInt(bulkInput.value);
-               
-                if (requestedCount === 1) {
+                
+                if (requestedCount === 1) { 
                     try { await this.analyzeText(); } catch(e) { console.warn("Analysis failed:", e); }
-                    return;
+                    return; 
                 }
-               
+                
                 App.data.bulkActive = true; App.data.abortController = new AbortController(); App.ui.setLoading(true);
                 var sourceText = document.getElementById('sourceText').value;
                 var chunkSize = Math.floor(sourceText.length / requestedCount);
@@ -901,8 +901,8 @@
                 setTimeout(function() { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
             },
             stopBulk: function() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
-            regenerate: function() {
-                if (!App.data.previewState) return;
+            regenerate: function() { 
+                if (!App.data.previewState) return; 
                 var state = App.data.previewState;
                 this.analyzeText({ retryCount: 0, groupId: state.groupId, version: state.version, prevQuestion: state.result.question }).catch(function(e) { console.warn("Regen failed:", e); });
             },
@@ -911,7 +911,7 @@
                 var s = App.data.previewState; var r = s.result;
                 var currentDoc = document.getElementById('docName').value || "N/A";
                 var currentPage = document.getElementById('pageNum').value || "-";
-               
+                
                 var entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image Source]" : "", createdAtISO: new Date().toISOString() };
                 App.data.qaLog.push(entry); this.renderTable();
                 if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
@@ -945,6 +945,53 @@
             }
         },
 
+        // --- EXPORTERS ---
+        exporters: {
+            sanitize: function(v) { return (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v); },
+            getDataForExport: function() {
+                var self = this;
+                return App.data.qaLog.map(function(i) {
+                    return {
+                        ID: i.id, GroupID: i.groupId, Version: i.version,
+                        Doc: self.sanitize(i.docName), Page: self.sanitize(i.pageNum),
+                        Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
+                        Question: self.sanitize(i.question), Answer: self.sanitize(i.answer),
+                        Quality: i.qualityScore, Grounded: i.groundingOk,
+                        Status: i.status, Notes: self.sanitize(i.reviewerNotes),
+                        Created: i.createdAtISO
+                    };
+                });
+            },
+            toExcel: function() {
+                if(!App.billing.canExport('excel')) return App.ui.showToast(App.i18n.t('copyRestricted')); 
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                var ws = XLSX.utils.json_to_sheet(this.getDataForExport());
+                var wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "QA Data");
+                XLSX.writeFile(wb, "AskDesk_PROD_" + new Date().toISOString().slice(0,10) + ".xlsx");
+            },
+            toCSV: function() {
+                if(!App.billing.canExport('csv')) return App.ui.showToast(App.i18n.t('copyRestricted')); 
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                var data = this.getDataForExport();
+                var headers = Object.keys(data[0]).join(',');
+                var rows = data.map(function(row) { return Object.values(row).map(function(v) { return '"' + String(v || '').replace(/"/g,'""') + '"'; }).join(','); });
+                var csv = "\uFEFF" + [headers, ...rows].join('\n');
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+                a.download = "AskDesk_PROD.csv";
+                a.click();
+            },
+            toJSON: function() {
+                if(!App.billing.canExport('json')) return App.ui.showToast(App.i18n.t('copyRestricted'));
+                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
+                a.download = "AskDesk_PROD.json";
+                a.click();
+            }
+        },
+
         // --- UI MODULE ---
         ui: {
             init: function() {
@@ -955,13 +1002,13 @@
                         var l = App.config.languages[i];
                         if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = Object.assign({}, en);
                     }
-                   
+                    
                     var domSelect = document.getElementById('domainSelect');
                     if(domSelect) {
                         domSelect.innerHTML = '';
                         App.config.domains.forEach(function(d) { domSelect.add(new Option(d.label, d.id)); });
                     }
-                   
+                    
                     var ids = ['qLangSelect', 'aLangSelect', 'uiLangSelect'];
                     ids.forEach(function(id) {
                         var el = document.getElementById(id);
@@ -970,25 +1017,25 @@
                             App.config.languages.forEach(function(l) { el.add(new Option(l.label, l.code)); });
                         }
                     });
-                   
+                    
                     var prefs = App.storage.getPrefs();
                     if(document.getElementById('uiLangSelect')) document.getElementById('uiLangSelect').value = prefs.uiLang;
                     if(document.getElementById('domainSelect')) document.getElementById('domainSelect').value = prefs.domain || 'general';
                     this.changeLanguage(prefs.uiLang);
                     App.billing.init();
-                   
+                    
                     var apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
                 } catch(e) { console.error(e); }
             },
-            cyclePlan: function() {
+            cyclePlan: function() { 
                 App.billing.cyclePlan();
             },
             handleTextChange: function() {
                 var val = document.getElementById('sourceText').value; this.updateCharCount();
                 var maxQ = App.logic.calculateCapacity(val.length);
-                var bulkPanel = document.getElementById('bulkPanel');
-                var range = document.getElementById('bulkRange');
+                var bulkPanel = document.getElementById('bulkPanel'); 
+                var range = document.getElementById('bulkRange'); 
                 var label = document.getElementById('bulkLimitLabel');
                 document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
                 if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = "Max: " + maxQ; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
@@ -996,7 +1043,7 @@
             updateBulkLabel: function(val) { document.getElementById('bulkValue').innerText = val; },
             changeLanguage: function(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
             toggleSettings: function() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
-            updatePlanBadge: function() {
+            updatePlanBadge: function() { 
                 // Handled in Billing UpdateUI
             },
             updateCharCount: function() { var len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = len + " chars"; },
@@ -1004,22 +1051,22 @@
             handleFileUpload: function(input) {
                 var file = input.files[0];
                 if (!file) return;
-                if (file.type.startsWith('image/')) {
-                    var r = new FileReader();
-                    r.onload = function(e) {
-                        App.data.currentImage = e.target.result;
-                        document.getElementById('previewImgElement').src = e.target.result;
-                        document.getElementById('sourceText').classList.add('hidden');
-                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                        document.getElementById('imagePreviewContainer').classList.add('flex');
-                        App.ui.showToast("Image loaded.");
-                    };
-                    r.readAsDataURL(file);
-                    input.value = '';
-                    return;
+                if (file.type.startsWith('image/')) { 
+                    var r = new FileReader(); 
+                    r.onload = function(e) { 
+                        App.data.currentImage = e.target.result; 
+                        document.getElementById('previewImgElement').src = e.target.result; 
+                        document.getElementById('sourceText').classList.add('hidden'); 
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden'); 
+                        document.getElementById('imagePreviewContainer').classList.add('flex'); 
+                        App.ui.showToast("Image loaded."); 
+                    }; 
+                    r.readAsDataURL(file); 
+                    input.value = ''; 
+                    return; 
                 }
                 var name = file.name.toLowerCase();
-               
+                
                 if (name.endsWith('.pdf')) {
                     App.ui.showToast("Parsing PDF...");
                     var reader = new FileReader();
@@ -1041,7 +1088,7 @@
                     };
                     reader.readAsArrayBuffer(file);
                 }
-                else if (name.endsWith('.docx')) {
+                else if (name.endsWith('.docx')) { 
                     var reader = new FileReader();
                     reader.onload = function(e) {
                         mammoth.extractRawText({arrayBuffer: e.target.result}).then(function(r) { document.getElementById('sourceText').value = r.value; App.ui.handleTextChange(); }).catch(function(e) { console.error(e); });
@@ -1049,24 +1096,24 @@
                     reader.readAsArrayBuffer(file);
                 }
                 else if (name.endsWith('.xlsx')) {
-                     var r = new FileReader();
-                     r.onload = function(e) {
-                         var wb = XLSX.read(e.target.result, {type:'array'});
-                         var ws = wb.Sheets[wb.SheetNames[0]];
-                         document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws);
-                         App.ui.handleTextChange();
-                     };
-                     r.readAsArrayBuffer(file);
+                     var r = new FileReader(); 
+                     r.onload = function(e) { 
+                         var wb = XLSX.read(e.target.result, {type:'array'}); 
+                         var ws = wb.Sheets[wb.SheetNames[0]]; 
+                         document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws); 
+                         App.ui.handleTextChange(); 
+                     }; 
+                     r.readAsArrayBuffer(file); 
                 }
-                else {
-                    var r = new FileReader();
-                    r.onload = function(e) { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); };
-                    r.readAsText(file);
+                else { 
+                    var r = new FileReader(); 
+                    r.onload = function(e) { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); }; 
+                    r.readAsText(file); 
                 }
                 input.value = '';
             },
             setLoading: function(isLoading) {
-                var btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive;
+                var btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive; 
                 var stopOverlay = document.getElementById('stopBtnOverlay'); var btnText = document.getElementById('btnText'); var icon = document.getElementById('btnIcon'); var loader = document.getElementById('btnLoader');
                 if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
             },
@@ -1074,33 +1121,33 @@
                 document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
                 document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
                 document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
-               
+                
                 var citationText = (res.citations && res.citations[0]) ? ("Offset: " + res.citations[0].start + "-" + res.citations[0].end) : "-";
                 var citPrev = document.getElementById('citationPreview');
                 if (citPrev) citPrev.innerText = citationText;
 
                 this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
             },
-            enableAddButton: function(enable) {
-                var btn = document.getElementById('addToLogBtn');
-                btn.disabled = !enable;
-                if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); }
-                else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); }
+            enableAddButton: function(enable) { 
+                var btn = document.getElementById('addToLogBtn'); 
+                btn.disabled = !enable; 
+                if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } 
+                else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } 
             },
             showError: function(msg, details) { var box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; box.classList.remove('hidden'); setTimeout(function() { box.classList.add('hidden'); }, 5000); },
-            showToast: function(msg, actionType) {
-                var t = document.getElementById('toast');
-                var btn = document.getElementById('toastActionBtn');
+            showToast: function(msg, actionType) { 
+                var t = document.getElementById('toast'); 
+                var btn = document.getElementById('toastActionBtn'); 
                 var pTag = t.querySelector('p');
                 if(pTag) pTag.innerText = msg;
 
                 if (btn) {
-                    if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; }
+                    if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; } 
                     else { btn.classList.add('hidden'); }
                 }
-               
-                t.classList.remove('translate-y-24');
-                setTimeout(function() { t.classList.add('translate-y-24'); }, 4000);
+                
+                t.classList.remove('translate-y-24'); 
+                setTimeout(function() { t.classList.add('translate-y-24'); }, 4000); 
             }
         }
     };
