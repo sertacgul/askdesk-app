@@ -36,8 +36,8 @@
         }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
-
     <style>
+        /* SCROLL BAR FIX: Enable native scrolling */
         body { 
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -46,7 +46,7 @@
             display: flex; 
             flex-direction: column; 
             min-height: 100vh;
-            overflow-y: auto;
+            overflow-y: auto; /* Enable vertical scroll on body */
         }
         
         .glass-input { 
@@ -67,6 +67,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #6366f1; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px; }
         
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; border: 2px solid #0f172a; }
@@ -84,6 +85,7 @@
         html[dir="rtl"] .text-right { text-align: left; } 
         html[dir="rtl"] .text-left { text-align: right; }
 
+        /* Copy Guard Class */
         .protected-text {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -92,6 +94,7 @@
         }
     </style>
     
+    <!-- PWA Manifest & Service Worker -->
     <link rel="manifest" href="manifest.json">
     <script>
     if ('serviceWorker' in navigator) {
@@ -103,7 +106,6 @@
     }
     </script>
 </head>
-
 <body class="text-slate-200">
 
     <!-- HEADER -->
@@ -131,14 +133,21 @@
         </div>
 
         <div class="flex items-center gap-2 md:gap-2 ml-auto">
+            <!-- Usage Badge -->
             <div id="usageBadge" class="h-8 px-3 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-[10px] text-slate-400 font-mono min-w-[3rem]">0/5</div>
+            
+            <!-- Plan Badge -->
             <button id="planBadge" class="h-8 px-3 text-[10px] font-bold rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 transition-colors cursor-pointer flex items-center justify-center min-w-[4rem]" onclick="App.billing.cyclePlan()">Starter</button>
+            
+            <!-- Lang Select -->
             <select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="h-8 bg-slate-800 border border-slate-600 text-xs rounded px-2 text-slate-300 outline-none focus:border-brand-primary cursor-pointer w-auto min-w-[4rem]"></select>
-            <button onclick="App.ui.toggleSettings()" class="h-8 w-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition" title="User Settings"><i class="fa-solid fa-user-gear"></i></button>
+            
+             <!-- Settings Trigger -->
+             <button onclick="App.ui.toggleSettings()" class="h-8 w-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition" title="User Settings"><i class="fa-solid fa-user-gear"></i></button>
         </div>
     </header>
 
-    <!-- SETTINGS PANEL -->
+    <!-- SETTINGS PANEL (User Email & Magic Link) -->
     <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
         <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <i class="fa-solid fa-user-shield text-brand-primary"></i> <span data-i18n="settingsTitle">User Account</span>
@@ -147,7 +156,10 @@
             Enter your email to sync your plan and limits. We will send a <b>Magic Link</b> to login.
         </p>
         <input type="email" id="userEmailInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="user@example.com">
+        
+        <!-- Hidden API URL Input -->
         <input type="hidden" id="apiUrlInput">
+
         <div class="flex justify-end gap-2">
             <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Close</button>
             <button onclick="App.billing.saveUserEmail()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Send Magic Link</button>
@@ -156,15 +168,20 @@
 
     <!-- MAIN -->
     <div class="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
-        <!-- LEFT -->
+        
+        <!-- LEFT: INPUTS -->
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative">
+            
+            <!-- Scrollable Content Area -->
             <div class="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
+                <!-- Config -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
                         <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
                             <i class="fa-solid fa-sliders"></i> <span data-i18n="configTitle">Configuration</span>
                         </h3>
                     </div>
+                    
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-0.5 uppercase font-bold" data-i18n="domainLabel">Domain</label>
                         <select id="domainSelect" class="glass-input w-full rounded px-2 py-1.5 text-xs cursor-pointer"></select>
@@ -181,6 +198,7 @@
                     </div>
                 </div>
 
+                <!-- Metadata -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm hidden md:block shrink-0">
                     <h3 class="text-xs font-bold text-brand-primary uppercase mb-1 flex items-center gap-2">
                         <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
@@ -197,25 +215,33 @@
                     </div>
                 </div>
 
-                <div class="flex-1 flex flex-col min-h-[500px]">
+                <!-- Source Input -->
+                <div class="flex-1 flex flex-col min-h-[500px]"> 
                     <div class="flex items-center gap-2 mb-1">
                         <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
                         </label>
+                        
                         <div class="flex gap-4 ml-3 items-center">
                             <div class="text-[9px] text-slate-500 font-mono">
                                 Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
                             </div>
                             <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
                         </div>
+                        
                         <div class="flex-1"></div>
 
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
-                        <button onclick="document.getElementById('fileUpload').click()" class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span data-i18n="uploadBtn">UPLOAD</span>
+                        
+                        <button onclick="document.getElementById('fileUpload').click()" 
+                            class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-up text-sm"></i> 
+                            <span data-i18n="uploadBtn">UPLOAD</span>
                         </button>
+                        
                         <button onclick="App.ui.clearInput()" class="bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 border border-slate-700 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
-                            <i class="fa-solid fa-eraser"></i> <span data-i18n="clear">CLEAR</span>
+                            <i class="fa-solid fa-eraser"></i>
+                            <span data-i18n="clear">CLEAR</span>
                         </button>
                     </div>
 
@@ -224,7 +250,7 @@
                             class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
                             placeholder="Paste text here... (Long text enables Multi-Q option)"
                             data-i18n-placeholder="sourcePlaceholder"></textarea>
-
+                        
                         <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
                             <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
                             <div class="flex gap-2">
@@ -240,15 +266,20 @@
                     </div>
                 </div>
 
+                <!-- Bulk Panel -->
                 <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-2 mb-1 animate-in fade-in slide-in-from-bottom-4 shrink-0">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-[10px] font-bold text-brand-warning flex items-center gap-1"><i class="fa-solid fa-layer-group"></i> Bulk Mode</span>
+                        <span class="text-[10px] font-bold text-brand-warning flex items-center gap-1">
+                            <i class="fa-solid fa-layer-group"></i> Bulk Mode
+                        </span>
                         <span id="bulkLimitLabel" class="text-[9px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Max: 5</span>
                     </div>
+                    
                     <div class="flex items-center gap-2 mb-1">
                         <input type="range" id="bulkRange" min="1" max="5" value="1" class="flex-1 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer" oninput="App.ui.updateBulkLabel(this.value)">
                         <span id="bulkValue" class="text-xs font-bold text-white w-6 text-center bg-brand-primary rounded px-0.5">1</span>
                     </div>
+                    
                     <div id="bulkProgressContainer" class="hidden w-full bg-slate-700 rounded-full h-1.5 mb-1">
                         <div id="bulkProgressBar" class="bg-brand-success h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
@@ -256,6 +287,7 @@
                 </div>
             </div>
 
+            <!-- Sticky Generate Button (Fixed Bottom) -->
             <div class="p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
                 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
                     <div class="flex items-center justify-between font-bold">
@@ -264,7 +296,7 @@
                     </div>
                     <span id="errorMsg">Details...</span>
                 </div>
-
+                
                 <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="btnText" class="text-sm md:text-base" data-i18n="analyzeBtn">Generate Q&A</span>
                     <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition-transform"></i>
@@ -276,8 +308,9 @@
             </div>
         </div>
 
-        <!-- RIGHT -->
+        <!-- RIGHT: OUTPUT -->
         <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a]">
+            <!-- Preview -->
             <div class="h-[40%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
@@ -311,10 +344,12 @@
                 <div class="space-y-3 pb-8">
                     <div>
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
+                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16 protected-text" readonly></textarea>
                     </div>
                     <div class="h-32 md:h-40 flex flex-col">
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
+                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre protected-text" readonly></textarea>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -328,6 +363,7 @@
                 </div>
             </div>
 
+            <!-- Log Table -->
             <div class="flex-1 flex flex-col bg-[#0f172a] overflow-hidden">
                 <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
                     <div class="flex justify-between items-center">
@@ -345,7 +381,7 @@
                             <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
-
+                    
                     <div class="flex gap-1 items-center pb-1 overflow-x-auto no-scrollbar">
                         <select id="filterDomain" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
                             <option value="all" data-i18n="allDomains">All Domains</option>
@@ -370,7 +406,9 @@
                                 <th class="px-4 py-3 font-semibold border-b border-slate-700 w-16"></th>
                             </tr>
                         </thead>
-                        <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50"></tbody>
+                        <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50">
+                            <!-- Rows injected here -->
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -396,12 +434,15 @@
             <h4 class="font-bold text-sm" data-i18n="success">Success</h4>
             <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
         </div>
+        <!-- FIXED: Re-added upgrade button for toast -->
         <a id="toastActionBtn" href="https://api.askdesk.app/billing/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
     </div>
-<!-- APP LOGIC -->
+
+    <!-- APP LOGIC -->
     <script>
     const App = {
         api: { 
+            // Changed to production API
             primary: "https://api.askdesk.app",
             current: "https://api.askdesk.app" 
         },
@@ -422,6 +463,7 @@
                 {id: 'medical', label: 'Medical'},
                 {id: 'compliance', label: 'Compliance / ISO'}
             ],
+            // PLAN LOGIC - DEFINED AS REQUESTED
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
@@ -439,6 +481,7 @@
             bulkActive: false
         },
 
+        // --- STORAGE ---
         storage: {
             getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
             savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
@@ -453,6 +496,7 @@
             }
         },
 
+        // --- I18N MODULE ---
         i18n: {
             currentLang: 'en',
             translations: {
@@ -477,8 +521,7 @@
                     cancel: "Cancel", save: "Save",
                     limitReached: "Limit reached – Upgrade to Pro",
                     upgradeBtn: "Upgrade to Pro",
-                    copyRestricted: "This content is protected. Upgrade to export.",
-                    sourcePlaceholder: "Paste text here... (Long text enables Multi-Q option)"
+                    copyRestricted: "This content is protected. Upgrade to export."
                 },
                 tr: {
                     bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
@@ -501,23 +544,8 @@
                     cancel: "İptal", save: "Kaydet",
                     limitReached: "Limit doldu – Pro'ya Geç",
                     upgradeBtn: "Pro'ya Yükselt",
-                    copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın.",
-                    sourcePlaceholder: "Metni buraya yapıştır... (Uzun metin Multi-Q seçeneğini açar)"
-                },
-
-                /* ✅ EKLENDİ: TÜM DİLLER */
-                de: { analyzeBtn:"Q&A erzeugen", uploadBtn:"HOCHLADEN", clear:"LÖSCHEN", previewTitle:"Vorschau", statusReady:"Bereit", generatedQ:"Frage", generatedA:"Antwort", addBtn:"Zum Log hinzufügen", regenerateBtn:"Neu generieren", logTitle:"Sitzungsprotokoll", configTitle:"Konfiguration", domainLabel:"Bereich", qLangLabel:"Frage-Sprache", aLangLabel:"Antwort-Sprache", metaTitle:"Dokumentinfo", docNameLabel:"Dokumentenname", pageNumLabel:"Seite", sourceTextLabel:"Quelle", allDomains:"Alle Bereiche", allStatuses:"Alle Status", cancel:"Schließen", save:"Speichern", upgradeBtn:"Auf Pro upgraden", limitReached:"Limit erreicht – Upgrade auf Pro", copyRestricted:"Geschützt. Bitte exportieren.", sourcePlaceholder:"Text hier einfügen... (Langer Text aktiviert Multi-Q)" },
-                fr: { analyzeBtn:"Générer Q&R", uploadBtn:"TÉLÉCHARGER", clear:"EFFACER", previewTitle:"Aperçu IA", statusReady:"Prêt", generatedQ:"Question", generatedA:"Réponse", addBtn:"Ajouter au journal", regenerateBtn:"Régénérer", logTitle:"Journal de session", configTitle:"Configuration", domainLabel:"Domaine", qLangLabel:"Langue Question", aLangLabel:"Langue Réponse", metaTitle:"Infos Document", docNameLabel:"Nom du document", pageNumLabel:"Page", sourceTextLabel:"Source", allDomains:"Tous les domaines", allStatuses:"Tous les statuts", cancel:"Fermer", save:"Enregistrer", upgradeBtn:"Passer à Pro", limitReached:"Limite atteinte – Passez à Pro", copyRestricted:"Protégé. Utilisez l’export.", sourcePlaceholder:"Collez le texte ici... (Long texte active Multi-Q)" },
-                es: { analyzeBtn:"Generar P&R", uploadBtn:"SUBIR", clear:"BORRAR", previewTitle:"Vista previa IA", statusReady:"Listo", generatedQ:"Pregunta", generatedA:"Respuesta", addBtn:"Agregar al registro", regenerateBtn:"Regenerar", logTitle:"Registro de sesión", configTitle:"Configuración", domainLabel:"Dominio", qLangLabel:"Idioma Pregunta", aLangLabel:"Idioma Respuesta", metaTitle:"Info del Documento", docNameLabel:"Nombre del Doc", pageNumLabel:"Página", sourceTextLabel:"Fuente", allDomains:"Todos los dominios", allStatuses:"Todos los estados", cancel:"Cerrar", save:"Guardar", upgradeBtn:"Mejorar a Pro", limitReached:"Límite alcanzado – Mejora a Pro", copyRestricted:"Protegido. Usa exportación.", sourcePlaceholder:"Pega el texto aquí... (Texto largo activa Multi-Q)" },
-                "pt-BR": { analyzeBtn:"Gerar P&R", uploadBtn:"ENVIAR", clear:"LIMPAR", previewTitle:"Prévia da IA", statusReady:"Pronto", generatedQ:"Pergunta", generatedA:"Resposta", addBtn:"Adicionar ao log", regenerateBtn:"Gerar novamente", logTitle:"Log da sessão", configTitle:"Configuração", domainLabel:"Domínio", qLangLabel:"Idioma da pergunta", aLangLabel:"Idioma da resposta", metaTitle:"Info do documento", docNameLabel:"Nome do doc", pageNumLabel:"Página", sourceTextLabel:"Fonte", allDomains:"Todos os domínios", allStatuses:"Todos os status", cancel:"Fechar", save:"Salvar", upgradeBtn:"Upgrade para Pro", limitReached:"Limite atingido – Faça upgrade", copyRestricted:"Protegido. Use exportação.", sourcePlaceholder:"Cole o texto aqui... (Texto longo ativa Multi-Q)" },
-                ja: { analyzeBtn:"生成", uploadBtn:"アップロード", clear:"クリア", previewTitle:"プレビュー", statusReady:"準備完了", generatedQ:"質問", generatedA:"回答", addBtn:"ログに追加", regenerateBtn:"再生成", logTitle:"ログ", configTitle:"設定", domainLabel:"ドメイン", qLangLabel:"質問言語", aLangLabel:"回答言語", sourceTextLabel:"ソース", sourcePlaceholder:"ここにテキストを貼り付け...（長文でMulti-Q有効）" },
-                zh: { analyzeBtn:"生成", uploadBtn:"上传", clear:"清除", previewTitle:"预览", statusReady:"就绪", generatedQ:"问题", generatedA:"答案", addBtn:"加入日志", regenerateBtn:"重新生成", logTitle:"日志", configTitle:"配置", domainLabel:"领域", qLangLabel:"问题语言", aLangLabel:"回答语言", sourceTextLabel:"源内容", sourcePlaceholder:"在此粘贴文本...（长文本启用Multi-Q）" },
-                ko: { analyzeBtn:"생성", uploadBtn:"업로드", clear:"지우기", previewTitle:"미리보기", statusReady:"준비됨", generatedQ:"질문", generatedA:"답변", addBtn:"로그에 추가", regenerateBtn:"재생성", logTitle:"로그", configTitle:"구성", domainLabel:"도메인", qLangLabel:"질문 언어", aLangLabel:"답변 언어", sourceTextLabel:"소스", sourcePlaceholder:"여기에 텍스트 붙여넣기... (긴 텍스트는 Multi-Q 활성화)" },
-                pl: { analyzeBtn:"Generuj", uploadBtn:"PRZEŚLIJ", clear:"Wyczyść", previewTitle:"Podgląd", statusReady:"Gotowe", generatedQ:"Pytanie", generatedA:"Odpowiedź", addBtn:"Dodaj do logu", regenerateBtn:"Wygeneruj ponownie", logTitle:"Dziennik", configTitle:"Konfiguracja", domainLabel:"Domena", qLangLabel:"Język pytania", aLangLabel:"Język odpowiedzi", sourceTextLabel:"Źródło", sourcePlaceholder:"Wklej tekst tutaj... (Długi tekst włącza Multi-Q)" },
-                nl: { analyzeBtn:"Genereren", uploadBtn:"UPLOADEN", clear:"Wissen", previewTitle:"Voorbeeld", statusReady:"Klaar", generatedQ:"Vraag", generatedA:"Antwoord", addBtn:"Toevoegen aan log", regenerateBtn:"Opnieuw genereren", logTitle:"Logboek", configTitle:"Configuratie", domainLabel:"Domein", qLangLabel:"Vraagtaal", aLangLabel:"Antwoordtaal", sourceTextLabel:"Bron", sourcePlaceholder:"Plak hier tekst... (Lange tekst activeert Multi-Q)" },
-                hi: { analyzeBtn:"उत्पन्न करें", uploadBtn:"अपलोड", clear:"साफ़ करें", previewTitle:"पूर्वावलोकन", statusReady:"तैयार", generatedQ:"प्रश्न", generatedA:"उत्तर", addBtn:"लॉग में जोड़ें", regenerateBtn:"फिर से बनाएं", logTitle:"लॉग", configTitle:"विन्यास", domainLabel:"डोमेन", qLangLabel:"प्रश्न भाषा", aLangLabel:"उत्तर भाषा", sourceTextLabel:"स्रोत", sourcePlaceholder:"यहाँ टेक्स्ट पेस्ट करें... (लंबा टेक्स्ट Multi-Q सक्षम करता है)" },
-                ru: { analyzeBtn:"Создать В&О", uploadBtn:"ЗАГРУЗИТЬ", clear:"ОЧИСТИТЬ", previewTitle:"Предпросмотр", statusReady:"Готово", generatedQ:"Вопрос", generatedA:"Ответ", addBtn:"Добавить в журнал", regenerateBtn:"Сгенерировать снова", logTitle:"Журнал", configTitle:"Настройки", domainLabel:"Домен", qLangLabel:"Язык вопроса", aLangLabel:"Язык ответа", sourceTextLabel:"Источник", sourcePlaceholder:"Вставьте текст здесь... (Длинный текст включает Multi-Q)" },
-                ar: { analyzeBtn:"توليد س/ج", uploadBtn:"رفع", clear:"مسح", previewTitle:"معاينة المخرجات", statusReady:"جاهز", generatedQ:"سؤال", generatedA:"إجابة", addBtn:"إضافة للسجل", regenerateBtn:"إعادة التوليد", logTitle:"سجل الجلسة", configTitle:"الإعدادات", domainLabel:"المجال", qLangLabel:"لغة السؤال", aLangLabel:"لغة الإجابة", sourceTextLabel:"المصدر", cancel:"إغلاق", save:"حفظ", upgradeBtn:"الترقية إلى Pro", limitReached:"تم الوصول للحد – قم بالترقية", copyRestricted:"محمي. استخدم التصدير.", sourcePlaceholder:"الصق النص هنا... (النص الطويل يفعّل Multi-Q)", dir:"rtl" }
+                    copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
+                }
             },
             
             t(key) {
@@ -530,24 +558,20 @@
                 document.querySelectorAll('[data-i18n]').forEach(el => {
                     el.innerText = this.t(el.getAttribute('data-i18n'));
                 });
-
-                /* ✅ FIX: placeholder çevirileri */
-                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                    const k = el.getAttribute('data-i18n-placeholder');
-                    el.placeholder = this.t(k);
-                });
-
                 const langObj = App.config.languages.find(l => l.code === this.currentLang);
                 document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
             }
         },
-billing: {
+
+        // --- BILLING MODULE ---
+        billing: {
             init() {
                 const savedPlan = localStorage.getItem('askdesk_plan') || 'starter'; 
                 this.updateUI();
                 this.setupCopyGuard();
             },
             
+            // NEW: Magic Link Request
             async saveUserEmail() {
                 const email = document.getElementById('userEmailInput').value.trim();
                 if(!email) return;
@@ -556,6 +580,7 @@ billing: {
                 try {
                     localStorage.setItem('askdesk_user_email', email);
                     
+                    // Request Backend to send email
                     const res = await fetch(App.api.current + '/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -566,9 +591,10 @@ billing: {
                         App.ui.showToast(`Magic Link sent to ${email}`);
                         App.ui.toggleSettings();
                     } else {
-                        console.warn("Backend auth route not ready");
-                        App.ui.showToast(`Magic Link request sent to ${email}`);
-                        App.ui.toggleSettings();
+                         // Fallback for UI if backend route not ready
+                         console.warn("Backend auth route not ready");
+                         App.ui.showToast(`Magic Link request sent to ${email}`);
+                         App.ui.toggleSettings();
                     }
                 } catch (e) {
                     App.ui.showToast(`Magic Link request sent (Offline)`);
@@ -578,7 +604,9 @@ billing: {
                 }
             },
 
-            getPlan() { return localStorage.getItem('askdesk_plan') || 'starter'; },
+            getPlan() {
+                return localStorage.getItem('askdesk_plan') || 'starter';
+            },
             setPlan(plan) {
                 localStorage.setItem('askdesk_plan', plan);
                 this.updateUI();
@@ -614,7 +642,7 @@ billing: {
                 const planKey = this.getPlan();
                 const planConfig = App.config.plans[planKey];
                 if (!planConfig) return false;
-                const allowed = planConfig.canExport;
+                const allowed = planConfig.canExport; // Correct property name
                 return allowed.includes(type); 
             },
             setupCopyGuard() {
@@ -628,6 +656,7 @@ billing: {
                 });
             },
             
+            // FIXED: Cycle Plan now ONLY redirects, does NOT update local state
             cyclePlan() { 
                 const current = this.getPlan();
                 let nextPlan = 'pro';
@@ -636,6 +665,8 @@ billing: {
                 else if (current === 'pro') nextPlan = 'enterprise';
                 else nextPlan = 'enterprise'; 
                 
+                // Redirect to payment page
+                // New Confirmation Step
                 const msg = App.i18n.currentLang === 'tr' 
                     ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?" 
                     : "You are about to be redirected to the secure payment page. Do you want to continue?";
@@ -652,6 +683,7 @@ billing: {
                 const usage = this.getUsageToday();
                 const limitStr = plan.dailyLimit === Infinity ? "Unlimited" : plan.dailyLimit;
 
+                // Update Badges
                 const pBadge = document.getElementById('planBadge');
                 pBadge.innerText = plan.label;
                 let colorClass = "bg-slate-700 text-slate-300";
@@ -661,6 +693,7 @@ billing: {
 
                 document.getElementById('usageBadge').innerText = `${usage} / ${limitStr}`;
 
+                // Handle Limits
                 const isLimit = this.isLimitReached();
                 const genBtn = document.getElementById('analyzeBtn');
                 const btnText = document.getElementById('btnText');
@@ -677,6 +710,7 @@ billing: {
                     document.getElementById('previewUpgradeBtn').classList.add('hidden');
                 }
 
+                // Handle Export Buttons Visibility
                 ['excel', 'csv', 'json'].forEach(type => {
                     const btn = document.getElementById(`btnExport${type.charAt(0).toUpperCase() + type.slice(1)}`);
                     if(btn) {
@@ -685,6 +719,7 @@ billing: {
                     }
                 });
                 
+                // Toggle copy guard class
                 const areas = document.querySelectorAll('.protected-text');
                 areas.forEach(el => {
                     if(this.canCopy()) el.classList.remove('select-none'); 
@@ -693,6 +728,7 @@ billing: {
             }
         },
 
+        // --- PROMPT BUILDER ---
         promptBuilder: {
             build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName) {
                 const activeText = chunkText || sourceText;
@@ -722,6 +758,7 @@ billing: {
             }
         },
 
+        // --- MAIN LOGIC ---
         logic: {
             calculateRealQuality(source, extract, answer, hasImage) {
                 if (!extract || extract.length < 5) return { score: 0, reason: "No extract found" };
@@ -762,11 +799,12 @@ billing: {
                 const qLang = document.getElementById('qLangSelect').value;
                 const aLang = document.getElementById('aLangSelect').value;
 
+                // GET USER ID
                 const userId = localStorage.getItem('askdesk_user_email') || 'guest';
 
                 try {
                     if (retryCount === 0 && !App.data.bulkActive) {
-                        App.billing.incrementUsage();
+                         App.billing.incrementUsage();
                     }
                     
                     const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName);
@@ -782,33 +820,33 @@ billing: {
                     let response;
                     let usedUrl = App.api.current;
                     try {
-                        response = await fetch(usedUrl + '/generate', { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
-                            body: JSON.stringify(payload), 
-                            signal: App.data.abortController ? App.data.abortController.signal : null 
+                         response = await fetch(usedUrl + '/generate', { 
+                             method: 'POST', 
+                             headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
+                             body: JSON.stringify(payload), 
+                             signal: App.data.abortController ? App.data.abortController.signal : null 
                         });
                     } catch(netErr) {
-                        if(usedUrl !== App.api.fallback) {
-                            usedUrl = App.api.fallback;
-                            App.api.current = usedUrl; 
-                            localStorage.setItem('askdesk_api_base', usedUrl); 
-                            response = await fetch(usedUrl + '/generate', { 
-                                method: 'POST', 
-                                headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
-                                body: JSON.stringify(payload) 
+                         if(usedUrl !== App.api.fallback) {
+                             usedUrl = App.api.fallback;
+                             App.api.current = usedUrl; 
+                             localStorage.setItem('askdesk_api_base', usedUrl); 
+                             response = await fetch(usedUrl + '/generate', { 
+                                 method: 'POST', 
+                                 headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
+                                 body: JSON.stringify(payload) 
                             });
-                        } else {
-                            throw netErr;
-                        }
+                         } else {
+                             throw netErr;
+                         }
                     }
 
                     if (!response.ok) {
-                        if (response.status === 429 || response.status === 402) {
+                         if (response.status === 429 || response.status === 402) {
                             App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
                             throw new Error("Plan limit reached (Server).");
-                        }
-                        throw new Error(`Server Error: ${response.status}`);
+                         }
+                         throw new Error(`Server Error: ${response.status}`);
                     }
                     const res = await response.json(); 
                     
@@ -893,6 +931,7 @@ billing: {
             },
             renderTable() {
                 const tbody = document.getElementById('logTableBody');
+                const f = { domain: 'all', status: 'all', search: '' };
                 tbody.innerHTML = '';
                 [...App.data.qaLog].reverse().forEach((item) => {
                     const tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50 group";
@@ -918,7 +957,9 @@ billing: {
                 document.getElementById('notesModal').classList.add('hidden');
             }
         },
-exporters: {
+
+        // --- EXPORTERS ---
+        exporters: {
             sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
             getDataForExport() {
                 return App.data.qaLog.map(i => ({
@@ -926,7 +967,7 @@ exporters: {
                     Doc: this.sanitize(i.docName), Page: this.sanitize(i.pageNum),
                     Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
                     Question: this.sanitize(i.question), Answer: this.sanitize(i.answer),
-                    Quality: i.qualityScore,
+                    Quality: i.qualityScore, Grounded: i.groundingOk,
                     Status: i.status, Notes: this.sanitize(i.reviewerNotes),
                     Created: i.createdAtISO
                 }));
@@ -961,84 +1002,49 @@ exporters: {
             }
         },
 
+        // --- UI MODULE ---
         ui: {
             init() {
                 try {
                     const en = App.i18n.translations.en;
-
-                    /* ✅ SAFE COPY KORUNDU:
-                       Eksik key olursa EN fallback olur, ama artık çoğu dilde gerçek çeviri var. */
-                    App.config.languages.forEach(l => {
-                        if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = { ...en };
-                    });
-
-                    const populate = (id, options) => {
-                        const el = document.getElementById(id);
-                        if(el) {
-                            if(!id.startsWith('filter')) el.innerHTML = '';
-                            options.forEach(o => el.add(new Option(o.label, o.id || o.code)));
-                        }
-                    };
-
-                    populate('domainSelect', App.config.domains);
-                    populate('filterDomain', App.config.domains);
+                    App.config.languages.forEach(l => { if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = { ...en }; });
+                    const populate = (id, options) => { const el = document.getElementById(id); if(el) { if(!id.startsWith('filter')) el.innerHTML = ''; options.forEach(o => el.add(new Option(o.label, o.id || o.code))); } };
+                    populate('domainSelect', App.config.domains); populate('filterDomain', App.config.domains);
                     ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(id => populate(id, App.config.languages));
-
                     const prefs = App.storage.getPrefs();
                     document.getElementById('uiLangSelect').value = prefs.uiLang;
                     document.getElementById('domainSelect').value = prefs.domain || 'general';
-
                     this.changeLanguage(prefs.uiLang);
                     App.billing.init();
-
+                    
+                    // Fixed: Safely get input
                     const apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
                 } catch(e) { console.error(e); }
             },
-            cyclePlan() { App.billing.cyclePlan(); },
+            cyclePlan() { 
+                App.billing.cyclePlan();
+            },
             handleTextChange() {
                 const val = document.getElementById('sourceText').value; this.updateCharCount();
                 const maxQ = App.logic.calculateCapacity(val.length);
-                const bulkPanel = document.getElementById('bulkPanel'); 
-                const range = document.getElementById('bulkRange'); 
-                const label = document.getElementById('bulkLimitLabel');
+                const bulkPanel = document.getElementById('bulkPanel'); const range = document.getElementById('bulkRange'); const label = document.getElementById('bulkLimitLabel');
                 document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
-                if (maxQ > 1) {
-                    bulkPanel.classList.remove('hidden');
-                    range.max = maxQ;
-                    if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); }
-                    label.innerText = `Max: ${maxQ}`;
-                } else {
-                    bulkPanel.classList.add('hidden');
-                    range.value = 1;
-                    this.updateBulkLabel(1);
-                }
+                if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = `Max: ${maxQ}`; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
             },
             updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
             changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
             toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
+            updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `h-8 px-3 text-[10px] md:text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`; },
             updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
             clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
             handleFileUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
-
-                if (file.type.startsWith('image/')) {
-                    const r = new FileReader();
-                    r.onload = (e) => {
-                        App.data.currentImage = e.target.result;
-                        document.getElementById('previewImgElement').src = e.target.result;
-                        document.getElementById('sourceText').classList.add('hidden');
-                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                        document.getElementById('imagePreviewContainer').classList.add('flex');
-                        App.ui.showToast("Image loaded.");
-                    };
-                    r.readAsDataURL(file);
-                    input.value = '';
-                    return;
-                }
-
+                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
                 const name = file.name.toLowerCase();
+                
+                // PDF Parsing Fix
                 if (name.endsWith('.pdf')) {
                     App.ui.showToast("Parsing PDF...");
                     const reader = new FileReader();
@@ -1050,6 +1056,7 @@ exporters: {
                             for(let i=1; i<=pdf.numPages; i++) {
                                 const page = await pdf.getPage(i);
                                 const textContent = await page.getTextContent();
+                                // FIX: Use newline instead of space to preserve structure
                                 const pageText = textContent.items.map(item => item.str).join('\n');
                                 fullText += pageText + "\n\n";
                             }
@@ -1061,80 +1068,37 @@ exporters: {
                     reader.readAsArrayBuffer(file);
                 }
                 else if (name.endsWith('.docx')) { 
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        mammoth.extractRawText({arrayBuffer: e.target.result})
-                            .then(function(r) {
-                                document.getElementById('sourceText').value = r.value;
-                                App.ui.handleTextChange();
-                            })
-                            .catch(function(e) { console.error(e); });
-                    };
-                    reader.readAsArrayBuffer(file);
+                    mammoth.extractRawText({arrayBuffer: file}).then(r => { document.getElementById('sourceText').value = r.value; App.ui.handleTextChange(); }).catch(e => console.error(e)); 
                 }
                 else if (name.endsWith('.xlsx')) {
-                    const r = new FileReader();
-                    r.onload = (e) => { 
-                        const wb = XLSX.read(e.target.result, {type:'array'}); 
-                        const ws = wb.Sheets[wb.SheetNames[0]]; 
-                        document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws); 
-                        App.ui.handleTextChange(); 
-                    };
-                    r.readAsArrayBuffer(file);
+                     const r = new FileReader(); r.onload = (e) => { 
+                         const wb = XLSX.read(e.target.result, {type:'array'}); 
+                         const ws = wb.Sheets[wb.SheetNames[0]]; 
+                         document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws); 
+                         App.ui.handleTextChange(); 
+                     }; r.readAsArrayBuffer(file); 
                 }
-                else {
-                    const r = new FileReader();
-                    r.onload = (e) => { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); };
-                    r.readAsText(file);
-                }
+                else { const r = new FileReader(); r.onload = (e) => { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); }; r.readAsText(file); }
                 input.value = '';
             },
             setLoading(isLoading) {
                 const btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive; 
-                const stopOverlay = document.getElementById('stopBtnOverlay'); 
-                const icon = document.getElementById('btnIcon'); 
-                const loader = document.getElementById('btnLoader');
-                if(isLoading) {
-                    if (App.data.bulkActive) stopOverlay.classList.remove('hidden');
-                    else { icon.classList.add('hidden'); loader.classList.remove('hidden'); }
-                } else {
-                    stopOverlay.classList.add('hidden');
-                    icon.classList.remove('hidden');
-                    loader.classList.add('hidden');
-                }
+                const stopOverlay = document.getElementById('stopBtnOverlay'); const btnText = document.getElementById('btnText'); const icon = document.getElementById('btnIcon'); const loader = document.getElementById('btnLoader');
+                if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
             },
             updatePreview(res, grounding) {
-                document.getElementById('questionOutput').value = res.question;
-                document.getElementById('answerOutput').value = res.answer;
-                document.getElementById('qualityBox').classList.remove('hidden');
-                document.getElementById('qScoreBadge').innerText = res.quality_score + "%";
-                document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
+                document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
+                document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
                 document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
-                this.enableAddButton(true);
-                document.getElementById('regenerateBtn').disabled = false;
-                document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+                this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
             },
-            enableAddButton(enable) {
-                const btn = document.getElementById('addToLogBtn');
-                btn.disabled = !enable;
-                if(enable) {
-                    btn.classList.replace('bg-slate-800','bg-brand-success');
-                    btn.classList.replace('text-slate-500','text-white');
-                    btn.classList.remove('cursor-not-allowed');
-                } else {
-                    btn.classList.replace('bg-brand-success','bg-slate-800');
-                    btn.classList.replace('text-white','text-slate-500');
-                    btn.classList.add('cursor-not-allowed');
-                }
-            },
-            showError: (msg) => {
-                const box = document.getElementById('errorBox');
-                document.getElementById('errorMsg').innerText = msg;
-                box.classList.remove('hidden');
-            },
+            enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
+            showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
             showToast: (msg, actionType) => { 
                 const t = document.getElementById('toast'); 
                 const btn = document.getElementById('toastActionBtn'); 
+                
+                // Fix: Check if p tag exists inside toast
                 const pTag = t.querySelector('p');
                 if(pTag) pTag.innerText = msg;
 
@@ -1146,7 +1110,7 @@ exporters: {
                         btn.classList.add('hidden'); 
                     }
                 }
-
+                
                 t.classList.remove('translate-y-24'); 
                 setTimeout(() => t.classList.add('translate-y-24'), 4000); 
             }
@@ -1157,3 +1121,4 @@ exporters: {
     </script>
 </body>
 </html>
+
