@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AskDesk | askdesk.app</title>
-   
+    
     <!-- UI Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   
+    
     <!-- Data Libraries -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -21,14 +21,14 @@
                     colors: {
                         brand: {
                             dark: '#0f172a',      
-                            panel: '#1e293b',    
+                            panel: '#1e293b',     
                             primary: '#6366f1',
                             accent: '#f43f5e',
                             success: '#10b981',
                             warning: '#f59e0b',
                             info: '#3b82f6',
-                            pro: '#22c55e',      
-                            enterprise: '#a855f7'
+                            pro: '#22c55e',       
+                            enterprise: '#a855f7' 
                         }
                     }
                 }
@@ -39,26 +39,26 @@
         }
     </script>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
+        body { 
+            background-color: #0f172a; 
+            color: #e2e8f0; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            transition: all 0.3s; 
+            display: flex; 
+            flex-direction: column; 
             min-height: 100vh;
-            overflow-y: auto;
+            overflow-y: auto; 
         }
-        .glass-input {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: white;
+        .glass-input { 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            color: white; 
             transition: all 0.2s;
         }
-        .glass-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            outline: none;
+        .glass-input:focus { 
+            border-color: #6366f1; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); 
+            outline: none; 
         }
         option { background-color: #1e293b; color: white; padding: 5px; }
         select { cursor: pointer; }
@@ -83,6 +83,8 @@
             -ms-user-select: none;
             user-select: none;
         }
+        /* Dropdown z-index fix */
+        select { position: relative; z-index: 10; }
     </style>
     <link rel="manifest" href="manifest.json">
     <script>
@@ -116,39 +118,52 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.40</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.51</p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 md:gap-2 ml-auto">
+            <!-- User Email Display -->
+            <div id="userEmailDisplay" class="hidden md:block text-[10px] text-slate-400 mr-2 font-mono"></div>
+            
+            <!-- Usage Badge -->
             <div id="usageBadge" class="h-8 px-3 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-[10px] text-slate-400 font-mono min-w-[3rem]">0/5</div>
-            <button id="planBadge" class="h-8 px-3 text-[10px] font-bold rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 transition-colors cursor-pointer flex items-center justify-center min-w-[4rem]" onclick="App.billing.cyclePlan()">Starter</button>
-            <select id="uiLangSelect" onchange="App.ui.changeLanguage(this.value)" class="h-8 bg-slate-800 border border-slate-600 text-xs rounded px-2 text-slate-300 outline-none focus:border-brand-primary cursor-pointer w-auto min-w-[4rem]"></select>
-             <button onclick="App.ui.toggleSettings()" class="h-8 w-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition" title="User Settings"><i class="fa-solid fa-user-gear"></i></button>
+            
+            <!-- Plan Badge -->
+            <button id="planBadge" class="h-8 px-3 text-[10px] font-bold rounded bg-slate-700 text-slate-300 uppercase tracking-wide border border-slate-600 transition-colors cursor-pointer flex items-center justify-center min-w-[4rem]" onclick="App.billing.upgradeRedirect()">Starter</button>
+            
+            <!-- Settings Trigger -->
+            <button onclick="App.ui.toggleSettings()" class="h-8 w-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition" title="User Settings"><i class="fa-solid fa-user-gear"></i></button>
         </div>
     </header>
 
     <!-- SETTINGS PANEL -->
-    <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
+    <div id="settingsPanel" class="hidden fixed top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
         <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <i class="fa-solid fa-user-shield text-brand-primary"></i> <span data-i18n="settingsTitle">User Account</span>
         </h3>
         <p class="text-[10px] text-slate-400 mb-3 leading-relaxed">
-            Enter your email to sync your plan and limits. We will send a <b>Magic Link</b> to login.
+            Enter your email to login or sign up. We will send a <b>Magic Link</b>.
         </p>
         <input type="email" id="userEmailInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="user@example.com">
-        <input type="hidden" id="apiUrlInput">
         <div class="flex justify-end gap-2">
             <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Close</button>
-            <button onclick="App.billing.saveUserEmail()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Send Magic Link</button>
+            <button id="sendMagicLinkBtn" onclick="App.auth.sendMagicLink()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
+               <span data-i18n="save">Send Magic Link</span>
+               <div id="authLoader" class="loader w-3 h-3 hidden border-white/20 border-t-white"></div>
+            </button>
         </div>
+        <div id="authMessage" class="text-[10px] text-center mt-2 hidden text-slate-400"></div>
     </div>
 
-    <!-- MAIN -->
+    <!-- MAIN CONTENT -->
     <div class="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
-        <!-- LEFT -->
+        
+        <!-- LEFT: INPUTS -->
         <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative">
             <div class="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
+                
+                <!-- Config -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
                         <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
@@ -171,33 +186,12 @@
                     </div>
                 </div>
 
-                <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm hidden md:block shrink-0">
-                    <h3 class="text-xs font-bold text-brand-primary uppercase mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
-                    </h3>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="col-span-2">
-                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase" data-i18n="docNameLabel">Document Name</label>
-                            <input type="text" id="docName" class="glass-input w-full rounded px-2 py-1 text-xs font-medium" placeholder="FCOM">
-                        </div>
-                        <div class="col-span-1">
-                            <label class="block text-[10px] text-slate-400 mb-0.5 uppercase" data-i18n="pageNumLabel">Page</label>
-                            <input type="text" id="pageNum" class="glass-input w-full rounded px-2 py-1 text-xs font-medium text-center" placeholder="123">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex-1 flex flex-col min-h-[500px]">
+                <!-- Source Input -->
+                <div class="flex-1 flex flex-col min-h-[400px]"> 
                     <div class="flex items-center gap-2 mb-1">
                         <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
                         </label>
-                        <div class="flex gap-4 ml-3 items-center">
-                            <div class="text-[9px] text-slate-500 font-mono">
-                                Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
-                            </div>
-                            <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
-                        </div>
                         <div class="flex-1"></div>
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
                         <button onclick="document.getElementById('fileUpload').click()" class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
@@ -209,37 +203,16 @@
                     </div>
 
                     <div class="relative w-full flex-1">
-                        <textarea id="sourceText" oninput="App.ui.handleTextChange()" class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap" placeholder="Paste text here... (Long text enables Multi-Q option)" data-i18n-placeholder="sourcePlaceholder"></textarea>
-                        <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
-                            <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
-                            <div class="flex gap-2">
-                                <span class="text-xs text-brand-primary bg-brand-primary/10 px-2 py-1 rounded">Image Mode Active</span>
-                                <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
-                            </div>
-                        </div>
+                        <textarea id="sourceText" class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap" placeholder="Paste text here..."></textarea>
                         <div id="fileLoader" class="hidden absolute inset-0 bg-slate-900/80 z-20 flex-col items-center justify-center rounded-xl backdrop-blur-sm">
                             <div class="loader mb-2"></div>
                             <span class="text-xs text-brand-primary font-bold">Processing File...</span>
                         </div>
                     </div>
                 </div>
-
-                <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-2 mb-1 animate-in fade-in slide-in-from-bottom-4 shrink-0">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[10px] font-bold text-brand-warning flex items-center gap-1"><i class="fa-solid fa-layer-group"></i> Bulk Mode</span>
-                        <span id="bulkLimitLabel" class="text-[9px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Max: 5</span>
-                    </div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <input type="range" id="bulkRange" min="1" max="5" value="1" class="flex-1 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer" oninput="App.ui.updateBulkLabel(this.value)">
-                        <span id="bulkValue" class="text-xs font-bold text-white w-6 text-center bg-brand-primary rounded px-0.5">1</span>
-                    </div>
-                    <div id="bulkProgressContainer" class="hidden w-full bg-slate-700 rounded-full h-1.5 mb-1">
-                        <div id="bulkProgressBar" class="bg-brand-success h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <div id="bulkStatusText" class="hidden text-[9px] text-center text-slate-400 mb-1">Generating 0/0...</div>
-                </div>
             </div>
 
+            <!-- Sticky Generate Button -->
             <div class="p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
                 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
                     <div class="flex items-center justify-between font-bold">
@@ -249,64 +222,33 @@
                     <span id="errorMsg">Daily limit reached. Upgrade to Pro.</span>
                     <a href="javascript:void(0)" onclick="App.billing.upgradeRedirect()" class="text-xs underline text-white font-bold mt-1 block">UPGRADE NOW &rarr;</a>
                 </div>
-                <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="btnText" class="text-sm md:text-base" data-i18n="analyzeBtn">Generate Q&A</span>
+                
+                <button id="analyzeBtn" onclick="App.logic.generate()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden">
+                    <span id="btnText" class="text-sm md:text-base">Generate Q&A</span>
                     <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition-transform"></i>
                     <div id="btnLoader" class="loader hidden border-white/20 border-t-white"></div>
-                    <div id="stopBtnOverlay" class="hidden absolute inset-0 bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2 cursor-pointer" onclick="event.stopPropagation(); App.logic.stopBulk();"><i class="fa-solid fa-stop"></i> STOP</div>
                 </button>
             </div>
         </div>
 
         <!-- RIGHT: OUTPUT -->
         <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a]">
-            <div class="h-[40%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
+            <div class="h-[50%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
-                        <a href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
+                        <i class="fa-solid fa-clipboard-check"></i> <span>Output</span>
                     </h2>
-                    <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
-                </div>
-
-                <div id="qualityBox" class="hidden mb-3 p-2 bg-slate-800/50 rounded-lg border border-slate-700 text-xs">
-                    <div class="flex items-center justify-between mb-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="qualityScore">Quality Score</span>
-                            <span id="qScoreBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">0</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="groundingStatus">Grounding</span>
-                            <span id="groundingBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">-</span>
-                        </div>
-                    </div>
-                    <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-1 italic text-[10px]"></ul>
-                    <details class="group">
-                        <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1 text-[10px]">
-                            <i class="fa-solid fa-chevron-right text-[9px] group-open:rotate-90 transition"></i>
-                            <span data-i18n="viewExtract">View Source Extract</span>
-                        </summary>
-                        <div class="mt-1 p-2 bg-slate-900 rounded border border-slate-700 font-mono text-[9px] text-slate-300 whitespace-pre-wrap" id="extractPreview"></div>
-                        <div id="citationPreview" class="mt-1 text-[9px] text-slate-500 font-mono"></div>
-                    </details>
+                    <a href="javascript:void(0)" onclick="App.billing.upgradeRedirect()" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
                 </div>
 
                 <div class="space-y-3 pb-8">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
-                        <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16 protected-text" readonly></textarea>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Question</label>
+                        <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-16 protected-text" readonly></textarea>
                     </div>
-                    <div class="h-32 md:h-40 flex flex-col">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
+                    <div class="h-40 flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Answer</label>
                         <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre protected-text" readonly></textarea>
-                    </div>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button id="regenerateBtn" onclick="App.logic.regenerate()" disabled class="text-[10px] md:text-xs text-brand-primary hover:text-white font-bold px-3 py-1.5 border border-brand-primary/50 hover:border-brand-primary rounded-lg transition flex items-center gap-2 opacity-50 cursor-not-allowed">
-                            <i class="fa-solid fa-rotate"></i> <span data-i18n="regenerateBtn">Regenerate</span>
-                        </button>
-                        <button id="addToLogBtn" onclick="App.logic.addToLog()" disabled class="bg-slate-800 text-slate-500 font-semibold px-4 py-1.5 rounded-lg border border-slate-700 transition cursor-not-allowed flex items-center gap-2 text-[10px] md:text-xs">
-                            <i class="fa-solid fa-circle-plus"></i> <span data-i18n="addBtn">Add to Log</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -316,42 +258,16 @@
                 <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 shadow-md z-10 shrink-0 flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-300"><span data-i18n="logTitle">Session Log</span> (<span id="counterDisplay">0</span>)</span>
+                            <span class="text-xs font-bold text-slate-300">Session Log</span>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <div class="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-                                <button id="btnExportExcel" onclick="App.exporters.toExcel()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition hidden" title="Export Excel" data-export="excel"><i class="fa-solid fa-file-excel text-green-500 mr-1"></i> XLSX</button>
-                                <div class="w-px bg-slate-700 my-1"></div>
-                                <button id="btnExportCSV" onclick="App.exporters.toCSV()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition hidden" title="Export CSV" data-export="csv"><i class="fa-solid fa-file-csv text-blue-500 mr-1"></i> CSV</button>
-                                <div class="w-px bg-slate-700 my-1"></div>
-                                <button id="btnExportJSON" onclick="App.exporters.toJSON()" class="px-2 py-1 text-[9px] font-bold text-slate-300 hover:text-white hover:bg-slate-700 rounded transition hidden" title="Export JSON" data-export="json"><i class="fa-solid fa-code text-yellow-500 mr-1"></i> JSON</button>
-                            </div>
-                            <button onclick="App.logic.clearLog()" class="text-xs text-red-400 hover:text-red-300 ml-2" title="Clear All"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                   
-                    <div class="flex gap-1 items-center pb-1 overflow-x-auto no-scrollbar">
-                        <select id="filterDomain" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
-                            <option value="all" data-i18n="allDomains">All Domains</option>
-                        </select>
-                        <select id="filterStatus" onchange="App.logic.renderTable()" class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-1 py-0.5 outline-none focus:border-brand-primary cursor-pointer min-w-[80px]">
-                            <option value="all" data-i18n="allStatuses">All Statuses</option>
-                            <option value="Draft">Draft</option>
-                            <option value="Reviewed">Reviewed</option>
-                            <option value="Approved">Approved</option>
-                        </select>
-                        <input type="text" id="filterSearch" oninput="App.logic.renderTable()" placeholder="Search..." class="bg-slate-800 border border-slate-700 text-[10px] text-slate-300 rounded px-2 py-0.5 w-full md:w-32 outline-none focus:border-brand-primary placeholder:text-slate-600">
                     </div>
                 </div>
                 <div class="flex-1 overflow-auto">
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-800 text-xs uppercase sticky top-0 z-10 shadow-sm text-slate-400">
                             <tr>
-                                <th class="px-4 py-3 font-semibold border-b border-slate-700 w-12">#</th>
-                                <th class="px-4 py-3 font-semibold border-b border-slate-700 w-24" data-i18n="thDoc">Doc</th>
-                                <th class="px-4 py-3 font-semibold border-b border-slate-700" data-i18n="thContent">Q & A</th>
-                                <th class="px-4 py-3 font-semibold border-b border-slate-700 w-28" data-i18n="thMeta">Meta</th>
-                                <th class="px-4 py-3 font-semibold border-b border-slate-700 w-16"></th>
+                                <th class="px-4 py-3 font-semibold border-b border-slate-700">Question</th>
+                                <th class="px-4 py-3 font-semibold border-b border-slate-700">Answer</th>
                             </tr>
                         </thead>
                         <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50"></tbody>
@@ -361,802 +277,290 @@
         </div>
     </div>
 
-    <!-- Notes Modal -->
-    <div id="notesModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-slate-800 border border-slate-600 rounded-xl p-4 w-96 shadow-2xl">
-            <h3 class="text-sm font-bold text-white mb-2" data-i18n="reviewerNotes">Reviewer Notes</h3>
-            <textarea id="notesInput" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white h-24 mb-3 resize-none focus:border-brand-primary outline-none"></textarea>
-            <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('notesModal').classList.add('hidden')" class="text-slate-400 text-xs hover:text-white px-3 py-1" data-i18n="cancel">Cancel</button>
-                <button onclick="App.logic.saveNotes()" class="bg-brand-primary text-white text-xs px-4 py-1 rounded hover:bg-indigo-500" data-i18n="save">Save</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast -->
     <div id="toast" class="fixed bottom-5 right-5 bg-brand-success text-white px-4 py-3 rounded-lg shadow-2xl transform translate-y-24 transition duration-300 flex items-center gap-3 z-50 border border-green-400">
         <i class="fa-solid fa-check-circle text-lg"></i>
-        <div>
-            <h4 class="font-bold text-sm" data-i18n="success">Success</h4>
-            <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
-        </div>
-        <a id="toastActionBtn" href="https://api.askdesk.app/billing/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
+        <p class="text-xs text-green-100 font-bold" id="toastMsg">Success</p>
     </div>
 
-    <!-- APP LOGIC -->
     <script>
-    var App = {
-        api: {
-            primary: "https://api.askdesk.app",
-            current: "https://api.askdesk.app",
-            fallback: "https://askdesk-api.captsertacgul.workers.dev" // Corrected fallback
+    const App = {
+        api: { 
+            base: "https://api.askdesk.app",
+            billing: "https://api.askdesk.app/billing"
         },
-
         config: {
             languages: [
                 {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
                 {code: 'fr', label: 'Français'}, {code: 'es', label: 'Español'}, {code: 'pt-BR', label: 'Português'},
                 {code: 'ja', label: '日本語'}, {code: 'zh', label: '简体中文'}, {code: 'ko', label: '한국어'},
-                {code: 'pl', label: 'Polski'}, {code: 'nl', label: 'Nederlands'}, {code: 'hi', label: 'हिन्दी'},
-                {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية', dir: 'rtl'}
+                {code: 'pl', label: 'Polski'}, {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية'}
             ],
             domains: [
-                {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
-                {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
-            ],
-            plans: {
-                'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
-                'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
-                'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise', canExport: ['excel', 'csv', 'json'], canCopy: true }
-            },
-            UPGRADE_URL: "https://api.askdesk.app/billing/upgrade"
+                {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'legal', label: 'Legal'}
+            ]
+        },
+        state: {
+            userEmail: localStorage.getItem('askdesk_user_email') || null,
+            plan: 'starter',
+            limit: 5,
+            usage: 0
         },
 
-        data: {
-            qaLog: [],
-            previewState: null,
-            editingNoteId: null,
-            currentImage: null,
-            abortController: null,
-            bulkActive: false,
-            tempUserId: null // For session-based failover
+        init: function() {
+            this.checkUrlToken();
+            this.ui.initDropdowns();
+            this.ui.updateAuthUI();
+            this.billing.checkState();
         },
 
-        storage: {
-            getPrefs: function() {
-                var prefs = localStorage.getItem('askdesk_prefs');
-                if (prefs) return JSON.parse(prefs);
-                return { uiLang: "en", domain: "general" };
-            },
-            savePrefs: function(p) {
-                var current = this.getPrefs();
-                for (var key in p) { current[key] = p[key]; }
-                localStorage.setItem('askdesk_prefs', JSON.stringify(current));
-            },
-            saveApiUrl: function() {
-                var url = document.getElementById('apiUrlInput').value.trim();
-                if(url) {
-                    localStorage.setItem('askdesk_api_base', url);
-                    App.api.current = url;
-                    App.ui.toggleSettings();
-                    App.ui.showToast("API URL Updated");
-                }
-            }
-        },
-
-        i18n: {
-            currentLang: 'en',
-            translations: {
-                en: {
-                    bannerWarning: "🔒 Secure Mode: API Key is managed server-side. Do not paste PII.",
-                    appSubtitle: "PROD SERVER EDITION",
-                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
-                    configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
-                    metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
-                    sourceTextLabel: "Source Content", clear: "Clear", error: "Error",
-                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
-                    generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
-                    logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
-                    noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
-                    minCharsErr: "Please provide text or an image.",
-                    notFound: "Not found in provided text",
-                    uploadBtn: "UPLOAD FILE", uploadError: "File format not supported.",
-                    qualityScore: "Quality Score", groundingStatus: "Grounding",
-                    viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
-                    allDomains: "All Domains", allStatuses: "All Statuses",
-                    statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
-                    cancel: "Cancel", save: "Save",
-                    limitReached: "Limit reached – Upgrade to Pro",
-                    upgradeBtn: "Upgrade to Pro",
-                    copyRestricted: "This content is protected. Upgrade to export."
-                },
-                tr: {
-                    bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
-                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
-                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
-                    configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
-                    metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
-                    sourceTextLabel: "Kaynak İçerik", clear: "Temizle", error: "Hata",
-                    analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
-                    generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
-                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
-                    noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
-                    minCharsErr: "Lütfen metin girin veya görsel yükleyin.",
-                    notFound: "Metinde bulunamadı",
-                    uploadBtn: "DOSYA YÜKLE", uploadError: "Format desteklenmiyor.",
-                    qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
-                    viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
-                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
-                    statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
-                    cancel: "İptal", save: "Kaydet",
-                    limitReached: "Limit doldu – Pro'ya Geç",
-                    upgradeBtn: "Pro'ya Yükselt",
-                    copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
-                },
-                // Added translation keys for other languages (shortened for brevity)
-                de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
-                fr: { analyzeBtn: "Générer", addBtn: "Ajouter", clear: "EFFACER", configTitle: "Configuration", uploadBtn: "TÉLÉCHARGER", metaTitle: "Infos Document", sourceTextLabel: "Contenu Source", planLabel: "Abonnement", previewTitle: "Aperçu", generatedQ: "Question", generatedA: "Réponse", logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Méta", docNameLabel: "Nom du document", pageNumLabel: "Page", domainLabel: "Domaine", qLangLabel: "Langue Question", aLangLabel: "Langue Réponse", sourcePlaceholder: "Collez le texte ici...", copyRestricted: "Protégé. Utilisez l'exportation." },
-                es: { analyzeBtn: "Generar", addBtn: "Añadir", clear: "BORRAR", configTitle: "Configuración", uploadBtn: "SUBIR", metaTitle: "Info del Documento", sourceTextLabel: "Contenido Fuente", planLabel: "Suscripción", previewTitle: "Vista Previa", generatedQ: "Pregunta", generatedA: "Respuesta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nombre del Doc", pageNumLabel: "Página", domainLabel: "Dominio", qLangLabel: "Idioma Pregunta", aLangLabel: "Idioma Respuesta", sourcePlaceholder: "Pegue el texto aquí...", copyRestricted: "Protegido. Usar exportar." },
-                "pt-BR": { analyzeBtn: "Gerar", addBtn: "Adicionar", clear: "Limpar", configTitle: "Configuração", uploadBtn: "ENVIAR", metaTitle: "Info do Documento", sourceTextLabel: "Conteúdo Fonte", planLabel: "Assinatura", previewTitle: "Visualização", generatedQ: "Pergunta", generatedA: "Resposta", logTitle: "Registro", thDoc: "Doc", thContent: "P & R", thMeta: "Meta", docNameLabel: "Nome do Doc", pageNumLabel: "Página", domainLabel: "Domínio", qLangLabel: "Idioma Pergunta", aLangLabel: "Idioma Resposta", sourcePlaceholder: "Cole o texto aqui...", copyRestricted: "Protegido. Usar exportar." },
-                ru: { analyzeBtn: "Создать", addBtn: "Добавить", clear: "ОЧИСТИТЬ", configTitle: "Конфигурация", uploadBtn: "ЗАГРУЗИТЬ", metaTitle: "Информация", sourceTextLabel: "Источник", planLabel: "План", previewTitle: "Предпросмотр", generatedQ: "Вопрос", generatedA: "Ответ", logTitle: "Журнал", thDoc: "Док", thContent: "В & О", thMeta: "Мета", docNameLabel: "Имя документа", pageNumLabel: "Страница", domainLabel: "Домен", qLangLabel: "Язык вопроса", aLangLabel: "Язык ответа", sourcePlaceholder: "Вставьте текст здесь...", copyRestricted: "Защищено. Исп. экспорт." },
-                ja: { analyzeBtn: "生成", addBtn: "追加", clear: "クリア", configTitle: "設定", uploadBtn: "アップロード", metaTitle: "ドキュメント情報", sourceTextLabel: "ソースコンテンツ", planLabel: "サブスクリプション", previewTitle: "プレビュー", generatedQ: "質問", generatedA: "回答", logTitle: "ログ", thDoc: "文書", thContent: "質疑応答", thMeta: "メタ", docNameLabel: "文書名", pageNumLabel: "ページ", domainLabel: "ドメイン", qLangLabel: "質問言語", aLangLabel: "回答言語", sourcePlaceholder: "ここにテキストを貼り付け...", copyRestricted: "保護されています。エクスポートを使用してください。" },
-                zh: { analyzeBtn: "生成", addBtn: "添加", clear: "清除", configTitle: "配置", uploadBtn: "上传", metaTitle: "文档信息", sourceTextLabel: "源内容", planLabel: "订阅计划", previewTitle: "预览", generatedQ: "问题", generatedA: "答案", logTitle: "日志", thDoc: "文档", thContent: "问答", thMeta: "元数据", docNameLabel: "文档名称", pageNumLabel: "页码", domainLabel: "领域", qLangLabel: "问题语言", aLangLabel: "回答语言", sourcePlaceholder: "在此处粘贴文本...", copyRestricted: "受保护。使用导出。" },
-                ko: { analyzeBtn: "생성", addBtn: "추가", clear: "지우기", configTitle: "구성", uploadBtn: "업로드", metaTitle: "문서 정보", sourceTextLabel: "소스 콘텐츠", planLabel: "구독 계획", previewTitle: "미리보기", generatedQ: "질문", generatedA: "답변", logTitle: "로그", thDoc: "문서", thContent: "질의 응답", thMeta: "메타", docNameLabel: "문서 이름", pageNumLabel: "페이지", domainLabel: "도메인", qLangLabel: "질문 언어", aLangLabel: "답변 언어", sourcePlaceholder: "여기에 텍스트 붙여넣기...", copyRestricted: "보호됨. 내보내기 사용." },
-                pl: { analyzeBtn: "Generuj", addBtn: "Dodaj", clear: "Wyczyść", configTitle: "Konfiguracja", uploadBtn: "PRZEŚLIJ", metaTitle: "Informacje", sourceTextLabel: "Treść źródłowa", planLabel: "Subskrypcja", previewTitle: "Podgląd", generatedQ: "Pytanie", generatedA: "Odpowiedź", logTitle: "Dziennik", thDoc: "Dok", thContent: "P & O", thMeta: "Meta", docNameLabel: "Nazwa dok", pageNumLabel: "Strona", domainLabel: "Domena", qLangLabel: "Język pytań", aLangLabel: "Język odp", sourcePlaceholder: "Wklej tekst tutaj...", copyRestricted: "Chronione. Użyj eksportu." },
-                nl: { analyzeBtn: "Genereren", addBtn: "Toevoegen", clear: "Wissen", configTitle: "Configuratie", uploadBtn: "UPLOADEN", metaTitle: "Info", sourceTextLabel: "Bron", planLabel: "Abonnement", previewTitle: "Voorbeeld", generatedQ: "Vraag", generatedA: "Antwoord", logTitle: "Logboek", thDoc: "Doc", thContent: "V & A", thMeta: "Meta", docNameLabel: "Doc Naam", pageNumLabel: "Pagina", domainLabel: "Domein", qLangLabel: "Vraag Taal", aLangLabel: "Antwoord Taal", sourcePlaceholder: "Plak hier tekst...", copyRestricted: "Beschermd. Gebruik export." },
-                hi: { analyzeBtn: "उत्पन्न करें", addBtn: "जोड़ें", clear: "साफ़ करें", configTitle: "विन्यास", uploadBtn: "अपलोड", metaTitle: "जानकारी", sourceTextLabel: "स्रोत", planLabel: "योजना", previewTitle: "पूर्वावलोकन", generatedQ: "प्रश्न", generatedA: "उत्तर", logTitle: "लॉग", thDoc: "दस्तावेज़", thContent: "प्रश्नोत्तर", thMeta: "मेटा", docNameLabel: "नाम", pageNumLabel: "पृष्ठ", domainLabel: "डोमेन", qLangLabel: "प्रश्न भाषा", aLangLabel: "उत्तर भाषा", sourcePlaceholder: "यहाँ टेक्स्ट पेस्ट करें...", copyRestricted: "सुरक्षित। निर्यात का उपयोग करें।" },
-                it: { analyzeBtn: "Generare", addBtn: "Aggiungere", clear: "Cancellare", configTitle: "Configurazione", uploadBtn: "CARICARE", metaTitle: "Info", sourceTextLabel: "Fonte", planLabel: "Abbonamento", previewTitle: "Anteprima", generatedQ: "Domanda", generatedA: "Risposta", logTitle: "Registro", thDoc: "Doc", thContent: "D & R", thMeta: "Meta", docNameLabel: "Nome Doc", pageNumLabel: "Pagina", domainLabel: "Dominio", qLangLabel: "Lingua Domanda", aLangLabel: "Lingua Risposta", sourcePlaceholder: "Incolla il testo qui...", copyRestricted: "Protetto. Usa esportazione." },
-                ar: { analyzeBtn: "توليد", addBtn: "إضافة", clear: "مسح", configTitle: "تكوين", uploadBtn: "رفع", metaTitle: "معلومات", sourceTextLabel: "المصدر", planLabel: "خطة", previewTitle: "معاينة", generatedQ: "سؤال", generatedA: "إجابة", logTitle: "سجل", thDoc: "مستند", thContent: "س & ج", thMeta: "ميتا", docNameLabel: "اسم المستند", pageNumLabel: "صفحة", domainLabel: "نطاق", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة", sourcePlaceholder: "لصق النص هنا...", dir: 'rtl', copyRestricted: "محمي. استخدم التصدير." }
-            },
-           
-            t: function(key) {
-                var lang = this.currentLang;
-                var dict = this.translations[lang] || this.translations['en'];
-                return (dict && dict[key]) ? dict[key] : key;
-            },
-
-            updateUI: function() {
-                var elements = document.querySelectorAll('[data-i18n]');
-                for (var i = 0; i < elements.length; i++) {
-                    var el = elements[i];
-                    var key = el.getAttribute('data-i18n');
-                    el.innerText = this.t(key);
-                }
-                var placeholders = document.querySelectorAll('[data-i18n-placeholder]');
-                for (var j = 0; j < placeholders.length; j++) {
-                    var pl = placeholders[j];
-                    var pKey = pl.getAttribute('data-i18n-placeholder');
-                    pl.placeholder = this.t(pKey);
-                }
-               
-                var foundLang = false;
-                for(var k=0; k<App.config.languages.length; k++) {
-                    if(App.config.languages[k].code === this.currentLang) {
-                        document.documentElement.dir = (App.config.languages[k].dir === 'rtl') ? 'rtl' : 'ltr';
-                        foundLang = true;
-                        break;
-                    }
-                }
-                if(!foundLang) document.documentElement.dir = 'ltr';
-            }
-        },
-
-        // --- BILLING MODULE ---
-        billing: {
-            init: function() {
-                var savedPlan = localStorage.getItem('askdesk_plan');
-                if (!savedPlan) {
-                    savedPlan = 'starter';
-                    localStorage.setItem('askdesk_plan', 'starter');
-                }
-                this.updateUI();
-                this.setupCopyGuard();
-            },
-            saveUserEmail: async function() {
-                var emailInput = document.getElementById('userEmailInput');
-                if(!emailInput) return;
-                var email = emailInput.value.trim();
-                if(!email) return;
-               
-                App.ui.setLoading(true);
+        checkUrlToken: async function() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            if (token) {
                 try {
-                    localStorage.setItem('askdesk_user_email', email);
-                    var res = await fetch(App.api.current + '/auth/login', {
+                    const res = await fetch(`${this.api.base}/auth/verify?token=${token}`);
+                    const data = await res.json();
+                    if (data.ok && data.email) {
+                        localStorage.setItem('askdesk_user_email', data.email);
+                        this.state.userEmail = data.email;
+                        window.history.replaceState({}, document.title, "/");
+                        this.ui.showToast("Giriş Başarılı: " + data.email);
+                        this.ui.updateAuthUI();
+                    }
+                } catch (e) {
+                    console.error("Auth Verify Error", e);
+                }
+            }
+        },
+
+        auth: {
+            sendMagicLink: async function() {
+                const email = document.getElementById('userEmailInput').value.trim();
+                if (!email) return;
+                
+                document.getElementById('authMessage').innerText = "Sending...";
+                document.getElementById('authMessage').classList.remove('hidden');
+
+                try {
+                    const res = await fetch(`${App.api.base}/auth/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: email })
                     });
-                   
                     if (res.ok) {
-                        App.ui.showToast("Magic Link sent to " + email);
+                        App.ui.showToast("Mail adresinize giriş linki gönderildi.");
                         App.ui.toggleSettings();
+                        document.getElementById('userEmailInput').value = "";
                     } else {
-                         console.warn("Backend auth route not ready");
-                         App.ui.showToast("Magic Link request sent to " + email);
-                         App.ui.toggleSettings();
+                        throw new Error("Failed");
                     }
                 } catch (e) {
-                    App.ui.showToast("Magic Link request sent (Offline)");
-                    App.ui.toggleSettings();
+                    alert("Connection error. Check backend URL.");
+                }
+                document.getElementById('authMessage').classList.add('hidden');
+            }
+        },
+
+        billing: {
+            checkState: function() {
+                App.ui.updateBadge("Starter");
+                App.ui.updateUsage(0, 5);
+            },
+            upgradeRedirect: function() {
+                const plan = "pro"; 
+                if(confirm("Güvenli ödeme sayfasına (LemonSqueezy) yönlendiriliyorsunuz. Devam et?")) {
+                    window.open(`${App.api.billing}/upgrade?plan=${plan}`, '_blank');
+                }
+            },
+            cyclePlan: function() {
+                this.upgradeRedirect(); 
+            }
+        },
+
+        logic: {
+            generate: async function() {
+                const promptText = document.getElementById('sourceText').value.trim();
+                if (promptText.length < 10) return alert("Please enter text.");
+
+                App.ui.setLoading(true);
+                const userId = App.state.userEmail || "guest";
+                
+                try {
+                    const payload = {
+                        prompt: promptText,
+                        meta: {
+                            domain: document.getElementById('domainSelect').value,
+                            qLang: document.getElementById('qLangSelect').value,
+                            aLang: document.getElementById('aLangSelect').value
+                        }
+                    };
+
+                    const res = await fetch(`${App.api.base}/generate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-AskDesk-User': userId
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.status === 402) {
+                        document.getElementById('errorBox').classList.remove('hidden');
+                        document.getElementById('errorMsg').innerText = "Limit doldu. Pro'ya yükseltin.";
+                        document.getElementById('previewUpgradeBtn').classList.remove('hidden');
+                        App.ui.showToast("Limit doldu!");
+                        return;
+                    }
+
+                    if (!res.ok) throw new Error("API Error");
+
+                    const data = await res.json();
+                    
+                    document.getElementById('questionOutput').value = data.question || "";
+                    document.getElementById('answerOutput').value = data.answer || "";
+                    
+                    this.addLog(data);
+
+                    let current = parseInt(document.getElementById('usageBadge').innerText.split('/')[0]) || 0;
+                    App.ui.updateUsage(current + 1, "Limit");
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Error generating content.");
                 } finally {
                     App.ui.setLoading(false);
                 }
             },
-            getPlan: function() {
-                return localStorage.getItem('askdesk_plan') || 'starter';
-            },
-            setPlan: function(plan) {
-                localStorage.setItem('askdesk_plan', plan);
-                this.updateUI();
-                App.ui.showToast("Plan updated to " + App.config.plans[plan].label);
-            },
-            getUsageToday: function() {
-                var key = "askdesk_usage_" + new Date().toISOString().slice(0, 10);
-                var data = localStorage.getItem(key);
-                if (data) {
-                    try {
-                        var parsed = JSON.parse(data);
-                        if (parsed && typeof parsed.count === 'number') return parsed.count;
-                        return parseInt(data) || 0;
-                    } catch(e) { return parseInt(data) || 0; }
-                }
-                return 0;
-            },
-            incrementUsage: function() {
-                var plan = this.getPlan();
-                if (plan === 'enterprise') return;
-                var key = "askdesk_usage_" + new Date().toISOString().slice(0, 10);
-                var count = this.getUsageToday() + 1;
-                localStorage.setItem(key, JSON.stringify({ count: count }));
-                this.updateUI();
-            },
-            isLimitReached: function() {
-                var plan = this.getPlan();
-                if (plan === 'enterprise') return false;
-                var limit = App.config.plans[plan].dailyLimit;
-                return this.getUsageToday() >= limit;
-            },
-            canCopy: function() {
-                var planKey = this.getPlan();
-                var planConfig = App.config.plans[planKey];
-                return planConfig ? planConfig.canCopy : false;
-            },
-            canExport: function(type) {
-                var planKey = this.getPlan();
-                var planConfig = App.config.plans[planKey];
-                if (!planConfig) return false;
-                var allowed = planConfig.canExport;
-                return allowed.indexOf(type) !== -1;
-            },
-            setupCopyGuard: function() {
-                var events = ['contextmenu', 'copy', 'cut'];
-                var self = this;
-                events.forEach(function(event) {
-                    document.addEventListener(event, function(e) {
-                        if (!self.canCopy()) {
-                            var target = e.target;
-                            if (target.tagName === 'TEXTAREA' || target.closest('.protected-text')) {
-                                e.preventDefault();
-                                App.ui.showToast(App.i18n.t('copyRestricted'));
-                            }
-                        }
-                    });
-                });
-            },
-            cyclePlan: function() {
-                var current = this.getPlan();
-                var nextPlan = 'pro';
-               
-                if (current === 'starter') nextPlan = 'pro';
-                else if (current === 'pro') nextPlan = 'enterprise';
-                else nextPlan = 'enterprise';
-               
-                var msg = App.i18n.currentLang === 'tr'
-                    ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?"
-                    : "You are about to be redirected to the secure payment page. Do you want to continue?";
-
-                if (confirm(msg)) {
-                    var url = App.config.UPGRADE_URL + "?plan=" + nextPlan;
-                    window.open(url, '_blank');
-                }
-            },
-            updateUI: function() {
-                var planKey = this.getPlan();
-                var plan = App.config.plans[planKey];
-                var usage = this.getUsageToday();
-                var limitStr = plan.dailyLimit === Infinity ? "Unlimited" : plan.dailyLimit;
-
-                var pBadge = document.getElementById('planBadge');
-                if(pBadge) {
-                    pBadge.innerText = plan.label;
-                    var colorClass = "bg-slate-700 text-slate-300";
-                    if(planKey === 'pro') colorClass = "bg-green-900 text-green-100 border-green-600";
-                    if(planKey === 'enterprise') colorClass = "bg-purple-900 text-purple-100 border-purple-600";
-                    pBadge.className = "h-8 px-3 text-[10px] md:text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center min-w-[4rem] " + colorClass;
-                }
-
-                var usageBadge = document.getElementById('usageBadge');
-                if(usageBadge) usageBadge.innerText = usage + " / " + limitStr;
-
-                var isLimit = this.isLimitReached();
-                var genBtn = document.getElementById('analyzeBtn');
-                var btnText = document.getElementById('btnText');
-                var upgradeBtn = document.getElementById('previewUpgradeBtn');
-               
-                if (genBtn && btnText) {
-                    // Always enable button, let backend handle limits via 402
-                    genBtn.disabled = false;
-                    genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btnText.innerText = App.i18n.t('analyzeBtn');
-                   
-                    if (isLimit) {
-                         if(upgradeBtn) upgradeBtn.classList.remove('hidden');
-                    } else {
-                         if(upgradeBtn) upgradeBtn.classList.add('hidden');
-                    }
-                }
-
-                // Handle Export Buttons Visibility
-                var types = ['excel', 'csv', 'json'];
-                for (var i = 0; i < types.length; i++) {
-                    var type = types[i];
-                    var btnId = "btnExport" + type.charAt(0).toUpperCase() + type.slice(1);
-                    var btn = document.getElementById(btnId);
-                    if(btn) {
-                        if(this.canExport(type)) btn.classList.remove('hidden');
-                        else btn.classList.add('hidden');
-                    }
-                }
-               
-                // Toggle copy guard class
-                var areas = document.querySelectorAll('.protected-text');
-                for (var j = 0; j < areas.length; j++) {
-                    var el = areas[j];
-                    if(this.canCopy()) el.classList.remove('select-none');
-                    else el.classList.add('select-none');
-                }
+            addLog: function(data) {
+                const tbody = document.getElementById('logTableBody');
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-700 hover:bg-slate-800/50";
+                row.innerHTML = `<td class="p-3 text-xs text-slate-300">
+                    <div class="font-bold text-white mb-1">${data.question || '-'}</div>
+                    ${data.answer ? data.answer.substring(0,80)+'...' : '-'}
+                </td>`;
+                tbody.prepend(row);
             }
         },
 
-        // --- PROMPT BUILDER ---
-        promptBuilder: {
-            build: function(domain, qLang, aLang, sourceText, retryCount, hasImage) {
-                var constraints = retryCount > 0 ? "- STRICTER MODE: Ensure Question is unambiguous." : "";
-                var notFoundTxt = (App.i18n.translations[aLang] && App.i18n.translations[aLang].notFound) ? App.i18n.translations[aLang].notFound : "Not found";
-                var inputContext = hasImage ? "Input is an IMAGE. Perform OCR." : "Input Text provided below.";
-                var prevContext = "";
-                var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
-                var docContext = "";
-
-                return "System: AskDesk v2.9.33 (Global). Domain: " + domain.toUpperCase() + "\n" +
-                docContext + "\n" +
-                inputContext + "\n" +
-                "Task: Generate JSON {question, answer, extract, citations}.\n" +
-                "1. Identify the most informative sentence in the Source Text.\n" +
-                "2. COPY that sentence EXACTLY as the 'extract' (Verbatim Copy).\n" +
-                "3. Formulate a professional Question in " + qLang + ".\n" +
-                "4. TRANSLATE the 'extract' into " + aLang + " to create the 'answer'.\n" +
-                "Rules:\n" +
-                "- If info not found, answer: \"" + notFoundTxt + "\", extract: \"\".\n" +
-                "- NO Markdown. STRICT JSON.\n" +
-                constraints + "\n" +
-                prevContext + "\n" +
-                sourceInjection;
-            }
-        },
-
-        // --- MAIN LOGIC ---
-        logic: {
-            calculateRealQuality: function(source, extract, answer, hasImage) {
-                if (!extract || extract.length < 5) return { score: 0, reason: "No extract found" };
-                var score = 100;
-                var reasons = [];
-                var normSource = source.replace(/\s+/g, ' ').toLowerCase();
-                var normExtract = extract.replace(/\s+/g, ' ').toLowerCase();
-                if (!hasImage && normSource.indexOf(normExtract) === -1) {
-                    score = 0; reasons.push("Grounding Failed: Extract not found in source text.");
-                } else {
-                    reasons.push("Grounding Verified (+50)"); reasons.push("Translation Mode (+50)");
-                }
-                return { score: Math.max(0, score), reasons: reasons };
-            },
-            calculateCapacity: function(textLen) {
-                var planKey = App.billing.getPlan();
-                var limits = App.config.plans[planKey];
-                var estimatedQ = Math.max(1, Math.floor(textLen / 1500));
-                return Math.min(estimatedQ, limits.maxBulk || 5);
-            },
-            analyzeText: async function(opts) {
-                opts = opts || {};
-                var retryCount = opts.retryCount || 0;
-                var forcedGroupId = opts.groupId || null;
-                var forcedVersion = opts.version || 0;
-               
-                if (App.billing.isLimitReached()) {
-                    App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                    App.billing.updateUI();
-                    return;
-                }
-
-                var hasImage = !!App.data.currentImage;
-                var sourceText = document.getElementById('sourceText').value.trim();
-                var docName = document.getElementById('docName').value || "";
-                var pageNum = document.getElementById('pageNum').value || "";
-                var chunkText = opts.chunkText || null;
-
-                if (!hasImage && sourceText.length < 50) return App.ui.showError(App.i18n.t('minCharsErr'));
-                if(!App.data.bulkActive) App.ui.setLoading(true);
-               
-                var domain = document.getElementById('domainSelect').value;
-                var qLang = document.getElementById('qLangSelect').value;
-                var aLang = document.getElementById('aLangSelect').value;
-
-                var userId = localStorage.getItem('askdesk_user_email') || 'guest';
-
-                try {
-                    if (retryCount === 0 && !App.data.bulkActive) {
-                         App.billing.incrementUsage();
-                    }
-                   
-                    var activeText = chunkText || sourceText;
-                    var promptStr = App.promptBuilder.build(domain, qLang, aLang, activeText, retryCount, hasImage);
-                   
-                    var payload = {
-                        prompt: promptStr,
-                        sourceText: hasImage ? "" : activeText,
-                        imageDataUrl: hasImage ? App.data.currentImage : null,
-                        meta: { domain: domain, qLang: qLang, aLang: aLang, docName: docName, pageNum: pageNum },
-                        regen: { nonce: Date.now() }
-                    };
-
-                    var response;
-                    var usedUrl = App.api.current;
-                    try {
-                         response = await fetch(usedUrl + '/generate', {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId },
-                             body: JSON.stringify(payload),
-                             signal: App.data.abortController ? App.data.abortController.signal : null
-                        });
-                    } catch(netErr) {
-                         if(usedUrl !== App.api.fallback) {
-                             usedUrl = App.api.fallback;
-                             App.api.current = usedUrl;
-                             localStorage.setItem('askdesk_api_base', usedUrl);
-                             response = await fetch(usedUrl + '/generate', {
-                                 method: 'POST',
-                                 headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId },
-                                 body: JSON.stringify(payload)
-                            });
-                         } else {
-                             throw netErr;
-                         }
-                    }
-
-                    if (!response.ok) {
-                         if (response.status === 429 || response.status === 402) {
-                            App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                            throw new Error("Plan limit reached (Server).");
-                         }
-                         throw new Error("Server Error: " + response.status);
-                    }
-                    var res = await response.json();
-                   
-                    if (res.error && (res.error === 'LIMIT_REACHED' || res.code === 'LIMIT_REACHED')) {
-                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                        throw new Error("Plan limit reached (Backend Logic).");
-                    }
-
-                    var realQual = this.calculateRealQuality(activeSrc, res.extract, res.answer, hasImage);
-                    res.quality_score = realQual.score;
-                    res.quality_reasons = realQual.reasons;
-                   
-                    if (!hasImage && res.quality_score < 90 && retryCount < 1) return this.analyzeText({ ...opts, retryCount: retryCount + 1 });
-                   
-                    var groupId = forcedGroupId || crypto.randomUUID();
-                    var version = forcedGroupId ? (forcedVersion + 1) : 1;
-                   
-                    if (App.data.bulkActive) return { result: res, grounding: {ok: res.quality_score>0}, domain: domain, qLang: qLang, aLang: aLang, groupId: groupId, version: version, hasImage: hasImage };
-                   
-                    App.data.previewState = { result: res, grounding: {ok: res.quality_score>0}, domain: domain, qLang: qLang, aLang: aLang, groupId: groupId, version: version, hasImage: hasImage };
-                    App.ui.updatePreview(res, {ok: res.quality_score>0});
-                } catch (e) {
-                    if (e.name !== 'AbortError') App.ui.showError(e.message);
-                    if(!App.data.bulkActive) App.ui.setLoading(false);
-                } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
-            },
-            startGeneration: async function() {
-                if (App.data.bulkActive) return;
-                var bulkInput = document.getElementById('bulkRange');
-                var requestedCount = document.getElementById('bulkPanel').classList.contains('hidden') ? 1 : parseInt(bulkInput.value);
-               
-                if (requestedCount === 1) {
-                    try { await this.analyzeText(); } catch(e) { console.warn("Analysis failed:", e); }
-                    return;
-                }
-               
-                App.data.bulkActive = true; App.data.abortController = new AbortController(); App.ui.setLoading(true);
-                var sourceText = document.getElementById('sourceText').value;
-                var chunkSize = Math.floor(sourceText.length / requestedCount);
-                document.getElementById('bulkProgressContainer').classList.remove('hidden');
-                document.getElementById('bulkStatusText').classList.remove('hidden');
-                var pBar = document.getElementById('bulkProgressBar');
-                var pText = document.getElementById('bulkStatusText');
-                var lowQualityCount = 0;
-                for (var i = 0; i < requestedCount; i++) {
-                    if (App.billing.isLimitReached()) {
-                        App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                        break;
-                    }
-                    App.billing.incrementUsage();
-
-                    pText.innerText = "Generating " + (i+1) + "/" + requestedCount + "...";
-                    pBar.style.width = ((i)/requestedCount)*100 + "%";
-                    var start = i * chunkSize;
-                    var end = start + chunkSize + 500;
-                    var chunk = sourceText.substring(start, end);
-                    try {
-                        var data = await this.analyzeText({ chunkText: chunk });
-                        if (data.result.quality_score < 50) { lowQualityCount++; if (lowQualityCount >= 3) { App.ui.showToast("Stopping: Quality dropped too low.", "warning"); break; } } else { lowQualityCount = 0; }
-                        App.data.previewState = data; this.addToLog();
-                    } catch (e) { if (e.name === 'AbortError') break; }
-                }
-                pBar.style.width = '100%'; App.data.bulkActive = false; App.ui.setLoading(false);
-                setTimeout(function() { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
-            },
-            stopBulk: function() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
-            regenerate: function() {
-                if (!App.data.previewState) return;
-                var state = App.data.previewState;
-                this.analyzeText({ retryCount: 0, groupId: state.groupId, version: state.version, prevQuestion: state.result.question }).catch(function(e) { console.warn("Regen failed:", e); });
-            },
-            addToLog: function() {
-                if (!App.data.previewState) return;
-                var s = App.data.previewState; var r = s.result;
-                var currentDoc = document.getElementById('docName').value || "N/A";
-                var currentPage = document.getElementById('pageNum').value || "-";
-               
-                var entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image Source]" : "", createdAtISO: new Date().toISOString() };
-                App.data.qaLog.push(entry); this.renderTable();
-                if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
-            },
-            renderTable: function() {
-                var tbody = document.getElementById('logTableBody');
-                tbody.innerHTML = '';
-                var reversedLog = [...App.data.qaLog].reverse();
-                reversedLog.forEach(function(item) {
-                    var tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50 group";
-                    tr.innerHTML = '<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v' + item.version + '</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="' + item.docName + '">' + item.docName + '</div><div class="text-brand-primary text-[10px]">p.' + item.pageNum + '</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">' + item.question + '</div><div class="text-slate-400 text-[10px] font-mono truncate w-64" title="' + item.answer + '">' + item.answer + '</div><div class="mt-1 flex gap-2"><span class="text-[9px] px-1 rounded ' + (item.qualityScore >= 70 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300') + '">QS: ' + item.qualityScore + '</span>' + (item.reviewerNotes ? '<i class="fa-solid fa-note-sticky text-yellow-500 text-[10px]" title="' + item.reviewerNotes + '"></i>' : '') + '</div></td><td class="px-4 py-3 align-top"><select onchange="App.logic.updateStatus(\'' + item.id + '\', this.value)" class="bg-slate-800 border border-slate-600 text-[9px] text-white rounded px-1 py-0.5 outline-none mb-1 w-full"><option value="Draft" ' + (item.status==='Draft'?'selected':'') + '>Draft</option><option value="Reviewed" ' + (item.status==='Reviewed'?'selected':'') + '>Review</option><option value="Approved" ' + (item.status==='Approved'?'selected':'') + '>Approve</option></select><button onclick="App.logic.openNotes(\'' + item.id + '\')" class="text-[9px] text-brand-info hover:underline flex items-center gap-1"><i class="fa-solid fa-pen"></i> Notes</button></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry(\'' + item.id + '\')" class="text-slate-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-2"><i class="fa-solid fa-trash"></i></button></td>';
-                    tbody.appendChild(tr);
-                });
-            },
-            deleteEntry: function(id) { App.data.qaLog = App.data.qaLog.filter(function(x) { return x.id !== id; }); this.renderTable(); },
-            clearLog: function() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } },
-            updateStatus: function(id, newStatus) {
-                var item = App.data.qaLog.find(function(x) { return x.id === id; });
-                if (item) { item.status = newStatus; this.renderTable(); }
-            },
-            openNotes: function(id) {
-                App.data.editingNoteId = id;
-                var item = App.data.qaLog.find(function(x) { return x.id === id; });
-                document.getElementById('notesInput').value = item.reviewerNotes || '';
-                document.getElementById('notesModal').classList.remove('hidden');
-            },
-            saveNotes: function() {
-                var item = App.data.qaLog.find(function(x) { return x.id === App.data.editingNoteId; });
-                if (item) { item.reviewerNotes = document.getElementById('notesInput').value; this.renderTable(); }
-                document.getElementById('notesModal').classList.add('hidden');
-            }
-        },
-
-        // --- EXPORTERS ---
-        exporters: {
-            sanitize: function(v) { return (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v); },
-            getDataForExport: function() {
-                var self = this;
-                return App.data.qaLog.map(function(i) {
-                    return {
-                        ID: i.id, GroupID: i.groupId, Version: i.version,
-                        Doc: self.sanitize(i.docName), Page: self.sanitize(i.pageNum),
-                        Domain: i.domain, QLang: i.qLang, ALang: i.aLang,
-                        Question: self.sanitize(i.question), Answer: self.sanitize(i.answer),
-                        Quality: i.qualityScore, Grounded: i.groundingOk,
-                        Status: i.status, Notes: self.sanitize(i.reviewerNotes),
-                        Created: i.createdAtISO
-                    };
-                });
-            },
-            toExcel: function() {
-                if(!App.billing.canExport('excel')) return App.ui.showToast(App.i18n.t('copyRestricted'));
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                var ws = XLSX.utils.json_to_sheet(this.getDataForExport());
-                var wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "QA Data");
-                XLSX.writeFile(wb, "AskDesk_PROD_" + new Date().toISOString().slice(0,10) + ".xlsx");
-            },
-            toCSV: function() {
-                if(!App.billing.canExport('csv')) return App.ui.showToast(App.i18n.t('copyRestricted'));
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                var data = this.getDataForExport();
-                var headers = Object.keys(data[0]).join(',');
-                var rows = data.map(function(row) { return Object.values(row).map(function(v) { return '"' + String(v || '').replace(/"/g,'""') + '"'; }).join(','); });
-                var csv = "\uFEFF" + [headers, ...rows].join('\n');
-                var a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
-                a.download = "AskDesk_PROD.csv";
-                a.click();
-            },
-            toJSON: function() {
-                if(!App.billing.canExport('json')) return App.ui.showToast(App.i18n.t('copyRestricted'));
-                if(!App.data.qaLog.length) return App.ui.showError(App.i18n.t('noData'));
-                var a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([JSON.stringify(App.data.qaLog,null,2)], {type: 'application/json'}));
-                a.download = "AskDesk_PROD.json";
-                a.click();
-            }
-        },
-
-        // --- UI MODULE ---
         ui: {
-            init: function() {
-                try {
-                    var en = App.i18n.translations.en;
-                    // Safe copy
-                    for (var i = 0; i < App.config.languages.length; i++) {
-                        var l = App.config.languages[i];
-                        if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = Object.assign({}, en);
-                    }
-                   
-                    var domSelect = document.getElementById('domainSelect');
-                    if(domSelect) {
-                        domSelect.innerHTML = '';
-                        App.config.domains.forEach(function(d) { domSelect.add(new Option(d.label, d.id)); });
-                    }
-                   
-                    var ids = ['qLangSelect', 'aLangSelect', 'uiLangSelect'];
-                    ids.forEach(function(id) {
-                        var el = document.getElementById(id);
-                        if(el) {
-                            el.innerHTML = '';
-                            App.config.languages.forEach(function(l) { el.add(new Option(l.label, l.code)); });
-                        }
-                    });
-                   
-                    var prefs = App.storage.getPrefs();
-                    if(document.getElementById('uiLangSelect')) document.getElementById('uiLangSelect').value = prefs.uiLang;
-                    if(document.getElementById('domainSelect')) document.getElementById('domainSelect').value = prefs.domain || 'general';
-                    this.changeLanguage(prefs.uiLang);
-                    App.billing.init();
-                   
-                    var apiInput = document.getElementById('apiUrlInput');
-                    if (apiInput) apiInput.value = App.api.current;
-                } catch(e) { console.error(e); }
-            },
-            cyclePlan: function() {
-                App.billing.cyclePlan();
-            },
-            handleTextChange: function() {
-                var val = document.getElementById('sourceText').value; this.updateCharCount();
-                var maxQ = App.logic.calculateCapacity(val.length);
-                var bulkPanel = document.getElementById('bulkPanel');
-                var range = document.getElementById('bulkRange');
-                var label = document.getElementById('bulkLimitLabel');
-                document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
-                if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = "Max: " + maxQ; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
-            },
-            updateBulkLabel: function(val) { document.getElementById('bulkValue').innerText = val; },
-            changeLanguage: function(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
-            toggleSettings: function() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
-            updatePlanBadge: function() {
-                // Handled in Billing UpdateUI
-            },
-            updateCharCount: function() { var len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = len + " chars"; },
-            clearInput: function() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
-            handleFileUpload: function(input) {
-                var file = input.files[0];
-                if (!file) return;
-                if (file.type.startsWith('image/')) {
-                    var r = new FileReader();
-                    r.onload = function(e) {
-                        App.data.currentImage = e.target.result;
-                        document.getElementById('previewImgElement').src = e.target.result;
-                        document.getElementById('sourceText').classList.add('hidden');
-                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                        document.getElementById('imagePreviewContainer').classList.add('flex');
-                        App.ui.showToast("Image loaded.");
-                    };
-                    r.readAsDataURL(file);
-                    input.value = '';
-                    return;
+            initDropdowns: function() {
+                const dSelect = document.getElementById('domainSelect');
+                if(dSelect) {
+                    dSelect.innerHTML = '';
+                    App.config.domains.forEach(d => dSelect.add(new Option(d.label, d.id)));
                 }
-                var name = file.name.toLowerCase();
-               
+                
+                ['qLangSelect', 'aLangSelect'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.innerHTML = '';
+                        App.config.languages.forEach(l => el.add(new Option(l.label, l.code)));
+                    }
+                });
+            },
+            changeLanguage: function(val) {
+                if (val === 'tr') {
+                    const btn = document.querySelector('[data-i18n="uploadBtn"]');
+                    if(btn) btn.innerText = "DOSYA YÜKLE";
+                } else {
+                    const btn = document.querySelector('[data-i18n="uploadBtn"]');
+                    if(btn) btn.innerText = "UPLOAD FILE";
+                }
+            },
+            toggleSettings: function() {
+                document.getElementById('settingsPanel').classList.toggle('hidden');
+            },
+            handleFileUpload: function(input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                const name = file.name.toLowerCase();
+
+                document.getElementById('fileLoader').classList.remove('hidden');
+
                 if (name.endsWith('.pdf')) {
-                    App.ui.showToast("Parsing PDF...");
-                    var reader = new FileReader();
-                    reader.onload = async function(e) {
+                     reader.onload = async function(e) {
                         try {
-                            var typedarray = new Uint8Array(e.target.result);
-                            var pdf = await pdfjsLib.getDocument(typedarray).promise;
-                            var fullText = "";
-                            for(var i=1; i<=pdf.numPages; i++) {
-                                var page = await pdf.getPage(i);
-                                var textContent = await page.getTextContent();
-                                var pageText = textContent.items.map(function(item) { return item.str; }).join('\n');
+                            const typedarray = new Uint8Array(e.target.result);
+                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                            let fullText = "";
+                            for(let i=1; i<=pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                const pageText = textContent.items.map(item => item.str).join('\n'); // Newline fix
                                 fullText += pageText + "\n\n";
                             }
                             document.getElementById('sourceText').value = fullText;
-                            App.ui.handleTextChange();
-                            App.ui.showToast("PDF Loaded!");
-                        } catch (err) { App.ui.showError("PDF Error: " + err.message); }
+                        } catch (err) { alert("PDF Error"); }
+                        document.getElementById('fileLoader').classList.add('hidden');
                     };
                     reader.readAsArrayBuffer(file);
-                }
+                } 
                 else if (name.endsWith('.docx')) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        mammoth.extractRawText({arrayBuffer: e.target.result}).then(function(r) { document.getElementById('sourceText').value = r.value; App.ui.handleTextChange(); }).catch(function(e) { console.error(e); });
+                     reader.onload = function(e) {
+                        mammoth.extractRawText({arrayBuffer: e.target.result})
+                            .then(function(result){
+                                document.getElementById('sourceText').value = result.value;
+                                document.getElementById('fileLoader').classList.add('hidden');
+                            })
+                            .catch(function(err){ console.log(err); document.getElementById('fileLoader').classList.add('hidden'); });
                     };
                     reader.readAsArrayBuffer(file);
                 }
                 else if (name.endsWith('.xlsx')) {
-                     var r = new FileReader();
-                     r.onload = function(e) {
-                         var wb = XLSX.read(e.target.result, {type:'array'});
-                         var ws = wb.Sheets[wb.SheetNames[0]];
-                         document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws);
-                         App.ui.handleTextChange();
-                     };
-                     r.readAsArrayBuffer(file);
+                    reader.onload = function(e) {
+                        const wb = XLSX.read(e.target.result, {type:'array'});
+                        const ws = wb.Sheets[wb.SheetNames[0]];
+                        const csv = XLSX.utils.sheet_to_csv(ws);
+                        document.getElementById('sourceText').value = csv;
+                        document.getElementById('fileLoader').classList.add('hidden');
+                    };
+                    reader.readAsArrayBuffer(file);
                 }
                 else {
-                    var r = new FileReader();
-                    r.onload = function(e) { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); };
-                    r.readAsText(file);
+                    reader.onload = function(e) {
+                        document.getElementById('sourceText').value = e.target.result;
+                        document.getElementById('fileLoader').classList.add('hidden');
+                    };
+                    reader.readAsText(file);
                 }
-                input.value = '';
             },
-            setLoading: function(isLoading) {
-                var btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive;
-                var stopOverlay = document.getElementById('stopBtnOverlay'); var btnText = document.getElementById('btnText'); var icon = document.getElementById('btnIcon'); var loader = document.getElementById('btnLoader');
-                if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
+            clearInput: function() {
+                document.getElementById('sourceText').value = "";
             },
-            updatePreview: function(res, grounding) {
-                document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
-                document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
-                document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
-               
-                var citationText = (res.citations && res.citations[0]) ? ("Offset: " + res.citations[0].start + "-" + res.citations[0].end) : "-";
-                var citPrev = document.getElementById('citationPreview');
-                if (citPrev) citPrev.innerText = citationText;
-
-                this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+            setLoading: function(loading) {
+                const btn = document.getElementById('analyzeBtn');
+                btn.disabled = loading;
+                document.getElementById('btnLoader').classList.toggle('hidden', !loading);
+                document.getElementById('btnIcon').classList.toggle('hidden', loading);
             },
-            enableAddButton: function(enable) {
-                var btn = document.getElementById('addToLogBtn');
-                btn.disabled = !enable;
-                if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); }
-                else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); }
-            },
-            showError: function(msg, details) { var box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; box.classList.remove('hidden'); setTimeout(function() { box.classList.add('hidden'); }, 5000); },
-            showToast: function(msg, actionType) {
-                var t = document.getElementById('toast');
-                var btn = document.getElementById('toastActionBtn');
-                var pTag = t.querySelector('p');
-                if(pTag) pTag.innerText = msg;
-
-                if (btn) {
-                    if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; }
-                    else { btn.classList.add('hidden'); }
-                }
-               
+            showToast: function(msg) {
+                const t = document.getElementById('toast');
+                t.querySelector('p').innerText = msg;
                 t.classList.remove('translate-y-24');
-                setTimeout(function() { t.classList.add('translate-y-24'); }, 4000);
+                setTimeout(() => t.classList.add('translate-y-24'), 3000);
+            },
+            updateAuthUI: function() {
+                const email = App.state.userEmail;
+                const display = document.getElementById('userEmailDisplay');
+                if (display && email) {
+                    display.innerText = email;
+                    display.classList.remove('hidden');
+                }
+            },
+            updateBadge: function(text) {
+                document.getElementById('planBadge').innerText = text;
+            },
+            updateUsage: function(curr, max) {
+                document.getElementById('usageBadge').innerText = curr + " / " + max;
             }
         }
     };
 
-    document.addEventListener('DOMContentLoaded', function() { App.ui.init(); });
+    document.addEventListener('DOMContentLoaded', () => App.init());
     </script>
 </body>
 </html>
