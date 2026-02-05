@@ -146,8 +146,7 @@
              <button onclick="App.ui.toggleSettings()" class="h-8 w-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 hover:text-white transition" title="User Settings"><i class="fa-solid fa-user-gear"></i></button>
         </div>
     </header>
-
-    <!-- SETTINGS PANEL (User Email & Magic Link) -->
+<!-- SETTINGS PANEL (User Email & Magic Link) -->
     <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
         <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <i class="fa-solid fa-user-shield text-brand-primary"></i> <span data-i18n="settingsTitle">User Account</span>
@@ -286,8 +285,7 @@
                     <div id="bulkStatusText" class="hidden text-[9px] text-center text-slate-400 mb-1">Generating 0/0...</div>
                 </div>
             </div>
-
-            <!-- Sticky Generate Button (Fixed Bottom) -->
+<!-- Sticky Generate Button (Fixed Bottom) -->
             <div class="p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
                 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
                     <div class="flex items-center justify-between font-bold">
@@ -344,12 +342,10 @@
                 <div class="space-y-3 pb-8">
                     <div>
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
-                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16 protected-text" readonly></textarea>
                     </div>
                     <div class="h-32 md:h-40 flex flex-col">
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
-                        <!-- Protected Textarea (COPY GUARD) -->
                         <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre protected-text" readonly></textarea>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -406,9 +402,7 @@
                                 <th class="px-4 py-3 font-semibold border-b border-slate-700 w-16"></th>
                             </tr>
                         </thead>
-                        <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50">
-                            <!-- Rows injected here -->
-                        </tbody>
+                        <tbody id="logTableBody" class="text-sm divide-y divide-slate-800/50"></tbody>
                     </table>
                 </div>
             </div>
@@ -434,7 +428,6 @@
             <h4 class="font-bold text-sm" data-i18n="success">Success</h4>
             <p class="text-xs text-green-100" id="toastMsg">Action completed.</p>
         </div>
-        <!-- FIXED: Re-added upgrade button for toast -->
         <a id="toastActionBtn" href="https://api.askdesk.app/billing/upgrade" target="_blank" class="hidden ml-2 bg-white text-brand-success text-xs font-bold px-2 py-1 rounded hover:bg-gray-100 uppercase">UPGRADE</a>
     </div>
 
@@ -442,7 +435,6 @@
     <script>
     const App = {
         api: { 
-            // Changed to production API
             primary: "https://api.askdesk.app",
             current: "https://api.askdesk.app" 
         },
@@ -463,7 +455,6 @@
                 {id: 'medical', label: 'Medical'},
                 {id: 'compliance', label: 'Compliance / ISO'}
             ],
-            // PLAN LOGIC - DEFINED AS REQUESTED
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
@@ -481,7 +472,6 @@
             bulkActive: false
         },
 
-        // --- STORAGE ---
         storage: {
             getPrefs: () => JSON.parse(localStorage.getItem('askdesk_prefs') || '{"uiLang":"en","domain":"general"}'),
             savePrefs: (p) => localStorage.setItem('askdesk_prefs', JSON.stringify({...App.storage.getPrefs(), ...p})),
@@ -500,13 +490,14 @@
         i18n: {
             currentLang: 'en',
             translations: {
-                en: {
+en: {
                     bannerWarning: "🔒 Secure Mode: API Key is managed server-side. Do not paste PII.",
                     appSubtitle: "PROD SERVER EDITION",
-                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
+                    settingsTitle: "User Account", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
                     configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
                     metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
-                    sourceTextLabel: "Source Content", clear: "Clear", error: "Error",
+                    sourceTextLabel: "Source Content", sourcePlaceholder: "Paste text here... (Long text enables Multi-Q option)",
+                    clear: "Clear", error: "Error",
                     analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
                     generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
                     logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
@@ -526,13 +517,14 @@
                 tr: {
                     bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
                     appSubtitle: "PROD SUNUCU SÜRÜMÜ",
-                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
+                    settingsTitle: "Kullanıcı Hesabı", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
                     configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
                     metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
-                    sourceTextLabel: "Kaynak İçerik", clear: "Temizle", error: "Hata",
+                    sourceTextLabel: "Kaynak İçerik", sourcePlaceholder: "Metni buraya yapıştırın... (Uzun metin Multi-Q açar)",
+                    clear: "Temizle", error: "Hata",
                     analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
                     generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
-                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
+                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "Soru & Cevap", thMeta: "Detay",
                     noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
                     minCharsErr: "Lütfen metin girin veya görsel yükleyin.",
                     notFound: "Metinde bulunamadı",
@@ -545,6 +537,306 @@
                     limitReached: "Limit doldu – Pro'ya Geç",
                     upgradeBtn: "Pro'ya Yükselt",
                     copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
+                },
+
+                de: {
+                    bannerWarning: "🔒 Sicherer Modus: API-Key wird serverseitig verwaltet. Keine sensiblen Daten einfügen.",
+                    appSubtitle: "PROD-SERVER-EDITION",
+                    settingsTitle: "Benutzerkonto", settingsDesc: "Backend-URL eingeben (z.B. https://my-worker.dev)",
+                    configTitle: "Konfiguration", domainLabel: "Bereich", qLangLabel: "Frage-Sprache", aLangLabel: "Antwort-Sprache",
+                    metaTitle: "Dokumentinfo", docNameLabel: "Dokumentname", pageNumLabel: "Seite",
+                    sourceTextLabel: "Quellinhalt", sourcePlaceholder: "Text hier einfügen... (Langer Text aktiviert Multi-Q)",
+                    clear: "Löschen", error: "Fehler",
+                    analyzeBtn: "Q&A erstellen", previewTitle: "KI-Ausgabe Vorschau", statusReady: "Bereit",
+                    generatedQ: "Frage", generatedA: "Antwort", addBtn: "Zum Protokoll", regenerateBtn: "Neu generieren",
+                    logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "F & A", thMeta: "Meta",
+                    noData: "Noch keine Einträge.", success: "Erfolg", analyzing: "Analysiere...",
+                    minCharsErr: "Bitte Text oder ein Bild bereitstellen.",
+                    notFound: "Im Text nicht gefunden",
+                    uploadBtn: "DATEI HOCHLADEN", uploadError: "Dateiformat nicht unterstützt.",
+                    qualityScore: "Qualitätswert", groundingStatus: "Bezug",
+                    viewExtract: "Quellauszug anzeigen", reviewerNotes: "Prüfernotizen",
+                    allDomains: "Alle Bereiche", allStatuses: "Alle Status",
+                    statusDraft: "Entwurf", statusReviewed: "Geprüft", statusApproved: "Genehmigt",
+                    cancel: "Abbrechen", save: "Speichern",
+                    limitReached: "Limit erreicht – Upgrade auf Pro",
+                    upgradeBtn: "Upgrade auf Pro",
+                    copyRestricted: "Dieser Inhalt ist geschützt. Upgrade zum Export."
+                },
+
+                fr: {
+                    bannerWarning: "🔒 Mode sécurisé : la clé API est gérée côté serveur. Ne collez pas de données sensibles.",
+                    appSubtitle: "ÉDITION SERVEUR PROD",
+                    settingsTitle: "Compte utilisateur", settingsDesc: "Saisir l’URL backend (ex. https://my-worker.dev)",
+                    configTitle: "Configuration", domainLabel: "Domaine", qLangLabel: "Langue question", aLangLabel: "Langue réponse",
+                    metaTitle: "Infos document", docNameLabel: "Nom du doc", pageNumLabel: "Page",
+                    sourceTextLabel: "Contenu source", sourcePlaceholder: "Collez le texte ici... (Texte long = Multi-Q)",
+                    clear: "Effacer", error: "Erreur",
+                    analyzeBtn: "Générer Q&R", previewTitle: "Aperçu IA", statusReady: "Prêt",
+                    generatedQ: "Question", generatedA: "Réponse", addBtn: "Ajouter au log", regenerateBtn: "Régénérer",
+                    logTitle: "Journal de session", thDoc: "Doc", thContent: "Q & R", thMeta: "Meta",
+                    noData: "Aucune entrée.", success: "Succès", analyzing: "Analyse...",
+                    minCharsErr: "Veuillez fournir du texte ou une image.",
+                    notFound: "Introuvable dans le texte",
+                    uploadBtn: "TÉLÉVERSER", uploadError: "Format de fichier non pris en charge.",
+                    qualityScore: "Score qualité", groundingStatus: "Ancrage",
+                    viewExtract: "Voir l’extrait", reviewerNotes: "Notes du relecteur",
+                    allDomains: "Tous domaines", allStatuses: "Tous statuts",
+                    statusDraft: "Brouillon", statusReviewed: "Revu", statusApproved: "Approuvé",
+                    cancel: "Annuler", save: "Enregistrer",
+                    limitReached: "Limite atteinte – Passer à Pro",
+                    upgradeBtn: "Passer à Pro",
+                    copyRestricted: "Contenu protégé. Upgrade pour exporter."
+                },
+
+                es: {
+                    bannerWarning: "🔒 Modo seguro: la clave API se gestiona en el servidor. No pegues datos sensibles.",
+                    appSubtitle: "EDICIÓN SERVIDOR PROD",
+                    settingsTitle: "Cuenta de usuario", settingsDesc: "Introduce la URL del backend (ej. https://my-worker.dev)",
+                    configTitle: "Configuración", domainLabel: "Dominio", qLangLabel: "Idioma pregunta", aLangLabel: "Idioma respuesta",
+                    metaTitle: "Info del documento", docNameLabel: "Nombre del doc", pageNumLabel: "Página",
+                    sourceTextLabel: "Contenido fuente", sourcePlaceholder: "Pega el texto aquí... (Texto largo habilita Multi-Q)",
+                    clear: "Limpiar", error: "Error",
+                    analyzeBtn: "Generar P&R", previewTitle: "Vista previa IA", statusReady: "Listo",
+                    generatedQ: "Pregunta", generatedA: "Respuesta", addBtn: "Añadir al registro", regenerateBtn: "Regenerar",
+                    logTitle: "Registro de sesión", thDoc: "Doc", thContent: "P & R", thMeta: "Meta",
+                    noData: "Sin entradas.", success: "Éxito", analyzing: "Analizando...",
+                    minCharsErr: "Proporciona texto o una imagen.",
+                    notFound: "No encontrado en el texto",
+                    uploadBtn: "SUBIR ARCHIVO", uploadError: "Formato no compatible.",
+                    qualityScore: "Puntuación de calidad", groundingStatus: "Anclaje",
+                    viewExtract: "Ver extracto", reviewerNotes: "Notas del revisor",
+                    allDomains: "Todos los dominios", allStatuses: "Todos los estados",
+                    statusDraft: "Borrador", statusReviewed: "Revisado", statusApproved: "Aprobado",
+                    cancel: "Cancelar", save: "Guardar",
+                    limitReached: "Límite alcanzado – Actualiza a Pro",
+                    upgradeBtn: "Actualizar a Pro",
+                    copyRestricted: "Contenido protegido. Actualiza para exportar."
+                },
+
+                pt-BR: {
+                    bannerWarning: "🔒 Modo seguro: a chave da API é gerenciada no servidor. Não cole dados sensíveis.",
+                    appSubtitle: "EDIÇÃO SERVIDOR PROD",
+                    settingsTitle: "Conta do usuário", settingsDesc: "Insira a URL do backend (ex. https://my-worker.dev)",
+                    configTitle: "Configuração", domainLabel: "Domínio", qLangLabel: "Idioma da pergunta", aLangLabel: "Idioma da resposta",
+                    metaTitle: "Info do documento", docNameLabel: "Nome do doc", pageNumLabel: "Página",
+                    sourceTextLabel: "Conteúdo fonte", sourcePlaceholder: "Cole o texto aqui... (Texto longo ativa Multi-Q)",
+                    clear: "Limpar", error: "Erro",
+                    analyzeBtn: "Gerar P&R", previewTitle: "Prévia da IA", statusReady: "Pronto",
+                    generatedQ: "Pergunta", generatedA: "Resposta", addBtn: "Adicionar ao log", regenerateBtn: "Regenerar",
+                    logTitle: "Log da sessão", thDoc: "Doc", thContent: "P & R", thMeta: "Meta",
+                    noData: "Sem entradas.", success: "Sucesso", analyzing: "Analisando...",
+                    minCharsErr: "Forneça texto ou uma imagem.",
+                    notFound: "Não encontrado no texto",
+                    uploadBtn: "ENVIAR ARQUIVO", uploadError: "Formato não suportado.",
+                    qualityScore: "Pontuação de qualidade", groundingStatus: "Base",
+                    viewExtract: "Ver trecho", reviewerNotes: "Notas do revisor",
+                    allDomains: "Todos os domínios", allStatuses: "Todos os status",
+                    statusDraft: "Rascunho", statusReviewed: "Revisado", statusApproved: "Aprovado",
+                    cancel: "Cancelar", save: "Salvar",
+                    limitReached: "Limite atingido – Upgrade para Pro",
+                    upgradeBtn: "Upgrade para Pro",
+                    copyRestricted: "Conteúdo protegido. Faça upgrade para exportar."
+                },
+
+                ja: {
+                    bannerWarning: "🔒 セキュアモード: APIキーはサーバー側で管理。機密情報は貼り付けないでください。",
+                    appSubtitle: "PROD サーバー版",
+                    settingsTitle: "ユーザーアカウント", settingsDesc: "バックエンドURLを入力 (例: https://my-worker.dev)",
+                    configTitle: "設定", domainLabel: "ドメイン", qLangLabel: "質問言語", aLangLabel: "回答言語",
+                    metaTitle: "ドキュメント情報", docNameLabel: "ドキュメント名", pageNumLabel: "ページ",
+                    sourceTextLabel: "ソース内容", sourcePlaceholder: "ここにテキストを貼り付け...（長文でMulti-Q有効）",
+                    clear: "クリア", error: "エラー",
+                    analyzeBtn: "Q&A生成", previewTitle: "AI出力プレビュー", statusReady: "準備完了",
+                    generatedQ: "質問", generatedA: "回答", addBtn: "ログに追加", regenerateBtn: "再生成",
+                    logTitle: "セッションログ", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
+                    noData: "まだエントリがありません。", success: "成功", analyzing: "解析中...",
+                    minCharsErr: "テキストまたは画像を入力してください。",
+                    notFound: "テキスト内に見つかりません",
+                    uploadBtn: "ファイル上传", uploadError: "未対応の形式です。",
+                    qualityScore: "品質スコア", groundingStatus: "根拠",
+                    viewExtract: "抜粋を表示", reviewerNotes: "レビューノート",
+                    allDomains: "すべてのドメイン", allStatuses: "すべての状態",
+                    statusDraft: "下書き", statusReviewed: "レビュー済み", statusApproved: "承認済み",
+                    cancel: "キャンセル", save: "保存",
+                    limitReached: "上限に達しました – Proへアップグレード",
+                    upgradeBtn: "Proへアップグレード",
+                    copyRestricted: "保護されたコンテンツです。エクスポートにはアップグレードが必要です。"
+                },
+
+                zh: {
+                    bannerWarning: "🔒 安全模式：API Key 由服务端管理，请勿粘贴敏感信息。",
+                    appSubtitle: "生产服务器版",
+                    settingsTitle: "用户账户", settingsDesc: "输入后端URL（例如 https://my-worker.dev）",
+                    configTitle: "配置", domainLabel: "领域", qLangLabel: "问题语言", aLangLabel: "回答语言",
+                    metaTitle: "文档信息", docNameLabel: "文档名", pageNumLabel: "页码",
+                    sourceTextLabel: "来源内容", sourcePlaceholder: "在此粘贴文本...（长文本启用 Multi-Q）",
+                    clear: "清空", error: "错误",
+                    analyzeBtn: "生成问答", previewTitle: "AI输出预览", statusReady: "就绪",
+                    generatedQ: "问题", generatedA: "答案", addBtn: "加入记录", regenerateBtn: "重新生成",
+                    logTitle: "会话记录", thDoc: "文档", thContent: "问&答", thMeta: "元信息",
+                    noData: "暂无记录。", success: "成功", analyzing: "分析中...",
+                    minCharsErr: "请提供文本或图片。",
+                    notFound: "在文本中未找到",
+                    uploadBtn: "上传文件", uploadError: "不支持的文件格式。",
+                    qualityScore: "质量分数", groundingStatus: "依据",
+                    viewExtract: "查看摘录", reviewerNotes: "审核备注",
+                    allDomains: "所有领域", allStatuses: "所有状态",
+                    statusDraft: "草稿", statusReviewed: "已审核", statusApproved: "已批准",
+                    cancel: "取消", save: "保存",
+                    limitReached: "达到上限 – 升级到 Pro",
+                    upgradeBtn: "升级到 Pro",
+                    copyRestricted: "内容受保护。升级后可导出。"
+                },
+
+                ko: {
+                    bannerWarning: "🔒 보안 모드: API 키는 서버에서 관리됩니다. 민감정보를 붙여넣지 마세요.",
+                    appSubtitle: "PROD 서버 에디션",
+                    settingsTitle: "사용자 계정", settingsDesc: "백엔드 URL 입력 (예: https://my-worker.dev)",
+                    configTitle: "설정", domainLabel: "도메인", qLangLabel: "질문 언어", aLangLabel: "답변 언어",
+                    metaTitle: "문서 정보", docNameLabel: "문서명", pageNumLabel: "페이지",
+                    sourceTextLabel: "원문 내용", sourcePlaceholder: "여기에 텍스트를 붙여넣기... (긴 텍스트는 Multi-Q 활성화)",
+                    clear: "지우기", error: "오류",
+                    analyzeBtn: "Q&A 생성", previewTitle: "AI 출력 미리보기", statusReady: "준비됨",
+                    generatedQ: "질문", generatedA: "답변", addBtn: "로그에 추가", regenerateBtn: "재생성",
+                    logTitle: "세션 로그", thDoc: "문서", thContent: "Q & A", thMeta: "메타",
+                    noData: "항목이 없습니다.", success: "성공", analyzing: "분석 중...",
+                    minCharsErr: "텍스트 또는 이미지를 제공하세요.",
+                    notFound: "제공된 텍스트에서 찾을 수 없음",
+                    uploadBtn: "파일 업로드", uploadError: "지원되지 않는 형식입니다.",
+                    qualityScore: "품질 점수", groundingStatus: "근거",
+                    viewExtract: "발췌 보기", reviewerNotes: "리뷰어 노트",
+                    allDomains: "모든 도메인", allStatuses: "모든 상태",
+                    statusDraft: "초안", statusReviewed: "검토됨", statusApproved: "승인됨",
+                    cancel: "취소", save: "저장",
+                    limitReached: "한도 도달 – Pro로 업그레이드",
+                    upgradeBtn: "Pro로 업그레이드",
+                    copyRestricted: "보호된 콘텐츠입니다. 내보내려면 업그레이드하세요."
+                },
+
+                pl: {
+                    bannerWarning: "🔒 Tryb bezpieczny: klucz API jest po stronie serwera. Nie wklejaj danych wrażliwych.",
+                    appSubtitle: "EDYCJA SERWERA PROD",
+                    settingsTitle: "Konto użytkownika", settingsDesc: "Wpisz URL backendu (np. https://my-worker.dev)",
+                    configTitle: "Konfiguracja", domainLabel: "Domena", qLangLabel: "Język pytania", aLangLabel: "Język odpowiedzi",
+                    metaTitle: "Info o dokumencie", docNameLabel: "Nazwa dokumentu", pageNumLabel: "Strona",
+                    sourceTextLabel: "Treść źródłowa", sourcePlaceholder: "Wklej tekst tutaj... (Długi tekst włącza Multi-Q)",
+                    clear: "Wyczyść", error: "Błąd",
+                    analyzeBtn: "Generuj P&O", previewTitle: "Podgląd AI", statusReady: "Gotowe",
+                    generatedQ: "Pytanie", generatedA: "Odpowiedź", addBtn: "Dodaj do logu", regenerateBtn: "Generuj ponownie",
+                    logTitle: "Log sesji", thDoc: "Dok", thContent: "P & O", thMeta: "Meta",
+                    noData: "Brak wpisów.", success: "Sukces", analyzing: "Analiza...",
+                    minCharsErr: "Podaj tekst lub obraz.",
+                    notFound: "Nie znaleziono w tekście",
+                    uploadBtn: "WYGRAJ PLIK", uploadError: "Nieobsługiwany format pliku.",
+                    qualityScore: "Wynik jakości", groundingStatus: "Ugruntowanie",
+                    viewExtract: "Pokaż fragment", reviewerNotes: "Notatki recenzenta",
+                    allDomains: "Wszystkie domeny", allStatuses: "Wszystkie statusy",
+                    statusDraft: "Szkic", statusReviewed: "Sprawdzone", statusApproved: "Zatwierdzone",
+                    cancel: "Anuluj", save: "Zapisz",
+                    limitReached: "Limit osiągnięty – Przejdź na Pro",
+                    upgradeBtn: "Przejdź na Pro",
+                    copyRestricted: "Treść chroniona. Ulepsz, aby eksportować."
+                },
+
+                nl: {
+                    bannerWarning: "🔒 Veilige modus: API-sleutel wordt server-side beheerd. Plak geen gevoelige data.",
+                    appSubtitle: "PROD SERVER EDITIE",
+                    settingsTitle: "Gebruikersaccount", settingsDesc: "Voer backend-URL in (bijv. https://my-worker.dev)",
+                    configTitle: "Configuratie", domainLabel: "Domein", qLangLabel: "Vraagtaal", aLangLabel: "Antwoordtaal",
+                    metaTitle: "Documentinfo", docNameLabel: "Documentnaam", pageNumLabel: "Pagina",
+                    sourceTextLabel: "Broninhoud", sourcePlaceholder: "Plak hier tekst... (Lange tekst activeert Multi-Q)",
+                    clear: "Wissen", error: "Fout",
+                    analyzeBtn: "Genereer V&A", previewTitle: "AI Voorbeeld", statusReady: "Gereed",
+                    generatedQ: "Vraag", generatedA: "Antwoord", addBtn: "Aan log toevoegen", regenerateBtn: "Opnieuw genereren",
+                    logTitle: "Sessielog", thDoc: "Doc", thContent: "V & A", thMeta: "Meta",
+                    noData: "Nog geen items.", success: "Succes", analyzing: "Analyseren...",
+                    minCharsErr: "Geef tekst of een afbeelding op.",
+                    notFound: "Niet gevonden in de tekst",
+                    uploadBtn: "UPLOAD BESTAND", uploadError: "Bestandsformaat niet ondersteund.",
+                    qualityScore: "Kwaliteitsscore", groundingStatus: "Bron",
+                    viewExtract: "Bekijk extract", reviewerNotes: "Reviewer-notities",
+                    allDomains: "Alle domeinen", allStatuses: "Alle statussen",
+                    statusDraft: "Concept", statusReviewed: "Beoordeeld", statusApproved: "Goedgekeurd",
+                    cancel: "Annuleren", save: "Opslaan",
+                    limitReached: "Limiet bereikt – Upgrade naar Pro",
+                    upgradeBtn: "Upgrade naar Pro",
+                    copyRestricted: "Inhoud is beschermd. Upgrade om te exporteren."
+                },
+
+                hi: {
+                    bannerWarning: "🔒 सुरक्षित मोड: API Key सर्वर पर मैनेज होती है। संवेदनशील डेटा पेस्ट न करें।",
+                    appSubtitle: "PROD सर्वर संस्करण",
+                    settingsTitle: "यूज़र अकाउंट", settingsDesc: "बैकएंड URL डालें (जैसे https://my-worker.dev)",
+                    configTitle: "कॉन्फ़िगरेशन", domainLabel: "डोमेन", qLangLabel: "प्रश्न भाषा", aLangLabel: "उत्तर भाषा",
+                    metaTitle: "दस्तावेज़ जानकारी", docNameLabel: "दस्तावेज़ नाम", pageNumLabel: "पेज",
+                    sourceTextLabel: "स्रोत सामग्री", sourcePlaceholder: "यहाँ टेक्स्ट पेस्ट करें... (लंबा टेक्स्ट Multi-Q सक्षम करता है)",
+                    clear: "क्लियर", error: "त्रुटि",
+                    analyzeBtn: "Q&A बनाएँ", previewTitle: "AI प्रीव्यू", statusReady: "तैयार",
+                    generatedQ: "प्रश्न", generatedA: "उत्तर", addBtn: "लॉग में जोड़ें", regenerateBtn: "फिर से बनाएँ",
+                    logTitle: "सेशन लॉग", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
+                    noData: "अभी कोई एंट्री नहीं।", success: "सफल", analyzing: "विश्लेषण...",
+                    minCharsErr: "कृपया टेक्स्ट या इमेज दें।",
+                    notFound: "टेक्स्ट में नहीं मिला",
+                    uploadBtn: "फ़ाइल अपलोड", uploadError: "फ़ाइल फ़ॉर्मेट सपोर्ट नहीं है।",
+                    qualityScore: "क्वालिटी स्कोर", groundingStatus: "आधार",
+                    viewExtract: "अंश देखें", reviewerNotes: "रिव्यू नोट्स",
+                    allDomains: "सभी डोमेन", allStatuses: "सभी स्टेटस",
+                    statusDraft: "ड्राफ्ट", statusReviewed: "रिव्यू", statusApproved: "अप्रूव",
+                    cancel: "रद्द", save: "सेव",
+                    limitReached: "लिमिट पूरी – Pro में अपग्रेड करें",
+                    upgradeBtn: "Pro में अपग्रेड",
+                    copyRestricted: "यह सामग्री सुरक्षित है। एक्सपोर्ट के लिए अपग्रेड करें।"
+                },
+
+                ru: {
+                    bannerWarning: "🔒 Безопасный режим: API-ключ управляется на сервере. Не вставляйте конфиденциальные данные.",
+                    appSubtitle: "PROD СЕРВЕР",
+                    settingsTitle: "Аккаунт пользователя", settingsDesc: "Введите URL бэкенда (напр. https://my-worker.dev)",
+                    configTitle: "Настройка", domainLabel: "Домен", qLangLabel: "Язык вопроса", aLangLabel: "Язык ответа",
+                    metaTitle: "Инфо документа", docNameLabel: "Имя документа", pageNumLabel: "Страница",
+                    sourceTextLabel: "Исходный текст", sourcePlaceholder: "Вставьте текст сюда... (Длинный текст включает Multi-Q)",
+                    clear: "Очистить", error: "Ошибка",
+                    analyzeBtn: "Сгенерировать Q&A", previewTitle: "Предпросмотр", statusReady: "Готово",
+                    generatedQ: "Вопрос", generatedA: "Ответ", addBtn: "Добавить в лог", regenerateBtn: "Перегенерировать",
+                    logTitle: "Журнал сессии", thDoc: "Док", thContent: "Q & A", thMeta: "Meta",
+                    noData: "Пока нет записей.", success: "Успех", analyzing: "Анализ...",
+                    minCharsErr: "Добавьте текст или изображение.",
+                    notFound: "Не найдено в тексте",
+                    uploadBtn: "ЗАГРУЗИТЬ ФАЙЛ", uploadError: "Формат файла не поддерживается.",
+                    qualityScore: "Оценка качества", groundingStatus: "Основание",
+                    viewExtract: "Показать фрагмент", reviewerNotes: "Заметки ревьюера",
+                    allDomains: "Все домены", allStatuses: "Все статусы",
+                    statusDraft: "Черновик", statusReviewed: "Проверено", statusApproved: "Одобрено",
+                    cancel: "Отмена", save: "Сохранить",
+                    limitReached: "Лимит достигнут — обновитесь до Pro",
+                    upgradeBtn: "Обновиться до Pro",
+                    copyRestricted: "Контент защищён. Обновитесь для экспорта."
+                },
+
+                ar: {
+                    bannerWarning: "🔒 وضع آمن: مفتاح API مُدار من الخادم. لا تلصق بيانات حساسة.",
+                    appSubtitle: "إصدار خادم PROD",
+                    settingsTitle: "حساب المستخدم", settingsDesc: "أدخل رابط الـBackend (مثال: https://my-worker.dev)",
+                    configTitle: "الإعدادات", domainLabel: "المجال", qLangLabel: "لغة السؤال", aLangLabel: "لغة الإجابة",
+                    metaTitle: "معلومات المستند", docNameLabel: "اسم المستند", pageNumLabel: "الصفحة",
+                    sourceTextLabel: "محتوى المصدر", sourcePlaceholder: "الصق النص هنا... (النص الطويل يفعّل Multi-Q)",
+                    clear: "مسح", error: "خطأ",
+                    analyzeBtn: "إنشاء سؤال/جواب", previewTitle: "معاينة المخرجات", statusReady: "جاهز",
+                    generatedQ: "السؤال", generatedA: "الإجابة", addBtn: "إضافة للسجل", regenerateBtn: "إعادة إنشاء",
+                    logTitle: "سجل الجلسة", thDoc: "مستند", thContent: "س/ج", thMeta: "بيانات",
+                    noData: "لا توجد عناصر بعد.", success: "تم", analyzing: "جارٍ التحليل...",
+                    minCharsErr: "يرجى إدخال نص أو صورة.",
+                    notFound: "غير موجود في النص",
+                    uploadBtn: "رفع ملف", uploadError: "صيغة الملف غير مدعومة.",
+                    qualityScore: "درجة الجودة", groundingStatus: "الاستناد",
+                    viewExtract: "عرض المقتطف", reviewerNotes: "ملاحظات المراجع",
+                    allDomains: "كل المجالات", allStatuses: "كل الحالات",
+                    statusDraft: "مسودة", statusReviewed: "مراجع", statusApproved: "معتمد",
+                    cancel: "إلغاء", save: "حفظ",
+                    limitReached: "تم الوصول للحد – الترقية إلى Pro",
+                    upgradeBtn: "الترقية إلى Pro",
+                    copyRestricted: "المحتوى محمي. قم بالترقية للتصدير."
                 }
             },
             
@@ -555,15 +847,25 @@
             },
 
             updateUI() {
+                // ✅ TEXT LABELS
                 document.querySelectorAll('[data-i18n]').forEach(el => {
                     el.innerText = this.t(el.getAttribute('data-i18n'));
                 });
+
+                // ✅ PLACEHOLDERS (THIS WAS MISSING IN YOUR CODE)
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                    const k = el.getAttribute('data-i18n-placeholder');
+                    el.setAttribute('placeholder', this.t(k));
+                });
+
                 const langObj = App.config.languages.find(l => l.code === this.currentLang);
                 document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
+
+                // ✅ HTML LANG ATTRIBUTE (SEO/ACCESSIBILITY)
+                document.documentElement.lang = this.currentLang || 'en';
             }
         },
-
-        // --- BILLING MODULE ---
+// --- BILLING MODULE ---
         billing: {
             init() {
                 const savedPlan = localStorage.getItem('askdesk_plan') || 'starter'; 
@@ -571,7 +873,6 @@
                 this.setupCopyGuard();
             },
             
-            // NEW: Magic Link Request
             async saveUserEmail() {
                 const email = document.getElementById('userEmailInput').value.trim();
                 if(!email) return;
@@ -580,7 +881,6 @@
                 try {
                     localStorage.setItem('askdesk_user_email', email);
                     
-                    // Request Backend to send email
                     const res = await fetch(App.api.current + '/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -591,10 +891,9 @@
                         App.ui.showToast(`Magic Link sent to ${email}`);
                         App.ui.toggleSettings();
                     } else {
-                         // Fallback for UI if backend route not ready
-                         console.warn("Backend auth route not ready");
-                         App.ui.showToast(`Magic Link request sent to ${email}`);
-                         App.ui.toggleSettings();
+                        console.warn("Backend auth route not ready");
+                        App.ui.showToast(`Magic Link request sent to ${email}`);
+                        App.ui.toggleSettings();
                     }
                 } catch (e) {
                     App.ui.showToast(`Magic Link request sent (Offline)`);
@@ -604,9 +903,7 @@
                 }
             },
 
-            getPlan() {
-                return localStorage.getItem('askdesk_plan') || 'starter';
-            },
+            getPlan() { return localStorage.getItem('askdesk_plan') || 'starter'; },
             setPlan(plan) {
                 localStorage.setItem('askdesk_plan', plan);
                 this.updateUI();
@@ -629,7 +926,6 @@
             isLimitReached() {
                 const plan = this.getPlan();
                 if (plan === 'enterprise') return false;
-                
                 const limit = App.config.plans[plan].dailyLimit;
                 return this.getUsageToday() >= limit;
             },
@@ -642,7 +938,7 @@
                 const planKey = this.getPlan();
                 const planConfig = App.config.plans[planKey];
                 if (!planConfig) return false;
-                const allowed = planConfig.canExport; // Correct property name
+                const allowed = planConfig.canExport;
                 return allowed.includes(type); 
             },
             setupCopyGuard() {
@@ -656,17 +952,13 @@
                 });
             },
             
-            // FIXED: Cycle Plan now ONLY redirects, does NOT update local state
             cyclePlan() { 
                 const current = this.getPlan();
                 let nextPlan = 'pro';
-                
                 if (current === 'starter') nextPlan = 'pro';
                 else if (current === 'pro') nextPlan = 'enterprise';
                 else nextPlan = 'enterprise'; 
                 
-                // Redirect to payment page
-                // New Confirmation Step
                 const msg = App.i18n.currentLang === 'tr' 
                     ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?" 
                     : "You are about to be redirected to the secure payment page. Do you want to continue?";
@@ -683,7 +975,6 @@
                 const usage = this.getUsageToday();
                 const limitStr = plan.dailyLimit === Infinity ? "Unlimited" : plan.dailyLimit;
 
-                // Update Badges
                 const pBadge = document.getElementById('planBadge');
                 pBadge.innerText = plan.label;
                 let colorClass = "bg-slate-700 text-slate-300";
@@ -693,7 +984,6 @@
 
                 document.getElementById('usageBadge').innerText = `${usage} / ${limitStr}`;
 
-                // Handle Limits
                 const isLimit = this.isLimitReached();
                 const genBtn = document.getElementById('analyzeBtn');
                 const btnText = document.getElementById('btnText');
@@ -710,7 +1000,6 @@
                     document.getElementById('previewUpgradeBtn').classList.add('hidden');
                 }
 
-                // Handle Export Buttons Visibility
                 ['excel', 'csv', 'json'].forEach(type => {
                     const btn = document.getElementById(`btnExport${type.charAt(0).toUpperCase() + type.slice(1)}`);
                     if(btn) {
@@ -719,7 +1008,6 @@
                     }
                 });
                 
-                // Toggle copy guard class
                 const areas = document.querySelectorAll('.protected-text');
                 areas.forEach(el => {
                     if(this.canCopy()) el.classList.remove('select-none'); 
@@ -799,12 +1087,11 @@
                 const qLang = document.getElementById('qLangSelect').value;
                 const aLang = document.getElementById('aLangSelect').value;
 
-                // GET USER ID
                 const userId = localStorage.getItem('askdesk_user_email') || 'guest';
 
                 try {
                     if (retryCount === 0 && !App.data.bulkActive) {
-                         App.billing.incrementUsage();
+                        App.billing.incrementUsage();
                     }
                     
                     const promptStr = App.promptBuilder.build(domain, qLang, aLang, sourceText, retryCount, hasImage, prevQuestion, chunkText, docName);
@@ -819,34 +1106,19 @@
 
                     let response;
                     let usedUrl = App.api.current;
-                    try {
-                         response = await fetch(usedUrl + '/generate', { 
-                             method: 'POST', 
-                             headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
-                             body: JSON.stringify(payload), 
-                             signal: App.data.abortController ? App.data.abortController.signal : null 
-                        });
-                    } catch(netErr) {
-                         if(usedUrl !== App.api.fallback) {
-                             usedUrl = App.api.fallback;
-                             App.api.current = usedUrl; 
-                             localStorage.setItem('askdesk_api_base', usedUrl); 
-                             response = await fetch(usedUrl + '/generate', { 
-                                 method: 'POST', 
-                                 headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
-                                 body: JSON.stringify(payload) 
-                            });
-                         } else {
-                             throw netErr;
-                         }
-                    }
+                    response = await fetch(usedUrl + '/generate', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json', 'X-AskDesk-User': userId }, 
+                        body: JSON.stringify(payload), 
+                        signal: App.data.abortController ? App.data.abortController.signal : null 
+                    });
 
                     if (!response.ok) {
-                         if (response.status === 429 || response.status === 402) {
+                        if (response.status === 429 || response.status === 402) {
                             App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
                             throw new Error("Plan limit reached (Server).");
-                         }
-                         throw new Error(`Server Error: ${response.status}`);
+                        }
+                        throw new Error(`Server Error: ${response.status}`);
                     }
                     const res = await response.json(); 
                     
@@ -874,6 +1146,7 @@
                     throw e; 
                 } finally { if (!App.data.bulkActive) App.ui.setLoading(false); }
             },
+
             async startGeneration() {
                 if (App.data.bulkActive) return;
                 const bulkInput = document.getElementById('bulkRange');
@@ -913,12 +1186,22 @@
                 pBar.style.width = '100%'; App.data.bulkActive = false; App.ui.setLoading(false);
                 setTimeout(() => { document.getElementById('bulkProgressContainer').classList.add('hidden'); document.getElementById('bulkStatusText').classList.add('hidden'); }, 2000);
             },
-            stopBulk() { if (App.data.abortController) { App.data.abortController.abort(); App.data.bulkActive = false; App.ui.setLoading(false); App.ui.showToast("Generation Stopped."); } },
+
+            stopBulk() { 
+                if (App.data.abortController) { 
+                    App.data.abortController.abort(); 
+                    App.data.bulkActive = false; 
+                    App.ui.setLoading(false); 
+                    App.ui.showToast("Generation Stopped."); 
+                } 
+            },
+
             regenerate() { 
                 if (!App.data.previewState) return; 
                 const { groupId, version, result } = App.data.previewState; 
                 this.analyzeText({ retryCount: 0, groupId, version, prevQuestion: result.question }).catch(e => console.warn("Regen failed:", e));
             },
+
             addToLog() {
                 if (!App.data.previewState) return;
                 const s = App.data.previewState; const r = s.result;
@@ -927,11 +1210,19 @@
                 
                 const entry = { id: crypto.randomUUID(), groupId: s.groupId, version: s.version, docName: currentDoc, pageNum: currentPage, domain: s.domain, qLang: s.qLang, aLang: s.aLang, question: r.question, answer: r.answer, extract: r.extract, qualityScore: r.quality_score, status: "Draft", reviewerNotes: s.hasImage ? "[From Image Source]" : "", createdAtISO: new Date().toISOString() };
                 App.data.qaLog.push(entry); this.renderTable();
-                if (!App.data.bulkActive) { App.ui.showToast(App.i18n.t('success')); document.getElementById('questionOutput').value = ''; document.getElementById('answerOutput').value = ''; document.getElementById('qualityBox').classList.add('hidden'); document.getElementById('addToLogBtn').disabled = true; document.getElementById('regenerateBtn').disabled = true; App.data.previewState = null; }
+                if (!App.data.bulkActive) { 
+                    App.ui.showToast(App.i18n.t('success')); 
+                    document.getElementById('questionOutput').value = ''; 
+                    document.getElementById('answerOutput').value = ''; 
+                    document.getElementById('qualityBox').classList.add('hidden'); 
+                    document.getElementById('addToLogBtn').disabled = true; 
+                    document.getElementById('regenerateBtn').disabled = true; 
+                    App.data.previewState = null; 
+                }
             },
+
             renderTable() {
                 const tbody = document.getElementById('logTableBody');
-                const f = { domain: 'all', status: 'all', search: '' };
                 tbody.innerHTML = '';
                 [...App.data.qaLog].reverse().forEach((item) => {
                     const tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50 group";
@@ -939,26 +1230,14 @@
                     tbody.appendChild(tr);
                 });
             },
+
             deleteEntry(id) { App.data.qaLog = App.data.qaLog.filter(x => x.id !== id); this.renderTable(); },
             clearLog() { if (confirm('Clear?')) { App.data.qaLog = []; this.renderTable(); } },
-            updateStatus(id, newStatus) {
-                const item = App.data.qaLog.find(x => x.id === id);
-                if (item) { item.status = newStatus; this.renderTable(); }
-            },
-            openNotes(id) {
-                App.data.editingNoteId = id;
-                const item = App.data.qaLog.find(x => x.id === id);
-                document.getElementById('notesInput').value = item.reviewerNotes || '';
-                document.getElementById('notesModal').classList.remove('hidden');
-            },
-            saveNotes() {
-                const item = App.data.qaLog.find(x => x.id === App.data.editingNoteId);
-                if (item) { item.reviewerNotes = document.getElementById('notesInput').value; this.renderTable(); }
-                document.getElementById('notesModal').classList.add('hidden');
-            }
+            updateStatus(id, newStatus) { const item = App.data.qaLog.find(x => x.id === id); if (item) { item.status = newStatus; this.renderTable(); } },
+            openNotes(id) { App.data.editingNoteId = id; const item = App.data.qaLog.find(x => x.id === id); document.getElementById('notesInput').value = item.reviewerNotes || ''; document.getElementById('notesModal').classList.remove('hidden'); },
+            saveNotes() { const item = App.data.qaLog.find(x => x.id === App.data.editingNoteId); if (item) { item.reviewerNotes = document.getElementById('notesInput').value; this.renderTable(); } document.getElementById('notesModal').classList.add('hidden'); }
         },
 
-        // --- EXPORTERS ---
         exporters: {
             sanitize: (v) => (typeof v === 'string' && ['=','+','-','@'].includes(v[0]) ? "'" + v : v),
             getDataForExport() {
@@ -1002,49 +1281,107 @@
             }
         },
 
-        // --- UI MODULE ---
         ui: {
             init() {
                 try {
+                    // ✅ Keep your original behavior, but now all dictionaries exist,
+                    // so fallback won't force English anymore.
                     const en = App.i18n.translations.en;
-                    App.config.languages.forEach(l => { if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = { ...en }; });
-                    const populate = (id, options) => { const el = document.getElementById(id); if(el) { if(!id.startsWith('filter')) el.innerHTML = ''; options.forEach(o => el.add(new Option(o.label, o.id || o.code))); } };
-                    populate('domainSelect', App.config.domains); populate('filterDomain', App.config.domains);
+                    App.config.languages.forEach(l => { 
+                        if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = { ...en }; 
+                    });
+
+                    const populate = (id, options) => { 
+                        const el = document.getElementById(id); 
+                        if(el) { 
+                            if(!id.startsWith('filter')) el.innerHTML = ''; 
+                            options.forEach(o => el.add(new Option(o.label, o.id || o.code))); 
+                        } 
+                    };
+
+                    populate('domainSelect', App.config.domains); 
+                    populate('filterDomain', App.config.domains);
                     ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(id => populate(id, App.config.languages));
+
                     const prefs = App.storage.getPrefs();
                     document.getElementById('uiLangSelect').value = prefs.uiLang;
                     document.getElementById('domainSelect').value = prefs.domain || 'general';
+
                     this.changeLanguage(prefs.uiLang);
+
                     App.billing.init();
                     
-                    // Fixed: Safely get input
                     const apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
                 } catch(e) { console.error(e); }
             },
-            cyclePlan() { 
-                App.billing.cyclePlan();
-            },
+
             handleTextChange() {
-                const val = document.getElementById('sourceText').value; this.updateCharCount();
+                const val = document.getElementById('sourceText').value; 
+                this.updateCharCount();
                 const maxQ = App.logic.calculateCapacity(val.length);
-                const bulkPanel = document.getElementById('bulkPanel'); const range = document.getElementById('bulkRange'); const label = document.getElementById('bulkLimitLabel');
+                const bulkPanel = document.getElementById('bulkPanel'); 
+                const range = document.getElementById('bulkRange'); 
+                const label = document.getElementById('bulkLimitLabel');
                 document.getElementById('densityScore').innerText = Math.floor(val.length / 1500);
-                if (maxQ > 1) { bulkPanel.classList.remove('hidden'); range.max = maxQ; if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } label.innerText = `Max: ${maxQ}`; } else { bulkPanel.classList.add('hidden'); range.value = 1; this.updateBulkLabel(1); }
+                if (maxQ > 1) { 
+                    bulkPanel.classList.remove('hidden'); 
+                    range.max = maxQ; 
+                    if(parseInt(range.value) > maxQ) { range.value = 1; this.updateBulkLabel(1); } 
+                    label.innerText = `Max: ${maxQ}`; 
+                } else { 
+                    bulkPanel.classList.add('hidden'); 
+                    range.value = 1; 
+                    this.updateBulkLabel(1); 
+                }
             },
+
             updateBulkLabel(val) { document.getElementById('bulkValue').innerText = val; },
-            changeLanguage(code) { App.i18n.currentLang = code; App.i18n.updateUI(); App.storage.savePrefs({ uiLang: code }); },
+
+            // ✅ Language change now updates placeholders too (via updateUI fix)
+            changeLanguage(code) { 
+                App.i18n.currentLang = code; 
+                App.i18n.updateUI(); 
+                App.storage.savePrefs({ uiLang: code }); 
+            },
+
             toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); },
-            updatePlanBadge() { const plan = App.storage.getPlan(); const el = document.getElementById('planBadge'); el.innerText = plan; let colors = "bg-slate-700 text-slate-300"; if(plan === 'Pro') colors = "bg-green-900 text-green-300 border-green-700"; if(plan === 'Enterprise') colors = "bg-purple-900 text-purple-300 border-purple-700"; el.className = `h-8 px-3 text-[10px] md:text-[10px] font-bold rounded uppercase tracking-wide border transition-colors cursor-pointer flex items-center justify-center ${colors}`; },
-            updateCharCount() { const len = document.getElementById('sourceText').value.length; document.getElementById('charCount').innerText = `${len} chars`; },
-            clearInput() { document.getElementById('sourceText').value = ''; document.getElementById('sourceText').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('hidden'); App.data.currentImage = null; this.updateCharCount(); this.handleTextChange(); },
+
+            updateCharCount() { 
+                const len = document.getElementById('sourceText').value.length; 
+                document.getElementById('charCount').innerText = `${len} chars`; 
+            },
+
+            clearInput() { 
+                document.getElementById('sourceText').value = ''; 
+                document.getElementById('sourceText').classList.remove('hidden'); 
+                document.getElementById('imagePreviewContainer').classList.add('hidden'); 
+                App.data.currentImage = null; 
+                this.updateCharCount(); 
+                this.handleTextChange(); 
+            },
+
             handleFileUpload(input) {
                 const file = input.files[0];
                 if (!file) return;
-                if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = (e) => { App.data.currentImage = e.target.result; document.getElementById('previewImgElement').src = e.target.result; document.getElementById('sourceText').classList.add('hidden'); document.getElementById('imagePreviewContainer').classList.remove('hidden'); document.getElementById('imagePreviewContainer').classList.add('flex'); App.ui.showToast("Image loaded."); }; r.readAsDataURL(file); input.value = ''; return; }
+
+                if (file.type.startsWith('image/')) {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        App.data.currentImage = e.target.result;
+                        document.getElementById('previewImgElement').src = e.target.result;
+                        document.getElementById('sourceText').classList.add('hidden');
+                        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                        document.getElementById('imagePreviewContainer').classList.add('flex');
+                        App.ui.showToast("Image loaded.");
+                    };
+                    r.readAsDataURL(file);
+                    input.value = '';
+                    return;
+                }
+
                 const name = file.name.toLowerCase();
-                
-                // PDF Parsing Fix
+
                 if (name.endsWith('.pdf')) {
                     App.ui.showToast("Parsing PDF...");
                     const reader = new FileReader();
@@ -1056,7 +1393,6 @@
                             for(let i=1; i<=pdf.numPages; i++) {
                                 const page = await pdf.getPage(i);
                                 const textContent = await page.getTextContent();
-                                // FIX: Use newline instead of space to preserve structure
                                 const pageText = textContent.items.map(item => item.str).join('\n');
                                 fullText += pageText + "\n\n";
                             }
@@ -1068,37 +1404,80 @@
                     reader.readAsArrayBuffer(file);
                 }
                 else if (name.endsWith('.docx')) { 
-                    mammoth.extractRawText({arrayBuffer: file}).then(r => { document.getElementById('sourceText').value = r.value; App.ui.handleTextChange(); }).catch(e => console.error(e)); 
+                    mammoth.extractRawText({arrayBuffer: file})
+                        .then(r => { document.getElementById('sourceText').value = r.value; App.ui.handleTextChange(); })
+                        .catch(e => console.error(e)); 
                 }
                 else if (name.endsWith('.xlsx')) {
-                     const r = new FileReader(); r.onload = (e) => { 
-                         const wb = XLSX.read(e.target.result, {type:'array'}); 
-                         const ws = wb.Sheets[wb.SheetNames[0]]; 
-                         document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws); 
-                         App.ui.handleTextChange(); 
-                     }; r.readAsArrayBuffer(file); 
+                    const r = new FileReader(); 
+                    r.onload = (e) => { 
+                        const wb = XLSX.read(e.target.result, {type:'array'}); 
+                        const ws = wb.Sheets[wb.SheetNames[0]]; 
+                        document.getElementById('sourceText').value = XLSX.utils.sheet_to_csv(ws); 
+                        App.ui.handleTextChange(); 
+                    }; 
+                    r.readAsArrayBuffer(file); 
                 }
-                else { const r = new FileReader(); r.onload = (e) => { document.getElementById('sourceText').value = e.target.result; App.ui.handleTextChange(); }; r.readAsText(file); }
+                else { 
+                    const r = new FileReader(); 
+                    r.onload = (e) => { 
+                        document.getElementById('sourceText').value = e.target.result; 
+                        App.ui.handleTextChange(); 
+                    }; 
+                    r.readAsText(file); 
+                }
                 input.value = '';
             },
+
             setLoading(isLoading) {
-                const btn = document.getElementById('analyzeBtn'); btn.disabled = isLoading && !App.data.bulkActive; 
-                const stopOverlay = document.getElementById('stopBtnOverlay'); const btnText = document.getElementById('btnText'); const icon = document.getElementById('btnIcon'); const loader = document.getElementById('btnLoader');
-                if(isLoading) { if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } } else { stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); }
+                const btn = document.getElementById('analyzeBtn'); 
+                btn.disabled = isLoading && !App.data.bulkActive; 
+                const stopOverlay = document.getElementById('stopBtnOverlay'); 
+                const icon = document.getElementById('btnIcon'); 
+                const loader = document.getElementById('btnLoader');
+                if(isLoading) { 
+                    if (App.data.bulkActive) { stopOverlay.classList.remove('hidden'); } 
+                    else { icon.classList.add('hidden'); loader.classList.remove('hidden'); } 
+                } else { 
+                    stopOverlay.classList.add('hidden'); icon.classList.remove('hidden'); loader.classList.add('hidden'); 
+                }
             },
+
             updatePreview(res, grounding) {
-                document.getElementById('questionOutput').value = res.question; document.getElementById('answerOutput').value = res.answer; document.getElementById('qualityBox').classList.remove('hidden');
-                document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
+                document.getElementById('questionOutput').value = res.question; 
+                document.getElementById('answerOutput').value = res.answer; 
+                document.getElementById('qualityBox').classList.remove('hidden');
+                document.getElementById('qScoreBadge').innerText = res.quality_score + "%"; 
+                document.getElementById('groundingBadge').innerText = grounding.ok ? "PASS" : "FAIL";
                 document.getElementById('extractPreview').innerText = res.extract || "(No extract)";
-                this.enableAddButton(true); document.getElementById('regenerateBtn').disabled = false; document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+                this.enableAddButton(true); 
+                document.getElementById('regenerateBtn').disabled = false; 
+                document.getElementById('regenerateBtn').classList.remove('opacity-50', 'cursor-not-allowed');
             },
-            enableAddButton(enable) { const btn = document.getElementById('addToLogBtn'); btn.disabled = !enable; if(enable) { btn.classList.replace('bg-slate-800','bg-brand-success'); btn.classList.replace('text-slate-500','text-white'); btn.classList.remove('cursor-not-allowed'); } else { btn.classList.replace('bg-brand-success','bg-slate-800'); btn.classList.replace('text-white','text-slate-500'); btn.classList.add('cursor-not-allowed'); } },
-            showError: (msg, details) => { const box = document.getElementById('errorBox'); document.getElementById('errorMsg').innerText = msg; const detEl = document.getElementById('errorDetails'); if(details) detEl.innerText = details; box.classList.remove('hidden'); },
+
+            enableAddButton(enable) {
+                const btn = document.getElementById('addToLogBtn'); 
+                btn.disabled = !enable; 
+                if(enable) { 
+                    btn.classList.replace('bg-slate-800','bg-brand-success'); 
+                    btn.classList.replace('text-slate-500','text-white'); 
+                    btn.classList.remove('cursor-not-allowed'); 
+                } else { 
+                    btn.classList.replace('bg-brand-success','bg-slate-800'); 
+                    btn.classList.replace('text-white','text-slate-500'); 
+                    btn.classList.add('cursor-not-allowed'); 
+                }
+            },
+
+            showError: (msg, details) => { 
+                const box = document.getElementById('errorBox'); 
+                document.getElementById('errorMsg').innerText = msg; 
+                box.classList.remove('hidden'); 
+            },
+
             showToast: (msg, actionType) => { 
                 const t = document.getElementById('toast'); 
                 const btn = document.getElementById('toastActionBtn'); 
-                
-                // Fix: Check if p tag exists inside toast
                 const pTag = t.querySelector('p');
                 if(pTag) pTag.innerText = msg;
 
@@ -1110,7 +1489,6 @@
                         btn.classList.add('hidden'); 
                     }
                 }
-                
                 t.classList.remove('translate-y-24'); 
                 setTimeout(() => t.classList.add('translate-y-24'), 4000); 
             }
@@ -1119,6 +1497,5 @@
 
     document.addEventListener('DOMContentLoaded', () => App.ui.init());
     </script>
-</body>
+ </body>
 </html>
-
