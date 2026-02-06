@@ -1058,6 +1058,12 @@
                     var apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
                 } catch(e) { console.error(e); }
+                var em = localStorage.getItem('askdesk_user_email');
+var emailDisp = document.getElementById('userEmailDisplay');
+if (emailDisp) {
+ if (em && em !== 'guest') { emailDisp.classList.remove('hidden'); emailDisp.innerText = em; }
+ else { emailDisp.classList.add('hidden'); emailDisp.innerText = ''; }
+}
             },
             cyclePlan: function() {
                 App.billing.cyclePlan();
@@ -1185,5 +1191,73 @@
 
     document.addEventListener('DOMContentLoaded', function() { App.ui.init(); });
     </script>
+    <script>
+
+(function () {
+
+  try {
+
+    var url = new URL(window.location.href);
+
+    if (url.pathname === "/auth/verify") {
+
+      var token = url.searchParams.get("token");
+
+      if (!token) return;
+
+      // backend verify endpoint
+
+      fetch(App.api.current + "/auth/verify?token=" + encodeURIComponent(token), { method: "GET" })
+
+        .then(function (r) { return r.json(); })
+
+        .then(function (data) {
+
+          if (!data || !data.ok || !data.email) {
+
+            App.ui.showError("Magic Link doğrulama başarısız (token geçersiz/expired).");
+
+            return;
+
+          }
+
+          // login success
+
+          localStorage.setItem("askdesk_user_email", data.email);
+
+          App.ui.showToast("Giriş başarılı: " + data.email);
+
+          // UI refresh
+
+          var emailDisp = document.getElementById("userEmailDisplay");
+
+          if (emailDisp) {
+
+            emailDisp.classList.remove("hidden");
+
+            emailDisp.innerText = data.email;
+
+          }
+
+          // tokenı URL’den temizle
+
+          window.history.replaceState({}, document.title, "/");
+
+        })
+
+        .catch(function (e) {
+
+          App.ui.showError("Magic Link doğrulama hatası: " + (e && e.message ? e.message : e));
+
+        });
+
+    }
+
+  } catch (e) {}
+
+})();
+</script>
+ 
 </body>
 </html>
+
