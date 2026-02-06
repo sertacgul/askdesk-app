@@ -634,12 +634,17 @@
                 this.updateUI();
             },
             isLimitReached: function() {
-                var plan = this.getPlan();
-                // Enterprise also checked now
-                // if (plan === 'enterprise') return false;
-                var limit = App.config.plans[plan].dailyLimit;
-                return this.getUsageToday() >= limit;
-            },
+
+    var plan = this.getPlan();
+
+    if (plan === 'enterprise') return false; // LIMIT'i backend karar versin
+
+    var limit = App.config.plans[plan].dailyLimit;
+
+    return this.getUsageToday() >= limit;
+
+},
+ 
             canCopy: function() {
                 var planKey = this.getPlan();
                 var planConfig = App.config.plans[planKey];
@@ -798,12 +803,12 @@
                 var retryCount = opts.retryCount || 0;
                 var forcedGroupId = opts.groupId || null;
                 var forcedVersion = opts.version || 0;
-               
-                if (App.billing.isLimitReached()) {
-                    App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
-                    App.billing.updateUI();
-                    return;
-                }
+               if (App.billing.isLimitReached()) {
+   // enterprise zaten false dönecek; diğer planlarda çalışır
+   App.ui.showToast(App.i18n.t('limitReached'), 'upgrade');
+   App.billing.updateUI();
+   return;
+}
 
                 var hasImage = !!App.data.currentImage;
                 var sourceText = document.getElementById('sourceText').value.trim();
@@ -1260,4 +1265,5 @@ if (emailDisp) {
  
 </body>
 </html>
+
 
