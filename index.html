@@ -134,7 +134,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.61</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">Test</p>
             </div>
         </div>
 
@@ -262,11 +262,10 @@
             <div class="p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
                 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
                     <div class="flex items-center justify-between font-bold">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> <span>Limit Reached</span></div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> <span>Error</span></div>
                         <button onclick="document.getElementById('errorBox').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <span id="errorMsg">Daily limit reached. Upgrade to Pro.</span>
-                    <a href="javascript:void(0)" onclick="App.billing.upgradeRedirect()" class="text-xs underline text-white font-bold mt-1 block" data-i18n="upgradeBtn">UPGRADE NOW &rarr;</a>
+                    <span id="errorMsg">Details...</span>
                 </div>
                 <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="btnText" class="text-sm md:text-base" data-i18n="analyzeBtn">Generate Q&A</span>
@@ -283,7 +282,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
                         <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
-                        <a href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition" data-i18n="upgradeBtn">UPGRADE</a>
+                        <a href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition">UPGRADE</a>
                     </h2>
                     <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
                 </div>
@@ -408,7 +407,7 @@
         api: {
             primary: "https://api.askdesk.app",
             current: "https://api.askdesk.app",
-            fallback: "https://askdesk-api.captsertacgul.workers.dev"
+            fallback: "https://askdesk-api.captsertacgul.workers.dev" // Corrected fallback
         },
 
         config: {
@@ -426,7 +425,7 @@
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
-                'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise', canExport: ['excel', 'csv', 'json'], canCopy: true }
+                'enterprise': { dailyLimit: 1000, maxBulk: 100, label: 'Enterprise', canExport: ['excel', 'csv', 'json'], canCopy: true }
             },
             UPGRADE_URL: "https://api.askdesk.app/billing/upgrade"
         },
@@ -437,10 +436,10 @@
             editingNoteId: null,
             currentImage: null,
             abortController: null,
-            bulkActive: false
+            bulkActive: false,
+            tempUserId: null // For session-based failover
         },
 
-        // FIXED: ADDED STORAGE OBJECT BACK
         storage: {
             getPrefs: function() {
                 var prefs = localStorage.getItem('askdesk_prefs');
@@ -530,8 +529,12 @@
            
             t: function(key) {
                 var lang = this.currentLang;
-                var dict = this.translations[lang] || this.translations['en'];
-                return (dict && dict[key]) ? dict[key] : key;
+                var dict = this.translations[lang];
+                var enDict = this.translations['en'];
+               
+                if (dict && dict[key]) return dict[key];
+                if (enDict && enDict[key]) return enDict[key];
+                return key;
             },
 
             updateUI: function() {
@@ -623,7 +626,8 @@
             },
             incrementUsage: function() {
                 var plan = this.getPlan();
-                if (plan === 'enterprise') return;
+                // Enterprise count enabled as per latest request
+                // if (plan === 'enterprise') return;
                 var key = "askdesk_usage_" + new Date().toISOString().slice(0, 10);
                 var count = this.getUsageToday() + 1;
                 localStorage.setItem(key, JSON.stringify({ count: count }));
@@ -631,7 +635,8 @@
             },
             isLimitReached: function() {
                 var plan = this.getPlan();
-                if (plan === 'enterprise') return false;
+                // Enterprise also checked now
+                // if (plan === 'enterprise') return false;
                 var limit = App.config.plans[plan].dailyLimit;
                 return this.getUsageToday() >= limit;
             },
@@ -706,16 +711,15 @@
                 var upgradeBtn = document.getElementById('previewUpgradeBtn');
                
                 if (genBtn && btnText) {
+                    // Always enable button, let backend handle limits via 402
+                    genBtn.disabled = false;
+                    genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnText.innerText = App.i18n.t('analyzeBtn');
+                   
                     if (isLimit) {
-                        genBtn.disabled = true;
-                        genBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        btnText.innerText = App.i18n.t('upgradeBtn');
-                        if(upgradeBtn) upgradeBtn.classList.remove('hidden');
+                         if(upgradeBtn) upgradeBtn.classList.remove('hidden');
                     } else {
-                        genBtn.disabled = false;
-                        genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnText.innerText = App.i18n.t('analyzeBtn');
-                        if(upgradeBtn) upgradeBtn.classList.add('hidden');
+                         if(upgradeBtn) upgradeBtn.classList.add('hidden');
                     }
                 }
 
@@ -751,7 +755,7 @@
                 var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
                 var docContext = "";
 
-                return "System: AskDesk v2.9.33 (Global). Domain: " + domain.toUpperCase() + "\n" +
+                return "System: AskDesk v2.9.57 (Global). Domain: " + domain.toUpperCase() + "\n" +
                 docContext + "\n" +
                 inputContext + "\n" +
                 "Task: Generate JSON {question, answer, extract, citations}.\n" +
@@ -949,7 +953,7 @@
                 var reversedLog = [...App.data.qaLog].reverse();
                 reversedLog.forEach(function(item) {
                     var tr = document.createElement('tr'); tr.className = "hover:bg-slate-800/50 transition border-b border-slate-800/50 group";
-                    tr.innerHTML = '<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v' + item.version + '</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="' + item.docName + '">' + item.docName + '</div><div class="text-brand-primary text-[10px]">p.' + item.pageNum + '</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">' + item.question + '</div><div class="text-slate-400 text-[10px] font-mono truncate w-64" title="' + item.answer + '">' + item.answer + '</div><div class="mt-1 flex gap-2"><div class="flex gap-2"><span class="text-[9px] px-1 rounded ' + (item.qualityScore >= 70 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300') + '">QS: ' + item.qualityScore + '</span></div></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry(\'' + item.id + '\')" class="text-slate-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-2"><i class="fa-solid fa-trash"></i></button></td>';
+                    tr.innerHTML = '<td class="px-4 py-3 text-slate-500 font-mono text-[10px] align-top">v' + item.version + '</td><td class="px-4 py-3 align-top"><div class="text-white text-xs font-bold truncate w-24" title="' + item.docName + '">' + item.docName + '</div><div class="text-brand-primary text-[10px]">p.' + item.pageNum + '</div></td><td class="px-4 py-3 align-top"><div class="mb-1 text-slate-200 text-xs font-medium">' + item.question + '</div><div class="text-slate-400 text-[10px] font-mono truncate w-64" title="' + item.answer + '">' + item.answer + '</div><div class="mt-1 flex gap-2"><span class="text-[9px] px-1 rounded ' + (item.qualityScore >= 70 ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300') + '">QS: ' + item.qualityScore + '</span>' + (item.reviewerNotes ? '<i class="fa-solid fa-note-sticky text-yellow-500 text-[10px]" title="' + item.reviewerNotes + '"></i>' : '') + '</div></td><td class="px-4 py-3 align-top"><select onchange="App.logic.updateStatus(\'' + item.id + '\', this.value)" class="bg-slate-800 border border-slate-600 text-[9px] text-white rounded px-1 py-0.5 outline-none mb-1 w-full"><option value="Draft" ' + (item.status==='Draft'?'selected':'') + '>Draft</option><option value="Reviewed" ' + (item.status==='Reviewed'?'selected':'') + '>Review</option><option value="Approved" ' + (item.status==='Approved'?'selected':'') + '>Approve</option></select><button onclick="App.logic.openNotes(\'' + item.id + '\')" class="text-[9px] text-brand-info hover:underline flex items-center gap-1"><i class="fa-solid fa-pen"></i> Notes</button></td><td class="px-4 py-3 align-top text-right"><button onclick="App.logic.deleteEntry(\'' + item.id + '\')" class="text-slate-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-2"><i class="fa-solid fa-trash"></i></button></td>';
                     tbody.appendChild(tr);
                 });
             },
@@ -1053,30 +1057,8 @@
                    
                     var apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
-                   
-                    // NEW: Ensure init logic
-                    this.checkAuth();
-
                 } catch(e) { console.error(e); }
             },
-           
-            // NEW: Auth & Limit Check
-            checkAuth: function() {
-                var urlParams = new URLSearchParams(window.location.search);
-                var token = urlParams.get('token');
-               
-                if (token) {
-                     this.verifyToken(token);
-                }
-            },
-           
-            verifyToken: async function(token) {
-                 // Mock verify - replace with real backend
-                 App.ui.showToast("Logged in!");
-                 localStorage.setItem('askdesk_user_email', 'user@verified.com');
-                 window.history.replaceState({}, document.title, "/");
-            },
-
             cyclePlan: function() {
                 App.billing.cyclePlan();
             },
