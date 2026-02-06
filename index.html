@@ -134,7 +134,7 @@
             </div>
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white tracking-wide">AskDesk</h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.58</p>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-mono tracking-wider">PROD v2.9.61</p>
             </div>
         </div>
 
@@ -148,35 +148,26 @@
     </header>
 
     <!-- SETTINGS PANEL -->
-    <div id="settingsPanel" class="hidden fixed top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
+    <div id="settingsPanel" class="hidden absolute top-16 right-4 w-80 md:w-96 bg-slate-800 border border-slate-600 shadow-2xl z-50 p-4 rounded-xl">
         <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
             <i class="fa-solid fa-user-shield text-brand-primary"></i> <span data-i18n="settingsTitle">User Account</span>
         </h3>
-        <p class="text-[10px] text-slate-400 mb-2 leading-relaxed" data-i18n="settingsDesc">
+        <p class="text-[10px] text-slate-400 mb-3 leading-relaxed">
             Enter your email to sync your plan and limits. We will send a <b>Magic Link</b> to login.
         </p>
-       
-        <div id="loginStatusLine" class="text-[10px] font-mono text-brand-info mb-3"></div>
-       
         <input type="email" id="userEmailInput" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white text-xs font-mono mb-3 focus:border-brand-primary outline-none" placeholder="user@example.com">
         <input type="hidden" id="apiUrlInput">
         <div class="flex justify-end gap-2">
             <button onclick="App.ui.toggleSettings()" class="text-slate-400 hover:text-white text-xs px-3 py-1" data-i18n="cancel">Close</button>
-            <button id="sendMagicLinkBtn" onclick="App.auth.sendMagicLink()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
-               <span data-i18n="sendMagicLink">Send Magic Link</span>
-               <div id="authLoader" class="loader w-3 h-3 hidden border-white/20 border-t-white"></div>
-            </button>
+            <button onclick="App.billing.saveUserEmail()" class="bg-brand-primary hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-xs font-bold transition" data-i18n="save">Send Magic Link</button>
         </div>
-        <div id="authMessage" class="text-[10px] text-center mt-2 hidden text-slate-400"></div>
     </div>
 
     <!-- MAIN -->
     <div class="flex flex-col md:flex-row min-h-[calc(100vh-4rem)]">
-       
-        <!-- LEFT: INPUTS -->
-        <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative z-0">
+        <!-- LEFT -->
+        <div class="w-full md:w-[40%] flex flex-col bg-slate-900 border-b md:border-b-0 md:border-r border-slate-700 relative">
             <div class="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
-                <!-- Config -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm space-y-2 shrink-0">
                     <div class="flex justify-between items-center border-b border-slate-700 pb-1">
                         <h3 class="text-xs font-bold text-brand-primary uppercase flex items-center gap-2">
@@ -199,7 +190,6 @@
                     </div>
                 </div>
 
-                <!-- Metadata -->
                 <div class="bg-brand-panel p-3 rounded-xl border border-slate-700 shadow-sm hidden md:block shrink-0">
                     <h3 class="text-xs font-bold text-brand-primary uppercase mb-1 flex items-center gap-2">
                         <i class="fa-solid fa-tag"></i> <span data-i18n="metaTitle">Document Info</span>
@@ -216,40 +206,29 @@
                     </div>
                 </div>
 
-                <!-- Source Input -->
                 <div class="flex-1 flex flex-col min-h-[500px]">
                     <div class="flex items-center gap-2 mb-1">
                         <label class="text-[10px] font-bold text-slate-300 uppercase flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-align-left text-brand-primary"></i> <span data-i18n="sourceTextLabel">Source</span>
                         </label>
-                       
                         <div class="flex gap-4 ml-3 items-center">
                             <div class="text-[9px] text-slate-500 font-mono">
                                 Density: <span id="densityScore" class="text-slate-400">0</span> Q/Doc
                             </div>
                             <span id="charCount" class="text-[9px] text-slate-500">0 chars</span>
                         </div>
-                       
                         <div class="flex-1"></div>
-
                         <input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp,.pdf,.docx,.xlsx" onchange="App.ui.handleFileUpload(this)">
-                       
-                        <button onclick="document.getElementById('fileUpload').click()"
-                            class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
+                        <button onclick="document.getElementById('fileUpload').click()" class="bg-slate-700 hover:bg-slate-600 text-brand-primary hover:text-white border border-slate-600 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
                             <i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span data-i18n="uploadBtn">UPLOAD</span>
                         </button>
-                       
                         <button onclick="App.ui.clearInput()" class="bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 border border-slate-700 font-bold py-1 px-3 rounded shadow-md transition flex items-center gap-1 text-[10px] h-6 cursor-pointer">
                             <i class="fa-solid fa-eraser"></i> <span data-i18n="clear">CLEAR</span>
                         </button>
                     </div>
 
                     <div class="relative w-full flex-1">
-                        <textarea id="sourceText" oninput="App.ui.handleTextChange()"
-                            class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap"
-                            placeholder="Paste text here... (Long text enables Multi-Q option)"
-                            data-i18n-placeholder="sourcePlaceholder"></textarea>
-                       
+                        <textarea id="sourceText" oninput="App.ui.handleTextChange()" class="glass-input w-full h-[500px] rounded-xl p-3 text-xs font-mono leading-relaxed resize-none focus:ring-brand-primary whitespace-pre-wrap" placeholder="Paste text here... (Long text enables Multi-Q option)" data-i18n-placeholder="sourcePlaceholder"></textarea>
                         <div id="imagePreviewContainer" class="hidden absolute inset-0 bg-slate-900/90 rounded-xl flex-col items-center justify-center border-2 border-dashed border-brand-primary z-10 p-4">
                             <img id="previewImgElement" class="max-h-[80%] max-w-full rounded shadow-lg object-contain mb-2" />
                             <div class="flex gap-2">
@@ -257,7 +236,6 @@
                                 <button onclick="App.ui.clearInput()" class="text-xs text-red-400 hover:text-white px-2 py-1 bg-red-900/20 rounded">Remove</button>
                             </div>
                         </div>
-
                         <div id="fileLoader" class="hidden absolute inset-0 bg-slate-900/80 z-20 flex-col items-center justify-center rounded-xl backdrop-blur-sm">
                             <div class="loader mb-2"></div>
                             <span class="text-xs text-brand-primary font-bold">Processing File...</span>
@@ -265,18 +243,15 @@
                     </div>
                 </div>
 
-                <!-- Bulk Panel -->
                 <div id="bulkPanel" class="hidden bg-slate-800/50 border border-slate-700 rounded-xl p-2 mb-1 animate-in fade-in slide-in-from-bottom-4 shrink-0">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-[10px] font-bold text-brand-warning flex items-center gap-1"><i class="fa-solid fa-layer-group"></i> Bulk Mode</span>
                         <span id="bulkLimitLabel" class="text-[9px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Max: 5</span>
                     </div>
-                   
                     <div class="flex items-center gap-2 mb-1">
                         <input type="range" id="bulkRange" min="1" max="5" value="1" class="flex-1 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer" oninput="App.ui.updateBulkLabel(this.value)">
                         <span id="bulkValue" class="text-xs font-bold text-white w-6 text-center bg-brand-primary rounded px-0.5">1</span>
                     </div>
-                   
                     <div id="bulkProgressContainer" class="hidden w-full bg-slate-700 rounded-full h-1.5 mb-1">
                         <div id="bulkProgressBar" class="bg-brand-success h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
@@ -284,7 +259,6 @@
                 </div>
             </div>
 
-            <!-- Sticky Generate Button -->
             <div class="p-4 bg-slate-900 border-t border-slate-800 sticky bottom-0 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
                 <div id="errorBox" class="hidden mb-2 p-3 bg-red-900/40 border border-red-800 rounded text-red-200 text-xs flex flex-col gap-1 w-full relative">
                     <div class="flex items-center justify-between font-bold">
@@ -294,7 +268,6 @@
                     <span id="errorMsg">Daily limit reached. Upgrade to Pro.</span>
                     <a href="javascript:void(0)" onclick="App.billing.upgradeRedirect()" class="text-xs underline text-white font-bold mt-1 block" data-i18n="upgradeBtn">UPGRADE NOW &rarr;</a>
                 </div>
-               
                 <button id="analyzeBtn" onclick="App.logic.startGeneration()" class="w-full bg-brand-primary hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-900/20 transition-all active:scale-[0.98] flex justify-center items-center gap-2 group cursor-pointer relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="btnText" class="text-sm md:text-base" data-i18n="analyzeBtn">Generate Q&A</span>
                     <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles group-hover:rotate-12 transition-transform"></i>
@@ -306,50 +279,46 @@
 
         <!-- RIGHT: OUTPUT -->
         <div class="w-full md:w-[60%] flex flex-col bg-[#0f172a]">
-            <div class="h-[40%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative z-0">
+            <div class="h-[40%] bg-slate-900/50 p-4 md:p-6 border-b border-slate-700 overflow-y-auto relative">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-xs md:text-sm font-bold text-brand-primary uppercase tracking-widest flex items-center gap-2">
                         <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="previewTitle">AI Output Preview</span>
-                        <a href="javascript:void(0)" onclick="App.billing.upgradeRedirect()" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition" data-i18n="upgradeBtn">UPGRADE</a>
+                        <a href="https://api.askdesk.app/billing/upgrade?plan=pro" target="_blank" id="previewUpgradeBtn" class="hidden ml-2 text-[9px] bg-brand-pro text-white px-2 py-0.5 rounded hover:bg-green-600 transition" data-i18n="upgradeBtn">UPGRADE</a>
                     </h2>
                     <span id="statusTag" class="text-[9px] bg-slate-800 text-slate-500 px-2 py-1 rounded border border-slate-700" data-i18n="statusReady">Ready</span>
                 </div>
 
-                <div class="space-y-3 pb-8">
-                    <!-- QUESTION SECTION -->
-                    <div class="mb-4">
-                        <div class="flex justify-between items-end mb-1">
-                            <div class="flex items-center gap-2">
-                                <label class="text-[10px] font-bold text-slate-400 uppercase" data-i18n="generatedQ">Question</label>
-                                <!-- SCORES DISPLAY -->
-                                <div id="scoreDisplay" class="hidden flex items-center gap-2 ml-2">
-                                     <span id="qScoreBadge" class="text-[10px] px-2 py-0.5 rounded text-white font-bold bg-slate-700">QS: 0</span>
-                                     <span id="groundingBadge" class="text-[10px] px-2 py-0.5 rounded text-white font-bold bg-slate-700">G: -</span>
-                                </div>
-                            </div>
+                <div id="qualityBox" class="hidden mb-3 p-2 bg-slate-800/50 rounded-lg border border-slate-700 text-xs">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="qualityScore">Quality Score</span>
+                            <span id="qScoreBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">0</span>
                         </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold uppercase text-slate-400 text-[10px]" data-i18n="groundingStatus">Grounding</span>
+                            <span id="groundingBadge" class="px-1.5 py-0.5 rounded text-white font-bold text-[10px]">-</span>
+                        </div>
+                    </div>
+                    <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-1 italic text-[10px]"></ul>
+                    <details class="group">
+                        <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1 text-[10px]">
+                            <i class="fa-solid fa-chevron-right text-[9px] group-open:rotate-90 transition"></i>
+                            <span data-i18n="viewExtract">View Source Extract</span>
+                        </summary>
+                        <div class="mt-1 p-2 bg-slate-900 rounded border border-slate-700 font-mono text-[9px] text-slate-300 whitespace-pre-wrap" id="extractPreview"></div>
+                        <div id="citationPreview" class="mt-1 text-[9px] text-slate-500 font-mono"></div>
+                    </details>
+                </div>
+
+                <div class="space-y-3 pb-8">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedQ">Question</label>
                         <textarea id="questionOutput" class="glass-input w-full rounded-lg p-3 text-white text-xs md:text-sm font-bold h-14 md:h-16 protected-text" readonly></textarea>
                     </div>
-
-                    <!-- ANSWER SECTION -->
-                    <div class="flex flex-col h-40 mb-4">
+                    <div class="h-32 md:h-40 flex flex-col">
                         <label class="text-[10px] font-bold text-slate-400 uppercase block mb-0.5" data-i18n="generatedA">Answer</label>
                         <textarea id="answerOutput" class="glass-input w-full flex-1 rounded-lg p-3 text-slate-300 text-xs md:text-sm font-mono whitespace-pre protected-text" readonly></textarea>
                     </div>
-                   
-                    <!-- ANALYSIS DETAILS (MOVED BELOW ANSWER) -->
-                    <div id="qualityBox" class="hidden p-3 bg-slate-800/50 rounded-lg border border-slate-700 text-xs mb-3">
-                        <ul id="qReasons" class="list-disc list-inside text-slate-400 mb-2 italic"></ul>
-                        <details class="group">
-                            <summary class="cursor-pointer text-brand-info hover:text-white font-semibold select-none flex items-center gap-1 text-[10px]">
-                                <i class="fa-solid fa-chevron-right text-[9px] group-open:rotate-90 transition"></i>
-                                <span data-i18n="viewExtract">View Source Extract</span>
-                            </summary>
-                            <div class="mt-2 p-2 bg-slate-900 rounded border border-slate-700 font-mono text-[9px] text-slate-300 whitespace-pre-wrap" id="extractPreview"></div>
-                            <div id="citationPreview" class="mt-1 text-[9px] text-slate-500 font-mono"></div>
-                        </details>
-                    </div>
-
                     <div class="flex justify-end gap-2 pt-1">
                         <button id="regenerateBtn" onclick="App.logic.regenerate()" disabled class="text-[10px] md:text-xs text-brand-primary hover:text-white font-bold px-3 py-1.5 border border-brand-primary/50 hover:border-brand-primary rounded-lg transition flex items-center gap-2 opacity-50 cursor-not-allowed">
                             <i class="fa-solid fa-rotate"></i> <span data-i18n="regenerateBtn">Regenerate</span>
@@ -447,32 +416,31 @@
                 {code: 'en', label: 'English'}, {code: 'tr', label: 'Türkçe'}, {code: 'de', label: 'Deutsch'},
                 {code: 'fr', label: 'Français'}, {code: 'es', label: 'Español'}, {code: 'pt-BR', label: 'Português'},
                 {code: 'ja', label: '日本語'}, {code: 'zh', label: '简体中文'}, {code: 'ko', label: '한국어'},
-                {code: 'pl', label: 'Polski'}, {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية', dir: 'rtl'}
+                {code: 'pl', label: 'Polski'}, {code: 'nl', label: 'Nederlands'}, {code: 'hi', label: 'हिन्दी'},
+                {code: 'ru', label: 'Русский'}, {code: 'ar', label: 'العربية', dir: 'rtl'}
             ],
             domains: [
-                {id: 'general', key: 'dom_general', label: 'General'},
-                {id: 'aviation', key: 'dom_aviation', label: 'Aviation'},
-                {id: 'strategy', key: 'dom_strategy', label: 'Strategy'},
-                {id: 'legal', key: 'dom_legal', label: 'Legal'},
-                {id: 'medical', key: 'dom_medical', label: 'Medical'},
-                {id: 'compliance', key: 'dom_compliance', label: 'Compliance'}
+                {id: 'general', label: 'General'}, {id: 'aviation', label: 'Aviation'}, {id: 'strategy', label: 'Strategy'},
+                {id: 'legal', label: 'Legal'}, {id: 'medical', label: 'Medical'}, {id: 'compliance', label: 'Compliance / ISO'}
             ],
-            statuses: ['Draft', 'Reviewed', 'Approved'],
-            UPGRADE_URL: "https://api.askdesk.app/billing/upgrade",
             plans: {
                 'starter': { dailyLimit: 5, maxBulk: 5, label: 'Starter', canExport: [], canCopy: false },
                 'pro': { dailyLimit: 100, maxBulk: 20, label: 'Pro', canExport: ['excel', 'csv'], canCopy: false },
                 'enterprise': { dailyLimit: Infinity, maxBulk: 100, label: 'Enterprise', canExport: ['excel', 'csv', 'json'], canCopy: true }
-            }
+            },
+            UPGRADE_URL: "https://api.askdesk.app/billing/upgrade"
         },
-        state: {
-            userEmail: localStorage.getItem('askdesk_user_email') || null,
-            plan: 'starter',
-            limit: 5,
-            usage: 0
+
+        data: {
+            qaLog: [],
+            previewState: null,
+            editingNoteId: null,
+            currentImage: null,
+            abortController: null,
+            bulkActive: false
         },
-       
-        // FIXED: Re-added storage object to fix undefined error
+
+        // FIXED: ADDED STORAGE OBJECT BACK
         storage: {
             getPrefs: function() {
                 var prefs = localStorage.getItem('askdesk_prefs');
@@ -481,8 +449,8 @@
             },
             savePrefs: function(p) {
                 var current = this.getPrefs();
-                var merged = Object.assign({}, current, p);
-                localStorage.setItem('askdesk_prefs', JSON.stringify(merged));
+                for (var key in p) { current[key] = p[key]; }
+                localStorage.setItem('askdesk_prefs', JSON.stringify(current));
             },
             saveApiUrl: function() {
                 var url = document.getElementById('apiUrlInput').value.trim();
@@ -499,48 +467,50 @@
             currentLang: 'en',
             translations: {
                 en: {
-                    settingsTitle: "User Account", save: "Save", cancel: "Close", sendMagicLink: "Send Magic Link",
-                    limitReached: "Limit reached – Upgrade to Pro", upgradeBtn: "Upgrade",
-                    copyRestricted: "Content protected. Upgrade to export.",
-                    loginSuccess: "Login Successful", linkSent: "Link sent to: ",
-                    linkProcessing: "Request received: ",
-                    purchaseSuccess: "Purchase successful. Updating plan...",
-                    purchaseCancel: "Purchase cancelled.",
-                    planUpdated: "Plan updated: ",
-                    guest: "Guest", loginStatus: "Login: ",
-                    // Dropdowns
-                    allDomains: "All Domains", allStatuses: "All Statuses",
-                    dom_general: "General", dom_aviation: "Aviation", dom_strategy: "Strategy",
-                    dom_legal: "Legal", dom_medical: "Medical", dom_compliance: "Compliance",
-                    status_draft: "Draft", status_reviewed: "Reviewed", status_approved: "Approved",
-                    // Main UI
+                    bannerWarning: "🔒 Secure Mode: API Key is managed server-side. Do not paste PII.",
+                    appSubtitle: "PROD SERVER EDITION",
+                    settingsTitle: "API Configuration", settingsDesc: "Enter backend URL (e.g. https://my-worker.dev)",
                     configTitle: "Configuration", domainLabel: "Domain", qLangLabel: "Question Lang", aLangLabel: "Answer Lang",
                     metaTitle: "Document Info", docNameLabel: "Doc Name", pageNumLabel: "Page Ref",
-                    sourceTextLabel: "Source Content", uploadBtn: "UPLOAD", clear: "CLEAR",
-                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output", statusReady: "Ready",
-                    generatedQ: "Question", generatedA: "Answer", qualityScore: "Quality", groundingStatus: "Grounding",
-                    viewExtract: "View Extract", logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta"
+                    sourceTextLabel: "Source Content", clear: "Clear", error: "Error",
+                    analyzeBtn: "Generate Q&A", previewTitle: "AI Output Preview", statusReady: "Ready",
+                    generatedQ: "Question", generatedA: "Answer", addBtn: "Add to Log", regenerateBtn: "Regenerate",
+                    logTitle: "Session Log", thDoc: "Doc", thContent: "Q & A", thMeta: "Meta",
+                    noData: "No entries yet.", success: "Success", analyzing: "Analyzing...",
+                    minCharsErr: "Please provide text or an image.",
+                    notFound: "Not found in provided text",
+                    uploadBtn: "UPLOAD FILE", uploadError: "File format not supported.",
+                    qualityScore: "Quality Score", groundingStatus: "Grounding",
+                    viewExtract: "View Source Extract", reviewerNotes: "Reviewer Notes",
+                    allDomains: "All Domains", allStatuses: "All Statuses",
+                    statusDraft: "Draft", statusReviewed: "Reviewed", statusApproved: "Approved",
+                    cancel: "Cancel", save: "Save",
+                    limitReached: "Limit reached – Upgrade to Pro",
+                    upgradeBtn: "Upgrade to Pro",
+                    copyRestricted: "This content is protected. Upgrade to export."
                 },
                 tr: {
-                    settingsTitle: "Kullanıcı Hesabı", save: "Kaydet", cancel: "Kapat", sendMagicLink: "Giriş Linki Gönder",
-                    limitReached: "Limit doldu – Pro'ya geç", upgradeBtn: "Yükselt",
-                    copyRestricted: "İçerik korumalı. Export kullanın.",
-                    loginSuccess: "Giriş Başarılı", linkSent: "Link gönderildi: ",
-                    linkProcessing: "İstek alındı: ",
-                    purchaseSuccess: "Satın alma başarılı. Plan güncelleniyor...",
-                    purchaseCancel: "Satın alma iptal edildi.",
-                    planUpdated: "Plan güncellendi: ",
-                    guest: "Misafir", loginStatus: "Giriş: ",
-                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
-                    dom_general: "Genel", dom_aviation: "Havacılık", dom_strategy: "Strateji",
-                    dom_legal: "Hukuk", dom_medical: "Medikal", dom_compliance: "Uyumluluk",
-                    status_draft: "Taslak", status_reviewed: "İncelendi", status_approved: "Onaylandı",
+                    bannerWarning: "🔒 Güvenli Mod: API Anahtarı sunucuda yönetilir. Gizli veri girmeyin.",
+                    appSubtitle: "PROD SUNUCU SÜRÜMÜ",
+                    settingsTitle: "API Ayarları", settingsDesc: "Backend URL giriniz (örn. https://my-worker.dev)",
                     configTitle: "Yapılandırma", domainLabel: "Alan", qLangLabel: "Soru Dili", aLangLabel: "Cevap Dili",
-                    metaTitle: "Doküman Bilgisi", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
-                    sourceTextLabel: "Kaynak İçerik", uploadBtn: "YÜKLE", clear: "TEMİZLE",
-                    analyzeBtn: "Soru Üret", previewTitle: "AI Çıktısı", statusReady: "Hazır",
-                    generatedQ: "Soru", generatedA: "Cevap", qualityScore: "Kalite", groundingStatus: "Dayanak",
-                    viewExtract: "Alıntıyı Göster", logTitle: "Oturum Kaydı", thDoc: "Belge", thContent: "Soru & Cevap", thMeta: "Detay"
+                    metaTitle: "Doküman", docNameLabel: "Doküman Adı", pageNumLabel: "Sayfa",
+                    sourceTextLabel: "Kaynak İçerik", clear: "Temizle", error: "Hata",
+                    analyzeBtn: "Oluştur", previewTitle: "Önizleme", statusReady: "Hazır",
+                    generatedQ: "Soru", generatedA: "Cevap", addBtn: "Listeye Ekle", regenerateBtn: "Yeniden Üret",
+                    logTitle: "Kayıtlar", thDoc: "Doküman", thContent: "İçerik", thMeta: "Detay",
+                    noData: "Veri yok.", success: "Başarılı", analyzing: "İşleniyor...",
+                    minCharsErr: "Lütfen metin girin veya görsel yükleyin.",
+                    notFound: "Metinde bulunamadı",
+                    uploadBtn: "DOSYA YÜKLE", uploadError: "Format desteklenmiyor.",
+                    qualityScore: "Kalite Puanı", groundingStatus: "Dayanak",
+                    viewExtract: "Alıntıyı Göster", reviewerNotes: "İnceleme Notları",
+                    allDomains: "Tüm Alanlar", allStatuses: "Tüm Durumlar",
+                    statusDraft: "Taslak", statusReviewed: "İncelendi", statusApproved: "Onaylandı",
+                    cancel: "İptal", save: "Kaydet",
+                    limitReached: "Limit doldu – Pro'ya Geç",
+                    upgradeBtn: "Pro'ya Yükselt",
+                    copyRestricted: "Bu içerik korunuyor. Export özelliğini kullanın."
                 },
                 // Added translation keys for other languages (shortened for brevity)
                 de: { analyzeBtn: "Generieren", addBtn: "Hinzufügen", clear: "LÖSCHEN", configTitle: "Konfiguration", uploadBtn: "HOCHLADEN", metaTitle: "Dokumenteninfo", sourceTextLabel: "Quellinhalt", planLabel: "Abonnement", previewTitle: "Vorschau", generatedQ: "Frage", generatedA: "Antwort", logTitle: "Sitzungsprotokoll", thDoc: "Dok", thContent: "Frage & Antwort", thMeta: "Meta", docNameLabel: "Dokumentenname", pageNumLabel: "Seite", domainLabel: "Bereich", qLangLabel: "Fragesprache", aLangLabel: "Antwortsprache", sourcePlaceholder: "Text hier einfügen...", copyRestricted: "Geschützt. Export verwenden." },
@@ -561,28 +531,32 @@
             t: function(key) {
                 var lang = this.currentLang;
                 var dict = this.translations[lang] || this.translations['en'];
-                return (dict && dict[key]) ? dict[key] : (this.translations['en'][key] || key);
+                return (dict && dict[key]) ? dict[key] : key;
             },
 
             updateUI: function() {
-                var self = this;
-                document.querySelectorAll('[data-i18n]').forEach(function(el) {
-                    el.innerText = self.t(el.getAttribute('data-i18n'));
-                });
-                document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
-                    el.placeholder = self.t(el.getAttribute('data-i18n-placeholder'));
-                });
-                var langObj = App.config.languages.find(function(l){ return l.code === self.currentLang });
-                document.documentElement.dir = (langObj && langObj.dir === 'rtl') ? 'rtl' : 'ltr';
-               
-                // FIXED: Call the function we just added
-                if (App.ui && typeof App.ui.updateDropdowns === 'function') {
-                    App.ui.updateDropdowns();
+                var elements = document.querySelectorAll('[data-i18n]');
+                for (var i = 0; i < elements.length; i++) {
+                    var el = elements[i];
+                    var key = el.getAttribute('data-i18n');
+                    el.innerText = this.t(key);
+                }
+                var placeholders = document.querySelectorAll('[data-i18n-placeholder]');
+                for (var j = 0; j < placeholders.length; j++) {
+                    var pl = placeholders[j];
+                    var pKey = pl.getAttribute('data-i18n-placeholder');
+                    pl.placeholder = this.t(pKey);
                 }
                
-                if (App.ui && typeof App.ui.updateAuthUI === 'function') {
-                    App.ui.updateAuthUI();
+                var foundLang = false;
+                for(var k=0; k<App.config.languages.length; k++) {
+                    if(App.config.languages[k].code === this.currentLang) {
+                        document.documentElement.dir = (App.config.languages[k].dir === 'rtl') ? 'rtl' : 'ltr';
+                        foundLang = true;
+                        break;
+                    }
                 }
+                if(!foundLang) document.documentElement.dir = 'ltr';
             }
         },
 
@@ -708,26 +682,6 @@
                     // this.setPlan(nextPlan);
                 }
             },
-            handlePlanClick: function() {
-                if (!App.state.userEmail) {
-                    App.ui.toggleSettings();
-                    App.ui.showToast("Please login with email first.");
-                    return;
-                }
-                this.upgradeRedirect();
-            },
-            upgradeRedirect: function() {
-                var current = this.getPlan();
-                var nextPlan = current === 'starter' ? 'pro' : 'enterprise';
-               
-                var msg = App.i18n.currentLang === 'tr'
-                    ? "Güvenli ödeme sayfasına yönlendirileceksiniz. Devam etmek istiyor musunuz?"
-                    : "You are about to be redirected to the secure payment page. Do you want to continue?";
-
-                if(confirm(msg)) {
-                    window.open(`${App.api.billing}/upgrade?plan=${nextPlan}`, '_blank');
-                }
-            },
             updateUI: function() {
                 var planKey = this.getPlan();
                 var plan = App.config.plans[planKey];
@@ -752,15 +706,16 @@
                 var upgradeBtn = document.getElementById('previewUpgradeBtn');
                
                 if (genBtn && btnText) {
-                    // Always enable button, let backend handle limits via 402
-                    genBtn.disabled = false;
-                    genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btnText.innerText = App.i18n.t('analyzeBtn');
-                   
                     if (isLimit) {
-                         if(upgradeBtn) upgradeBtn.classList.remove('hidden');
+                        genBtn.disabled = true;
+                        genBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        btnText.innerText = App.i18n.t('upgradeBtn');
+                        if(upgradeBtn) upgradeBtn.classList.remove('hidden');
                     } else {
-                         if(upgradeBtn) upgradeBtn.classList.add('hidden');
+                        genBtn.disabled = false;
+                        genBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btnText.innerText = App.i18n.t('analyzeBtn');
+                        if(upgradeBtn) upgradeBtn.classList.add('hidden');
                     }
                 }
 
@@ -796,7 +751,7 @@
                 var sourceInjection = hasImage ? "" : "\n\nSOURCE TEXT SEGMENT:\n\"\"\"" + sourceText + "\"\"\"\n\n";
                 var docContext = "";
 
-                return "System: AskDesk v2.9.57 (Global). Domain: " + domain.toUpperCase() + "\n" +
+                return "System: AskDesk v2.9.33 (Global). Domain: " + domain.toUpperCase() + "\n" +
                 docContext + "\n" +
                 inputContext + "\n" +
                 "Task: Generate JSON {question, answer, extract, citations}.\n" +
@@ -862,7 +817,6 @@
                 var userId = localStorage.getItem('askdesk_user_email') || 'guest';
 
                 try {
-                    // Optimistic Increment
                     if (retryCount === 0 && !App.data.bulkActive) {
                          App.billing.incrementUsage();
                     }
@@ -1076,7 +1030,20 @@
                         if (!App.i18n.translations[l.code]) App.i18n.translations[l.code] = Object.assign({}, en);
                     }
                    
-                    this.initDropdowns(); // FIXED: Called via this
+                    var domSelect = document.getElementById('domainSelect');
+                    if(domSelect) {
+                        domSelect.innerHTML = '';
+                        App.config.domains.forEach(function(d) { domSelect.add(new Option(d.label, d.id)); });
+                    }
+                   
+                    var ids = ['qLangSelect', 'aLangSelect', 'uiLangSelect'];
+                    ids.forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if(el) {
+                            el.innerHTML = '';
+                            App.config.languages.forEach(function(l) { el.add(new Option(l.label, l.code)); });
+                        }
+                    });
                    
                     var prefs = App.storage.getPrefs();
                     if(document.getElementById('uiLangSelect')) document.getElementById('uiLangSelect').value = prefs.uiLang;
@@ -1086,43 +1053,30 @@
                    
                     var apiInput = document.getElementById('apiUrlInput');
                     if (apiInput) apiInput.value = App.api.current;
+                   
+                    // NEW: Ensure init logic
+                    this.checkAuth();
+
                 } catch(e) { console.error(e); }
             },
-            initDropdowns: function() {
-                var self = this;
-                var domSelect = document.getElementById('domainSelect');
-                if(domSelect) {
-                    domSelect.innerHTML = '';
-                    App.config.domains.forEach(function(d) { domSelect.add(new Option(d.label, d.id)); });
-                }
+           
+            // NEW: Auth & Limit Check
+            checkAuth: function() {
+                var urlParams = new URLSearchParams(window.location.search);
+                var token = urlParams.get('token');
                
-                ['qLangSelect', 'aLangSelect', 'uiLangSelect'].forEach(function(id) {
-                    var el = document.getElementById(id);
-                    if(el) {
-                        el.innerHTML = '';
-                        App.config.languages.forEach(function(l) { el.add(new Option(l.label, l.code)); });
-                    }
-                });
-               
-                // Add Filter Dropdowns
-                var filterDom = document.getElementById('filterDomain');
-                if(filterDom) {
-                    filterDom.innerHTML = '';
-                    filterDom.add(new Option(App.i18n.t('allDomains'), 'all'));
-                    App.config.domains.forEach(function(d) { filterDom.add(new Option(d.label, d.id)); });
-                }
-               
-                var filterStat = document.getElementById('filterStatus');
-                if(filterStat) {
-                    filterStat.innerHTML = '';
-                    filterStat.add(new Option(App.i18n.t('allStatuses'), 'all'));
-                    ['Draft', 'Reviewed', 'Approved'].forEach(function(s) { filterStat.add(new Option(s, s)); });
+                if (token) {
+                     this.verifyToken(token);
                 }
             },
-            // FIXED: Added missing function
-            updateDropdowns: function() {
-                this.initDropdowns();
+           
+            verifyToken: async function(token) {
+                 // Mock verify - replace with real backend
+                 App.ui.showToast("Logged in!");
+                 localStorage.setItem('askdesk_user_email', 'user@verified.com');
+                 window.history.replaceState({}, document.title, "/");
             },
+
             cyclePlan: function() {
                 App.billing.cyclePlan();
             },
@@ -1233,42 +1187,21 @@
             showToast: function(msg, actionType) {
                 var t = document.getElementById('toast');
                 var btn = document.getElementById('toastActionBtn');
-               
-                // Fix: Check if p tag exists inside toast
-                const pTag = t.querySelector('p');
+                var pTag = t.querySelector('p');
                 if(pTag) pTag.innerText = msg;
 
                 if (btn) {
-                    if (actionType === 'upgrade') {
-                        btn.classList.remove('hidden');
-                        btn.href = App.config.UPGRADE_URL;
-                    } else {
-                        btn.classList.add('hidden');
-                    }
+                    if (actionType === 'upgrade') { btn.classList.remove('hidden'); btn.href = App.config.UPGRADE_URL; }
+                    else { btn.classList.add('hidden'); }
                 }
                
                 t.classList.remove('translate-y-24');
-                setTimeout(() => t.classList.add('translate-y-24'), 4000);
-            },
-            updateAuthUI: function() {
-                var email = App.state.userEmail;
-                var display = document.getElementById('userEmailDisplay');
-                // var statusLine = document.getElementById('loginStatusLine');
-               
-                if(display) {
-                    display.innerText = email || "";
-                    display.style.display = email ? 'block' : 'none';
-                }
-               
-                // Auto-fill input
-                if(email && document.getElementById('userEmailInput')) {
-                    document.getElementById('userEmailInput').value = email;
-                }
+                setTimeout(function() { t.classList.add('translate-y-24'); }, 4000);
             }
         }
     };
 
-    document.addEventListener('DOMContentLoaded', () => App.ui.init());
+    document.addEventListener('DOMContentLoaded', function() { App.ui.init(); });
     </script>
 </body>
 </html>
